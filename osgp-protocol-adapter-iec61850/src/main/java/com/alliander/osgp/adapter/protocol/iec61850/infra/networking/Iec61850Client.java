@@ -20,7 +20,6 @@ import org.openmuc.openiec61850.ClientSap;
 import org.openmuc.openiec61850.Fc;
 import org.openmuc.openiec61850.FcModelNode;
 import org.openmuc.openiec61850.ModelNode;
-import org.openmuc.openiec61850.Report;
 import org.openmuc.openiec61850.SclParseException;
 import org.openmuc.openiec61850.ServerModel;
 import org.openmuc.openiec61850.ServiceError;
@@ -35,7 +34,7 @@ import com.alliander.osgp.adapter.protocol.iec61850.exceptions.ProtocolAdapterEx
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.Function;
 
 @Component
-public class Iec61850Client implements ClientEventListener {
+public class Iec61850Client {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Iec61850Client.class);
 
@@ -75,7 +74,8 @@ public class Iec61850Client implements ClientEventListener {
         LOGGER.info("Attempting to connect to server: {} on port: {}", ipAddress.getHostAddress(),
                 this.iec61850PortServer);
         try {
-            association = clientSap.associate(ipAddress, this.iec61850PortServer, null, this);
+            final ClientEventListener reportListener = new Iec61850ClientEventListener(deviceIdentification);
+            association = clientSap.associate(ipAddress, this.iec61850PortServer, null, reportListener);
         } catch (final IOException e) {
             // an IOException will always indicate a fatal exception. It
             // indicates that the association was closed and
@@ -163,30 +163,6 @@ public class Iec61850Client implements ClientEventListener {
         LOGGER.info("disconnecting from device: {}...", deviceIdentification);
         clientAssociation.disconnect();
         LOGGER.info("disconnected from device: {} !!!", deviceIdentification);
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.openmuc.openiec61850.ClientEventListener#newReport(org.openmuc.
-     * openiec61850.Report)
-     */
-    @Override
-    public void newReport(final Report report) {
-        LOGGER.info("Iec61850Client.newReport, reportId: {}", report.getRptId());
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * org.openmuc.openiec61850.ClientEventListener#associationClosed(java.io
-     * .IOException)
-     */
-    @Override
-    public void associationClosed(final IOException e) {
-        LOGGER.info("Iec61850Client.associationClosed, exception (if present): {}", e == null ? "no exception message"
-                : e.getMessage());
     }
 
     public ServerModel readServerModelFromDevice(final ClientAssociation clientAssociation) {
