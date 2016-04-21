@@ -30,6 +30,22 @@ public final class LogicalNodeAttributeDefinitons {
      */
     public static final String LOGICAL_NODE_CSLC = "/CSLC";
 
+    /**
+     * LLN0, configuration Logical Node zero.
+     */
+    public static final String LOGICAL_NODE_LLN0 = "/LLN0";
+
+    /**
+     * Property of LLN0 Node, evn_rpn01, contains the reporting information
+     */
+    public static final String PROPERTY_REPORTING = ".evn_rpn01";
+
+    /**
+     * Property of LLN0's Node, evn_rpn01. Enables reporting. This boolean is
+     * reset to false by the device once the reports are sent.
+     */
+    public static final String PROPERTY_ENABLE_REPORTING = "RptEna";
+
     /*
      * XSWC, prefix of the relays' Logical Node.
      */

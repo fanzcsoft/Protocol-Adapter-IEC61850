@@ -7,6 +7,7 @@
  */
 package com.alliander.osgp.adapter.protocol.iec61850.infra.networking;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -31,6 +32,7 @@ import org.openmuc.openiec61850.Fc;
 import org.openmuc.openiec61850.FcModelNode;
 import org.openmuc.openiec61850.ModelNode;
 import org.openmuc.openiec61850.ServerModel;
+import org.openmuc.openiec61850.ServiceError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -592,6 +594,11 @@ public class Iec61850DeviceService implements DeviceService {
                     deviceRequest.getOrganisationIdentification(), deviceRequest.getDeviceIdentification(),
                     deviceRequest.getCorrelationUid(), DeviceMessageStatus.OK);
             deviceResponseHandler.handleResponse(deviceResponse);
+
+            // Enabling device reporting. This is placed here because this is
+            // called twice a day.
+            this.enableReportingOnDevice(serverModel, clientAssociation, deviceRequest.getDeviceIdentification());
+
         } catch (final ConnectionFailureException se) {
             LOGGER.error("Could not connect to device after all retries", se);
 
@@ -1496,6 +1503,23 @@ public class Iec61850DeviceService implements DeviceService {
 
         this.iec61850Client.sendCommandWithRetry(function);
 
+    }
+
+    private void enableReportingOnDevice(final ServerModel serverModel, final ClientAssociation clientAssociation,
+            final String deviceIdentification) throws ServiceError, IOException {
+
+        final String functionalFirmwareConfigurationObjectReference = LogicalNodeAttributeDefinitons.LOGICAL_DEVICE
+                + LogicalNodeAttributeDefinitons.LOGICAL_NODE_LLN0 + LogicalNodeAttributeDefinitons.PROPERTY_REPORTING;
+
+        final FcModelNode functionalFirmwareConfiguration = (FcModelNode) serverModel.findModelNode(
+                functionalFirmwareConfigurationObjectReference, Fc.BR);
+
+        final BdaBoolean enableReporting = (BdaBoolean) functionalFirmwareConfiguration
+                .getChild(LogicalNodeAttributeDefinitons.PROPERTY_ENABLE_REPORTING);
+
+        LOGGER.info("Allowing device {} to send events", deviceIdentification);
+        enableReporting.setValue(true);
+        clientAssociation.setDataValues(enableReporting);
     }
 
     // ========================
