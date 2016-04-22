@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.alliander.osgp.adapter.protocol.iec61850.application.services.DeviceManagementService;
 import com.alliander.osgp.adapter.protocol.iec61850.exceptions.ConnectionFailureException;
 import com.alliander.osgp.adapter.protocol.iec61850.exceptions.ProtocolAdapterException;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.Function;
@@ -37,6 +38,9 @@ import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.Func
 public class Iec61850Client {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Iec61850Client.class);
+
+    @Autowired
+    private DeviceManagementService deviceManagementService;
 
     @Autowired
     private int iec61850PortClient;
@@ -74,7 +78,8 @@ public class Iec61850Client {
         LOGGER.info("Attempting to connect to server: {} on port: {}", ipAddress.getHostAddress(),
                 this.iec61850PortServer);
         try {
-            final ClientEventListener reportListener = new Iec61850ClientEventListener(deviceIdentification);
+            final ClientEventListener reportListener = new Iec61850ClientEventListener(deviceIdentification,
+                    this.deviceManagementService);
             association = clientSap.associate(ipAddress, this.iec61850PortServer, null, reportListener);
         } catch (final IOException e) {
             // an IOException will always indicate a fatal exception. It
