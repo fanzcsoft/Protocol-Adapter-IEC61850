@@ -1,7 +1,10 @@
 package com.alliander.osgp.adapter.protocol.iec61850.infra.networking;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -23,6 +26,8 @@ import org.slf4j.LoggerFactory;
 
 import com.alliander.osgp.adapter.protocol.iec61850.application.services.DeviceManagementService;
 import com.alliander.osgp.adapter.protocol.iec61850.exceptions.ProtocolAdapterException;
+import com.alliander.osgp.core.db.api.iec61850.entities.DeviceOutputSetting;
+import com.alliander.osgp.dto.valueobjects.EventNotification;
 import com.alliander.osgp.dto.valueobjects.EventType;
 
 public class Iec61850ClientEventListener implements ClientEventListener {
@@ -37,63 +42,27 @@ public class Iec61850ClientEventListener implements ClientEventListener {
      */
     private static final long IEC61850_ENTRY_TIME_OFFSET = 441763200000L;
 
+    /*
+     * Node names of EvnRpn nodes that occur as members of the report dataset.
+     */
+    private static final String EVENT_NODE_EVENT_TYPE = "evnType";
+    private static final String EVENT_NODE_SWITCH_NUMBER = "swNum";
+    private static final String EVENT_NODE_SWITCH_VALUE = "swVal";
+    private static final String EVENT_NODE_TRIGGER_TIME = "trgTime";
+    private static final String EVENT_NODE_TRIGGER_TYPE = "trgType";
+    private static final String EVENT_NODE_REMARK = "remark";
+
     private static final Map<Short, String> EVN_TYPE_DESCRIPTION_PER_CODE = new TreeMap<>();
     private static final Map<Short, EventType> OSGP_EVENT_TYPE_PER_CODE = new TreeMap<>();
     private static final Map<Short, String> TRG_TYPE_DESCRIPTION_PER_CODE = new TreeMap<>();
 
-    /*-
-     * OSGP Event types not mapped from IEC61850 evnType:
-     *
-     * HARDWARE_FAILURE_RELAY(1)
-     * LIGHT_FAILURE_DALI_COMMUNICATION(2)
-     * LIGHT_FAILURE_BALLAST(3)
-     * MONITOR_EVENTS_LONG_BUFFER_FULL(6)
-     * LIGHT_FAILURE_TARIFF_SWITCH_ATTEMPT(10)
-     * MONITOR_FAILURE_P1_COMMUNICATION(13)
-     * COMM_EVENTS_ALTERNATIVE_CHANNEL(14)
-     * COMM_EVENTS_RECOVERED_CHANNEL(15)
-     * SECURITY_EVENTS_OUT_OF_SEQUENCE(16)
-     * MONITOR_SHORT_DETECTED(17)
-     * MONITOR_SHORT_RESOLVED(18)
-     * MONITOR_DOOR_OPENED(19)
-     * MONITOR_DOOR_CLOSED(20)
-     * ALARM_NOTIFICATION(21)
-     * SMS_NOTIFICATION(22)
-     * MONITOR_EVENTS_TEST_RELAY_ON(23)
-     * MONITOR_EVENTS_TEST_RELAY_OFF(24)
-     * MONITOR_EVENTS_LOCAL_MODE(26)
-     * MONITOR_EVENTS_REMOTE_MODE(27)
-     * FIRMWARE_EVENTS_CONFIGURATION_CHANGED(28)
-     *
-     *
-     * OSGP Event types mapped from multiple IEC61850 evnType:
-     *
-     * FIRMWARE_EVENTS_ACTIVATING(7)
-     *   from  7 - FUNCTION_FIRMWARE_EVENTS_ACTIVATING
-     *   and  11 - SECURITY_FIRMWARE_EVENTS_ACTIVATING
-     *
-     * FIRMWARE_EVENTS_DOWNLOAD_NOTFOUND(8)
-     *   from  8 - FUNCTION_FIRMWARE_EVENTS_DOWNLOAD_NOTFOUND
-     *   and  12 - SECURITY_FIRMWARE_EVENTS_DOWNLOAD_NOTFOUND
-     *
-     * FIRMWARE_EVENTS_DOWNLOAD_FAILED(9)
-     *   from  9 - FUNCTION_FIRMWARE_EVENTS_DOWNLOAD_FAILED
-     *   and  13 - SECURITY_FIRMWARE_EVENTS_DOWNLOAD_FAILED
-     *
-     *
-     * IEC61850 evnType without OSGP Event type
-     *
-     * 10 - FUNCTION_FIRMWARE_EVENTS_DOWNLOAD_SUCCESS
-     * 14 - SECURITY_FIRMWARE_EVENTS_DOWNLOAD_SUCCESS
-     * 15 - CA_FILE_EVENTS_ACTIVATING
-     * 16 - CA_FILE_FIRMWARE_EVENTS_DOWNLOAD_NOTFOUND
-     * 17 - CA_FILE_EVENTS_DOWNLOAD_FAILED
-     * 18 - CA_FILE_EVENTS_DOWNLOAD_SUCCESS
-     * 19 - NTP_SERVER_NOT_REACH
-     * 20 - NTP_SYNC_ALARM_OFFSET
-     * 21 - NTP_SYNC_MAX_OFFSET
-     * 22 - AUTHENTICATION_FAIL
-     */
+    private static final Comparator<EventNotification> NOTIFICATIONS_BY_TIME = new Comparator<EventNotification>() {
+        @Override
+        public int compare(final EventNotification o1, final EventNotification o2) {
+            return o1.getDateTime().compareTo(o2.getDateTime());
+        }
+    };
+
     static {
         EVN_TYPE_DESCRIPTION_PER_CODE.put((short) 1, "DIAG_EVENTS_GENERAL");
         OSGP_EVENT_TYPE_PER_CODE.put((short) 1, EventType.DIAG_EVENTS_GENERAL);
@@ -114,7 +83,7 @@ public class Iec61850ClientEventListener implements ClientEventListener {
         EVN_TYPE_DESCRIPTION_PER_CODE.put((short) 9, "FUNCTION_FIRMWARE_EVENTS_DOWNLOAD_FAILED");
         OSGP_EVENT_TYPE_PER_CODE.put((short) 9, EventType.FIRMWARE_EVENTS_DOWNLOAD_FAILED);
         EVN_TYPE_DESCRIPTION_PER_CODE.put((short) 10, "FUNCTION_FIRMWARE_EVENTS_DOWNLOAD_SUCCESS");
-        OSGP_EVENT_TYPE_PER_CODE.put((short) 10, null);
+        OSGP_EVENT_TYPE_PER_CODE.put((short) 10, EventType.FIRMWARE_EVENTS_DOWNLOAD_SUCCESS);
         EVN_TYPE_DESCRIPTION_PER_CODE.put((short) 11, "SECURITY_FIRMWARE_EVENTS_ACTIVATING");
         OSGP_EVENT_TYPE_PER_CODE.put((short) 11, EventType.FIRMWARE_EVENTS_ACTIVATING);
         EVN_TYPE_DESCRIPTION_PER_CODE.put((short) 12, "SECURITY_FIRMWARE_EVENTS_DOWNLOAD_NOTFOUND");
@@ -122,23 +91,23 @@ public class Iec61850ClientEventListener implements ClientEventListener {
         EVN_TYPE_DESCRIPTION_PER_CODE.put((short) 13, "SECURITY_FIRMWARE_EVENTS_DOWNLOAD_FAILED");
         OSGP_EVENT_TYPE_PER_CODE.put((short) 13, EventType.FIRMWARE_EVENTS_DOWNLOAD_FAILED);
         EVN_TYPE_DESCRIPTION_PER_CODE.put((short) 14, "SECURITY_FIRMWARE_EVENTS_DOWNLOAD_SUCCESS");
-        OSGP_EVENT_TYPE_PER_CODE.put((short) 14, null);
+        OSGP_EVENT_TYPE_PER_CODE.put((short) 14, EventType.FIRMWARE_EVENTS_DOWNLOAD_SUCCESS);
         EVN_TYPE_DESCRIPTION_PER_CODE.put((short) 15, "CA_FILE_EVENTS_ACTIVATING");
-        OSGP_EVENT_TYPE_PER_CODE.put((short) 15, null);
+        OSGP_EVENT_TYPE_PER_CODE.put((short) 15, EventType.CA_FILE_EVENTS_ACTIVATING);
         EVN_TYPE_DESCRIPTION_PER_CODE.put((short) 16, "CA_FILE_FIRMWARE_EVENTS_DOWNLOAD_NOTFOUND");
-        OSGP_EVENT_TYPE_PER_CODE.put((short) 16, null);
+        OSGP_EVENT_TYPE_PER_CODE.put((short) 16, EventType.CA_FILE_FIRMWARE_EVENTS_DOWNLOAD_NOT_FOUND);
         EVN_TYPE_DESCRIPTION_PER_CODE.put((short) 17, "CA_FILE_EVENTS_DOWNLOAD_FAILED");
-        OSGP_EVENT_TYPE_PER_CODE.put((short) 17, null);
+        OSGP_EVENT_TYPE_PER_CODE.put((short) 17, EventType.CA_FILE_EVENTS_DOWNLOAD_FAILED);
         EVN_TYPE_DESCRIPTION_PER_CODE.put((short) 18, "CA_FILE_EVENTS_DOWNLOAD_SUCCESS");
-        OSGP_EVENT_TYPE_PER_CODE.put((short) 18, null);
+        OSGP_EVENT_TYPE_PER_CODE.put((short) 18, EventType.CA_FILE_EVENTS_DOWNLOAD_SUCCESS);
         EVN_TYPE_DESCRIPTION_PER_CODE.put((short) 19, "NTP_SERVER_NOT_REACH");
-        OSGP_EVENT_TYPE_PER_CODE.put((short) 19, null);
+        OSGP_EVENT_TYPE_PER_CODE.put((short) 19, EventType.NTP_SERVER_NOT_REACH);
         EVN_TYPE_DESCRIPTION_PER_CODE.put((short) 20, "NTP_SYNC_ALARM_OFFSET");
-        OSGP_EVENT_TYPE_PER_CODE.put((short) 20, null);
+        OSGP_EVENT_TYPE_PER_CODE.put((short) 20, EventType.NTP_SYNC_ALARM_OFFSET);
         EVN_TYPE_DESCRIPTION_PER_CODE.put((short) 21, "NTP_SYNC_MAX_OFFSET");
-        OSGP_EVENT_TYPE_PER_CODE.put((short) 21, null);
+        OSGP_EVENT_TYPE_PER_CODE.put((short) 21, EventType.NTP_SYNC_MAX_OFFSET);
         EVN_TYPE_DESCRIPTION_PER_CODE.put((short) 22, "AUTHENTICATION_FAIL");
-        OSGP_EVENT_TYPE_PER_CODE.put((short) 22, null);
+        OSGP_EVENT_TYPE_PER_CODE.put((short) 22, EventType.AUTHENTICATION_FAIL);
 
         TRG_TYPE_DESCRIPTION_PER_CODE.put((short) 1, "light trigger (sensor trigger)");
         TRG_TYPE_DESCRIPTION_PER_CODE.put((short) 2, "ad-hoc trigger");
@@ -148,11 +117,33 @@ public class Iec61850ClientEventListener implements ClientEventListener {
 
     private final String deviceIdentification;
     private final DeviceManagementService deviceManagementService;
+    private final List<EventNotification> eventNotifications = new ArrayList<>();
+    private final Map<Integer, Integer> externalIndexByInternalIndex = new TreeMap<>();
 
     public Iec61850ClientEventListener(final String deviceIdentification,
-            final DeviceManagementService deviceManagementService) {
+            final DeviceManagementService deviceManagementService) throws ProtocolAdapterException {
         this.deviceIdentification = deviceIdentification;
         this.deviceManagementService = deviceManagementService;
+        this.externalIndexByInternalIndex.putAll(this.buildExternalByInternalIndexMap(this.deviceManagementService,
+                this.deviceIdentification));
+    }
+
+    private Map<Integer, Integer> buildExternalByInternalIndexMap(
+            final DeviceManagementService deviceManagementService, final String deviceIdentification)
+                    throws ProtocolAdapterException {
+
+        final Map<Integer, Integer> indexMap = new TreeMap<>();
+        indexMap.put(0, 0);
+
+        final List<DeviceOutputSetting> deviceOutputSettings = deviceManagementService
+                .getDeviceOutputSettings(deviceIdentification);
+        for (final DeviceOutputSetting outputSetting : deviceOutputSettings) {
+            indexMap.put(outputSetting.getInternalId(), outputSetting.getExternalId());
+        }
+
+        LOGGER.info("Retrieved internal to external index map for device {}: {}", deviceIdentification, indexMap);
+
+        return indexMap;
     }
 
     public String getDeviceIdentification() {
@@ -161,10 +152,17 @@ public class Iec61850ClientEventListener implements ClientEventListener {
 
     @Override
     public void newReport(final Report report) {
+        /*-
+         * TODO make the last/next SqNum for the reports available to this listener.
+         * Using this SqNum implement some checking/filtering on the events reported,
+         * in order to prevent double notifications to the platform.
+         */
+        final DateTime timeOfEntry = report.getTimeOfEntry() == null ? null : new DateTime(report.getTimeOfEntry()
+                .getTimestampValue() + IEC61850_ENTRY_TIME_OFFSET);
+
         final String reportDescription = String.format("device: %s, reportId: %s, timeOfEntry: %s, sqNum: %s%s%s",
-                this.deviceIdentification, report.getRptId(), report.getTimeOfEntry() == null ? "-" : new DateTime(
-                        report.getTimeOfEntry().getTimestampValue() + IEC61850_ENTRY_TIME_OFFSET), report.getSqNum(),
-                        report.getSubSqNum() == null ? "" : " subSqNum: " + report.getSubSqNum(),
+                this.deviceIdentification, report.getRptId(), timeOfEntry == null ? "-" : timeOfEntry,
+                        report.getSqNum(), report.getSubSqNum() == null ? "" : " subSqNum: " + report.getSubSqNum(),
                                 report.isMoreSegmentsFollow() ? " (more segments follow for this sqNum)" : "");
         LOGGER.info("newReport for {}", reportDescription);
         if (report.isBufOvfl()) {
@@ -192,7 +190,7 @@ public class Iec61850ClientEventListener implements ClientEventListener {
             }
             LOGGER.info("Handle member {} for {}", member.getReference(), reportDescription);
             try {
-                this.addEventNotificationForReportedData(member, reportDescription);
+                this.addEventNotificationForReportedData(member, timeOfEntry, reportDescription);
             } catch (final Exception e) {
                 LOGGER.error("Error adding event notification for member {} from {}", member.getReference(),
                         reportDescription, e);
@@ -200,23 +198,27 @@ public class Iec61850ClientEventListener implements ClientEventListener {
         }
     }
 
-    private void addEventNotificationForReportedData(final FcModelNode evnRpn, final String reportDescription)
-            throws ProtocolAdapterException {
+    private void addEventNotificationForReportedData(final FcModelNode evnRpn, final DateTime timeOfEntry,
+            final String reportDescription)
+                    throws ProtocolAdapterException {
 
         final EventType eventType = this.determineEventType(evnRpn, reportDescription);
         final Integer index = this.determineRelayIndex(evnRpn, reportDescription);
-        final String description = this.determineDescription(evnRpn, reportDescription);
+        final String description = this.determineDescription(evnRpn);
+        final DateTime dateTime = this.determineDateTime(evnRpn, timeOfEntry);
 
-        this.deviceManagementService.addEventNotification(this.deviceIdentification, eventType.name(), description,
-                index);
+        final EventNotification eventNotification = new EventNotification(this.deviceIdentification, dateTime,
+                eventType, description, index);
+        synchronized (this.eventNotifications) {
+            this.eventNotifications.add(eventNotification);
+        }
     }
 
     private EventType determineEventType(final FcModelNode evnRpn, final String reportDescription) {
 
-        final String evnTypeName = "evnType";
-        final BdaInt8U evnTypeNode = (BdaInt8U) evnRpn.getChild(evnTypeName);
+        final BdaInt8U evnTypeNode = (BdaInt8U) evnRpn.getChild(EVENT_NODE_EVENT_TYPE);
         if (evnTypeNode == null) {
-            throw this.childNodeNotAvailableException(evnRpn, evnTypeName, reportDescription);
+            throw this.childNodeNotAvailableException(evnRpn, EVENT_NODE_EVENT_TYPE, reportDescription);
         }
 
         final Short evnTypeCode = evnTypeNode.getValue();
@@ -236,28 +238,99 @@ public class Iec61850ClientEventListener implements ClientEventListener {
         return eventType;
     }
 
-    private Integer determineRelayIndex(final FcModelNode evnRpn, final String reportDescription) {
+    private Integer determineRelayIndex(final FcModelNode evnRpn, final String reportDescription)
+            throws ProtocolAdapterException {
 
-        final String swNumName = "swNum";
-        final BdaInt8U swNumNode = (BdaInt8U) evnRpn.getChild(swNumName);
+        final BdaInt8U swNumNode = (BdaInt8U) evnRpn.getChild(EVENT_NODE_SWITCH_NUMBER);
         if (swNumNode == null) {
-            throw this.childNodeNotAvailableException(evnRpn, swNumName, reportDescription);
+            throw this.childNodeNotAvailableException(evnRpn, EVENT_NODE_SWITCH_NUMBER, reportDescription);
         }
 
         final Short swNum = swNumNode.getValue();
-
-        return swNum.intValue();
-    }
-
-    private String determineDescription(final FcModelNode evnRpn, final String reportDescription) {
-
-        final String remarkName = "remark";
-        final BdaVisibleString remarkNode = (BdaVisibleString) evnRpn.getChild(remarkName);
-        if (remarkNode == null) {
-            throw this.childNodeNotAvailableException(evnRpn, remarkName, reportDescription);
+        final Integer externalIndex = this.externalIndexByInternalIndex.get(swNum.intValue());
+        if (externalIndex == null) {
+            LOGGER.error("No external index configured for internal index: {} for device: {}, using '0' for event",
+                    swNum, this.deviceIdentification);
+            return 0;
         }
 
-        return remarkNode.getStringValue();
+        return externalIndex;
+    }
+
+    private String determineDescription(final FcModelNode evnRpn) {
+
+        final StringBuilder sb = new StringBuilder();
+
+        final BdaInt8U trgTypeNode = (BdaInt8U) evnRpn.getChild(EVENT_NODE_TRIGGER_TYPE);
+        if (trgTypeNode != null && trgTypeNode.getValue() > 0) {
+            final short trgType = trgTypeNode.getValue();
+            final String trigger = TRG_TYPE_DESCRIPTION_PER_CODE.get(trgType);
+            if (trigger == null) {
+                sb.append("trgType=").append(trgType);
+            } else {
+                sb.append(trigger);
+            }
+        }
+
+        final BdaInt8U evnTypeNode = (BdaInt8U) evnRpn.getChild(EVENT_NODE_EVENT_TYPE);
+        if (evnTypeNode != null && evnTypeNode.getValue() > 0) {
+            final short evnType = evnTypeNode.getValue();
+            final String event = EVN_TYPE_DESCRIPTION_PER_CODE.get(evnType);
+            if (event != null && event.startsWith("FUNCTION_FIRMWARE")) {
+                if (sb.length() > 0) {
+                    sb.append("; ");
+                }
+                sb.append("functional firmware");
+            } else if (event != null && event.startsWith("SECURITY_FIRMWARE")) {
+                if (sb.length() > 0) {
+                    sb.append("; ");
+                }
+                sb.append("security firmware");
+            }
+        }
+
+        final BdaTimestamp trgTimeNode = (BdaTimestamp) evnRpn.getChild(EVENT_NODE_TRIGGER_TIME);
+        if (trgTimeNode != null && trgTimeNode.getDate() != null) {
+            final DateTime trgTime = new DateTime(trgTimeNode.getDate());
+            if (sb.length() > 0) {
+                sb.append("; ");
+            }
+            sb.append(trgTime);
+        }
+
+        final BdaVisibleString remarkNode = (BdaVisibleString) evnRpn.getChild(EVENT_NODE_REMARK);
+        if (remarkNode != null && !EVENT_NODE_REMARK.equalsIgnoreCase(remarkNode.getStringValue())) {
+            if (sb.length() > 0) {
+                sb.append(' ');
+            }
+            sb.append('(').append(remarkNode.getStringValue()).append(')');
+        }
+
+        return sb.toString();
+    }
+
+    private DateTime determineDateTime(final FcModelNode evnRpn, final DateTime timeOfEntry) {
+
+        if (timeOfEntry != null) {
+            /*
+             * Use the reports time of entry for the event. The trigger time
+             * will appear in the description with the event notification.
+             *
+             * See: determineDescription(FcModelNode)
+             */
+            return timeOfEntry;
+        }
+
+        final BdaTimestamp trgTimeNode = (BdaTimestamp) evnRpn.getChild(EVENT_NODE_TRIGGER_TIME);
+        if (trgTimeNode != null && trgTimeNode.getDate() != null) {
+            return new DateTime(trgTimeNode.getDate());
+        }
+
+        /*
+         * No time of entry or trigger time available for the report. As a
+         * fallback use the time the report is processed here as event time.
+         */
+        return DateTime.now();
     }
 
     private IllegalArgumentException childNodeNotAvailableException(final FcModelNode evnRpn,
@@ -446,8 +519,8 @@ public class Iec61850ClientEventListener implements ClientEventListener {
     private String evnRpnInfo(final String linePrefix, final FcModelNode evnRpn) {
         final StringBuilder sb = new StringBuilder();
 
-        final BdaInt8U evnTypeNode = (BdaInt8U) evnRpn.getChild("evnType");
-        sb.append(linePrefix).append("evnType: ");
+        final BdaInt8U evnTypeNode = (BdaInt8U) evnRpn.getChild(EVENT_NODE_EVENT_TYPE);
+        sb.append(linePrefix).append(EVENT_NODE_EVENT_TYPE).append(": ");
         if (evnTypeNode == null) {
             sb.append("null");
         } else {
@@ -456,8 +529,8 @@ public class Iec61850ClientEventListener implements ClientEventListener {
         }
         sb.append(System.lineSeparator());
 
-        final BdaInt8U swNumNode = (BdaInt8U) evnRpn.getChild("swNum");
-        sb.append(linePrefix).append("swNum: ");
+        final BdaInt8U swNumNode = (BdaInt8U) evnRpn.getChild(EVENT_NODE_SWITCH_NUMBER);
+        sb.append(linePrefix).append(EVENT_NODE_SWITCH_NUMBER).append(": ");
         if (swNumNode == null) {
             sb.append("null");
         } else {
@@ -466,8 +539,8 @@ public class Iec61850ClientEventListener implements ClientEventListener {
         }
         sb.append(System.lineSeparator());
 
-        final BdaInt8U trgTypeNode = (BdaInt8U) evnRpn.getChild("trgType");
-        sb.append(linePrefix).append("trgType: ");
+        final BdaInt8U trgTypeNode = (BdaInt8U) evnRpn.getChild(EVENT_NODE_TRIGGER_TYPE);
+        sb.append(linePrefix).append(EVENT_NODE_TRIGGER_TYPE).append(": ");
         if (trgTypeNode == null) {
             sb.append("null");
         } else {
@@ -476,8 +549,8 @@ public class Iec61850ClientEventListener implements ClientEventListener {
         }
         sb.append(System.lineSeparator());
 
-        final BdaBoolean swValNode = (BdaBoolean) evnRpn.getChild("swVal");
-        sb.append(linePrefix).append("swVal: ");
+        final BdaBoolean swValNode = (BdaBoolean) evnRpn.getChild(EVENT_NODE_SWITCH_VALUE);
+        sb.append(linePrefix).append(EVENT_NODE_SWITCH_VALUE).append(": ");
         if (swValNode == null) {
             sb.append("null");
         } else {
@@ -486,8 +559,8 @@ public class Iec61850ClientEventListener implements ClientEventListener {
         }
         sb.append(System.lineSeparator());
 
-        final BdaTimestamp trgTimeNode = (BdaTimestamp) evnRpn.getChild("trgTime");
-        sb.append(linePrefix).append("trgTime: ");
+        final BdaTimestamp trgTimeNode = (BdaTimestamp) evnRpn.getChild(EVENT_NODE_TRIGGER_TIME);
+        sb.append(linePrefix).append(EVENT_NODE_TRIGGER_TIME).append(": ");
         if (trgTimeNode == null || trgTimeNode.getDate() == null) {
             sb.append("null");
         } else {
@@ -496,8 +569,8 @@ public class Iec61850ClientEventListener implements ClientEventListener {
         }
         sb.append(System.lineSeparator());
 
-        final BdaVisibleString remarkNode = (BdaVisibleString) evnRpn.getChild("remark");
-        sb.append(linePrefix).append("remark: ");
+        final BdaVisibleString remarkNode = (BdaVisibleString) evnRpn.getChild(EVENT_NODE_REMARK);
+        sb.append(linePrefix).append(EVENT_NODE_REMARK).append(": ");
         if (remarkNode == null) {
             sb.append("null");
         } else {
@@ -513,5 +586,17 @@ public class Iec61850ClientEventListener implements ClientEventListener {
     public void associationClosed(final IOException e) {
         LOGGER.info("associationClosed for device: {}, {}", this.deviceIdentification, e == null ? "no IOException"
                 : "IOException: " + e.getMessage());
+
+        synchronized (this.eventNotifications) {
+            Collections.sort(this.eventNotifications, NOTIFICATIONS_BY_TIME);
+            // TODO handle list of event notifications in platform
+            for (final EventNotification eventNotification : this.eventNotifications) {
+                try {
+                    this.deviceManagementService.addEventNotification(this.deviceIdentification, eventNotification);
+                } catch (final ProtocolAdapterException pae) {
+                    LOGGER.error("", pae);
+                }
+            }
+        }
     }
 }

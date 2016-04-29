@@ -22,7 +22,6 @@ import com.alliander.osgp.core.db.api.iec61850.entities.Ssld;
 import com.alliander.osgp.core.db.api.iec61850.repositories.SsldDataRepository;
 import com.alliander.osgp.dto.valueobjects.DeviceFunction;
 import com.alliander.osgp.dto.valueobjects.EventNotification;
-import com.alliander.osgp.dto.valueobjects.EventType;
 import com.alliander.osgp.shared.infra.jms.RequestMessage;
 
 @Service(value = "iec61850DeviceManagementService")
@@ -37,32 +36,21 @@ public class DeviceManagementService {
     @Autowired
     private OsgpRequestMessageSender osgpRequestMessageSender;
 
-    /**
-     * Constructor
-     */
     public DeviceManagementService() {
         // Parameterless constructor required for transactions...
     }
 
     /**
-     * Send a new event notification to OSGP Core with the given arguments.<br>
-     * Note that a non-zero internal index will be mapped to an external index
-     * using the DeviceOutputSettings for the event notification that is sent to
-     * the platform. If no mapping is available the external index will be 0.
+     * Send an event notification to OSGP Core.
      *
      * @param deviceIdentification
      *            The identification of the device
-     * @param eventType
-     *            The event type
-     * @param description
-     *            The description which came along with the event from the
-     *            device.
-     * @param internalIndex
-     *            The internal index (switch number) of the device.
+     * @param eventNotification
+     *            The event notification
      * @throws ProtocolAdapterException
      */
-    public void addEventNotification(final String deviceIdentification, final String eventType,
-            final String description, final Integer internalIndex) throws ProtocolAdapterException {
+    public void addEventNotification(final String deviceIdentification, final EventNotification eventNotification)
+            throws ProtocolAdapterException {
 
         final Ssld ssldDevice = this.ssldDataRepository.findByDeviceIdentification(deviceIdentification);
         if (ssldDevice == null) {
@@ -70,37 +58,23 @@ public class DeviceManagementService {
                     + deviceIdentification);
         }
 
-        LOGGER.info(
-                "addEventNotification called for device: {} with eventType: {}, description: {} and internal index: {}",
-                deviceIdentification, eventType, description, internalIndex);
+        LOGGER.info("addEventNotification called for device {}: {}", deviceIdentification, eventNotification);
 
-        int externalIndex = 0;
-        if (internalIndex != null && internalIndex != 0) {
-            final List<DeviceOutputSetting> outputSettings = ssldDevice.getOutputSettings();
-            for (final DeviceOutputSetting outputSetting : outputSettings) {
-                if (internalIndex == outputSetting.getInternalId()) {
-                    externalIndex = outputSetting.getExternalId();
-                    break;
-                }
-            }
-            if (externalIndex == 0) {
-                LOGGER.warn(
-                        "addEventNotification could not map internal index: {} to an external index for device: {} with eventType: {}",
-                        internalIndex, deviceIdentification, eventType);
-            }
-        }
-
-        if (externalIndex > 0) {
-            LOGGER.info(
-                    "addEventNotification mapped internal index: {} to external index: {}, for device: {} with eventType: {}",
-                    internalIndex, externalIndex, deviceIdentification, eventType);
-        }
-
-        final EventNotification eventNotification = new EventNotification(deviceIdentification,
-                EventType.valueOf(eventType), description, externalIndex);
         final RequestMessage requestMessage = new RequestMessage("no-correlationUid", "no-organisation",
                 deviceIdentification, eventNotification);
 
         this.osgpRequestMessageSender.send(requestMessage, DeviceFunction.ADD_EVENT_NOTIFICATION.name());
+    }
+
+    public List<DeviceOutputSetting> getDeviceOutputSettings(final String deviceIdentification)
+            throws ProtocolAdapterException {
+
+        final Ssld ssldDevice = this.ssldDataRepository.findByDeviceIdentification(deviceIdentification);
+        if (ssldDevice == null) {
+            throw new ProtocolAdapterException("Unable to find device using deviceIdentification: "
+                    + deviceIdentification);
+        }
+
+        return ssldDevice.getOutputSettings();
     }
 }
