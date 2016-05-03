@@ -46,6 +46,13 @@ public final class LogicalNodeAttributeDefinitons {
      */
     public static final String PROPERTY_ENABLE_REPORTING = "RptEna";
 
+    /**
+     * Property of LLN0's Node, evn_rpn01. Next SqNum for a report not yet
+     * reported. This value is updated by the device when newer reports have
+     * been sent.
+     */
+    public static final String PROPERTY_SEQUENCE_NUMBER = "SqNum";
+
     /*
      * XSWC, prefix of the relays' Logical Node.
      */

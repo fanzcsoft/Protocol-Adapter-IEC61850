@@ -584,8 +584,9 @@ public class Iec61850DeviceService implements DeviceService {
 
         try {
             final ServerModel serverModel = this.connectAndRetrieveServerModel(deviceRequest);
-            final ClientAssociation clientAssociation = this.iec61850DeviceConnectionService
-                    .getClientAssociation(deviceRequest.getDeviceIdentification());
+            final Iec61850ClientAssociation iec61850ClientAssociation = this.iec61850DeviceConnectionService
+                    .getIec61850ClientAssociation(deviceRequest.getDeviceIdentification());
+            final ClientAssociation clientAssociation = iec61850ClientAssociation.getClientAssociation();
 
             this.transitionDevice(serverModel, clientAssociation, deviceRequest.getDeviceIdentification(),
                     deviceRequest.getTransitionTypeContainer());
@@ -597,7 +598,8 @@ public class Iec61850DeviceService implements DeviceService {
 
             // Enabling device reporting. This is placed here because this is
             // called twice a day.
-            this.enableReportingOnDevice(serverModel, clientAssociation, deviceRequest.getDeviceIdentification());
+            this.enableReportingOnDevice(serverModel, iec61850ClientAssociation,
+                    deviceRequest.getDeviceIdentification());
 
         } catch (final ConnectionFailureException se) {
             LOGGER.error("Could not connect to device after all retries", se);
@@ -1505,16 +1507,29 @@ public class Iec61850DeviceService implements DeviceService {
 
     }
 
-    private void enableReportingOnDevice(final ServerModel serverModel, final ClientAssociation clientAssociation,
-            final String deviceIdentification) throws ServiceError, IOException {
+    private void enableReportingOnDevice(final ServerModel serverModel,
+            final Iec61850ClientAssociation iec61850ClientAssociation, final String deviceIdentification)
+                    throws ServiceError, IOException {
 
-        final String functionalFirmwareConfigurationObjectReference = LogicalNodeAttributeDefinitons.LOGICAL_DEVICE
+        final ClientAssociation clientAssociation = iec61850ClientAssociation.getClientAssociation();
+
+        final String eventReportingDataObjectReference = LogicalNodeAttributeDefinitons.LOGICAL_DEVICE
                 + LogicalNodeAttributeDefinitons.LOGICAL_NODE_LLN0 + LogicalNodeAttributeDefinitons.PROPERTY_REPORTING;
 
-        final FcModelNode functionalFirmwareConfiguration = (FcModelNode) serverModel.findModelNode(
-                functionalFirmwareConfigurationObjectReference, Fc.BR);
+        final FcModelNode eventReportingDataNode = (FcModelNode) serverModel.findModelNode(
+                eventReportingDataObjectReference, Fc.BR);
 
-        final BdaBoolean enableReporting = (BdaBoolean) functionalFirmwareConfiguration
+        final Iec61850ClientEventListener reportListener = iec61850ClientAssociation.getReportListener();
+        final BdaInt16U sqNum = (BdaInt16U) eventReportingDataNode
+                .getChild(LogicalNodeAttributeDefinitons.PROPERTY_SEQUENCE_NUMBER);
+        if (sqNum == null) {
+            LOGGER.warn("Child {} of {} is null. No SqNum available for filtering incoming event reports.",
+                    LogicalNodeAttributeDefinitons.PROPERTY_SEQUENCE_NUMBER, eventReportingDataNode);
+        } else {
+            reportListener.setSqNum(sqNum.getValue());
+        }
+
+        final BdaBoolean enableReporting = (BdaBoolean) eventReportingDataNode
                 .getChild(LogicalNodeAttributeDefinitons.PROPERTY_ENABLE_REPORTING);
 
         LOGGER.info("Allowing device {} to send events", deviceIdentification);

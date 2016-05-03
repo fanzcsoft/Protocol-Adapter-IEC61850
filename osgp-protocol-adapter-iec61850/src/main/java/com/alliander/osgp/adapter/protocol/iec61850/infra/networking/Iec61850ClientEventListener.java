@@ -119,6 +119,7 @@ public class Iec61850ClientEventListener implements ClientEventListener {
     private final DeviceManagementService deviceManagementService;
     private final List<EventNotification> eventNotifications = new ArrayList<>();
     private final Map<Integer, Integer> externalIndexByInternalIndex = new TreeMap<>();
+    private Integer firstNewSqNum = null;
 
     public Iec61850ClientEventListener(final String deviceIdentification,
             final DeviceManagementService deviceManagementService) throws ProtocolAdapterException {
@@ -152,11 +153,7 @@ public class Iec61850ClientEventListener implements ClientEventListener {
 
     @Override
     public void newReport(final Report report) {
-        /*-
-         * TODO make the last/next SqNum for the reports available to this listener.
-         * Using this SqNum implement some checking/filtering on the events reported,
-         * in order to prevent double notifications to the platform.
-         */
+
         final DateTime timeOfEntry = report.getTimeOfEntry() == null ? null : new DateTime(report.getTimeOfEntry()
                 .getTimestampValue() + IEC61850_ENTRY_TIME_OFFSET);
 
@@ -165,9 +162,14 @@ public class Iec61850ClientEventListener implements ClientEventListener {
                         report.getSqNum(), report.getSubSqNum() == null ? "" : " subSqNum: " + report.getSubSqNum(),
                                 report.isMoreSegmentsFollow() ? " (more segments follow for this sqNum)" : "");
         LOGGER.info("newReport for {}", reportDescription);
+        boolean skipRecordBecauseOfOldSqNum = false;
         if (report.isBufOvfl()) {
             LOGGER.warn("Buffer Overflow reported for {} - entries within the buffer may have been lost.",
                     reportDescription);
+        } else if (this.firstNewSqNum != null && report.getSqNum() != null) {
+            if (report.getSqNum() < this.firstNewSqNum) {
+                skipRecordBecauseOfOldSqNum = true;
+            }
         }
         this.logReportDetails(report);
 
@@ -190,7 +192,13 @@ public class Iec61850ClientEventListener implements ClientEventListener {
             }
             LOGGER.info("Handle member {} for {}", member.getReference(), reportDescription);
             try {
-                this.addEventNotificationForReportedData(member, timeOfEntry, reportDescription);
+                if (skipRecordBecauseOfOldSqNum) {
+                    LOGGER.warn(
+                            "Skipping report because SqNum: {} is less than what should be the first new value: {}",
+                            report.getSqNum(), this.firstNewSqNum);
+                } else {
+                    this.addEventNotificationForReportedData(member, timeOfEntry, reportDescription);
+                }
             } catch (final Exception e) {
                 LOGGER.error("Error adding event notification for member {} from {}", member.getReference(),
                         reportDescription, e);
@@ -599,5 +607,18 @@ public class Iec61850ClientEventListener implements ClientEventListener {
                 LOGGER.error("Error adding device notifications for device: " + this.deviceIdentification, pae);
             }
         }
+    }
+
+    /**
+     * Before enabling reporting on the device, set the SqNum of the buffered
+     * report data to be able to check if incoming reports have been received
+     * already.
+     *
+     * @param value
+     *            the value of SqNum of a BR node on the device.
+     */
+    public void setSqNum(final int value) {
+        LOGGER.info("First new SqNum for report listener for device: {} is: {}", this.deviceIdentification, value);
+        this.firstNewSqNum = value;
     }
 }

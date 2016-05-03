@@ -15,7 +15,6 @@ import javax.annotation.Resource;
 
 import org.openmuc.openiec61850.BdaBoolean;
 import org.openmuc.openiec61850.ClientAssociation;
-import org.openmuc.openiec61850.ClientEventListener;
 import org.openmuc.openiec61850.ClientSap;
 import org.openmuc.openiec61850.Fc;
 import org.openmuc.openiec61850.FcModelNode;
@@ -60,7 +59,7 @@ public class Iec61850Client {
                 this.iec61850PortClientLocal, this.iec61850PortServer);
     }
 
-    public ClientAssociation connect(final String deviceIdentification, final InetAddress ipAddress)
+    public Iec61850ClientAssociation connect(final String deviceIdentification, final InetAddress ipAddress)
             throws ServiceError {
 
         final ClientSap clientSap = new ClientSap();
@@ -73,14 +72,16 @@ public class Iec61850Client {
         // clientSap.setTSelLocal(new byte[] { 0, 0 });
 
         // final SampleClient eventHandler = new SampleClient();
-        ClientAssociation association;
+        final Iec61850ClientAssociation clientAssociation;
 
         LOGGER.info("Attempting to connect to server: {} on port: {}", ipAddress.getHostAddress(),
                 this.iec61850PortServer);
         try {
-            final ClientEventListener reportListener = new Iec61850ClientEventListener(deviceIdentification,
+            final Iec61850ClientEventListener reportListener = new Iec61850ClientEventListener(deviceIdentification,
                     this.deviceManagementService);
-            association = clientSap.associate(ipAddress, this.iec61850PortServer, null, reportListener);
+            final ClientAssociation association = clientSap.associate(ipAddress, this.iec61850PortServer, null,
+                    reportListener);
+            clientAssociation = new Iec61850ClientAssociation(association, reportListener);
         } catch (final ProtocolAdapterException e) {
             LOGGER.error("Error setting up ClientEventListener for server association", e);
             return null;
@@ -164,7 +165,7 @@ public class Iec61850Client {
         // final BdaQuality totWq = (BdaQuality) totW.getChild("q");
         // @formatter:on
 
-        return association;
+        return clientAssociation;
     }
 
     public void disconnect(final ClientAssociation clientAssociation, final String deviceIdentification) {
@@ -212,15 +213,16 @@ public class Iec61850Client {
     public void disableRegistration(final String deviceIdentification, final InetAddress ipAddress)
             throws ProtocolAdapterException {
 
-        final ClientAssociation clientAssociation;
+        final Iec61850ClientAssociation iec61850ClientAssociation;
         try {
-            clientAssociation = this.connect(deviceIdentification, ipAddress);
+            iec61850ClientAssociation = this.connect(deviceIdentification, ipAddress);
         } catch (final ServiceError e) {
             throw new ProtocolAdapterException("Unexpected error connecting to device to disable registration.", e);
         }
-        if (clientAssociation == null) {
+        if (iec61850ClientAssociation == null || iec61850ClientAssociation.getClientAssociation() == null) {
             throw new ProtocolAdapterException("Unable to connect to device to disable registration.");
         }
+        final ClientAssociation clientAssociation = iec61850ClientAssociation.getClientAssociation();
 
         final Function<Void> function = new Function<Void>() {
 
