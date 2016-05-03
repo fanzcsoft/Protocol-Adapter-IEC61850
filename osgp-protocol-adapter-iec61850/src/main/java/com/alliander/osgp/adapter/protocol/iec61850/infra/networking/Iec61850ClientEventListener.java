@@ -588,14 +588,15 @@ public class Iec61850ClientEventListener implements ClientEventListener {
                 : "IOException: " + e.getMessage());
 
         synchronized (this.eventNotifications) {
+            if (this.eventNotifications.isEmpty()) {
+                LOGGER.info("No event notifications received from device: {}", this.deviceIdentification);
+                return;
+            }
             Collections.sort(this.eventNotifications, NOTIFICATIONS_BY_TIME);
-            // TODO handle list of event notifications in platform
-            for (final EventNotification eventNotification : this.eventNotifications) {
-                try {
-                    this.deviceManagementService.addEventNotification(this.deviceIdentification, eventNotification);
-                } catch (final ProtocolAdapterException pae) {
-                    LOGGER.error("", pae);
-                }
+            try {
+                this.deviceManagementService.addEventNotifications(this.deviceIdentification, this.eventNotifications);
+            } catch (final ProtocolAdapterException pae) {
+                LOGGER.error("Error adding device notifications for device: " + this.deviceIdentification, pae);
             }
         }
     }

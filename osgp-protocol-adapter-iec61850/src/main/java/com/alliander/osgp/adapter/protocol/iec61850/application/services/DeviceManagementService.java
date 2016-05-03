@@ -7,6 +7,7 @@
  */
 package com.alliander.osgp.adapter.protocol.iec61850.application.services;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -45,11 +46,11 @@ public class DeviceManagementService {
      *
      * @param deviceIdentification
      *            The identification of the device
-     * @param eventNotification
-     *            The event notification
+     * @param eventNotifications
+     *            The event notifications
      * @throws ProtocolAdapterException
      */
-    public void addEventNotification(final String deviceIdentification, final EventNotification eventNotification)
+    public void addEventNotifications(final String deviceIdentification, final List<EventNotification> eventNotifications)
             throws ProtocolAdapterException {
 
         final Ssld ssldDevice = this.ssldDataRepository.findByDeviceIdentification(deviceIdentification);
@@ -58,10 +59,10 @@ public class DeviceManagementService {
                     + deviceIdentification);
         }
 
-        LOGGER.info("addEventNotification called for device {}: {}", deviceIdentification, eventNotification);
+        LOGGER.info("addEventNotifications called for device {}: {}", deviceIdentification, eventNotifications);
 
         final RequestMessage requestMessage = new RequestMessage("no-correlationUid", "no-organisation",
-                deviceIdentification, eventNotification);
+                deviceIdentification, new ArrayList<>(eventNotifications));
 
         this.osgpRequestMessageSender.send(requestMessage, DeviceFunction.ADD_EVENT_NOTIFICATION.name());
     }
