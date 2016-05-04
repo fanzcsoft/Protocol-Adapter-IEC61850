@@ -9,7 +9,6 @@ package com.alliander.osgp.adapter.protocol.iec61850.infra.networking;
 
 import com.alliander.osgp.adapter.protocol.iec61850.domain.valueobjects.ScheduleWeekday;
 import com.alliander.osgp.adapter.protocol.iec61850.domain.valueobjects.TriggerType;
-import com.alliander.osgp.dto.valueobjects.LightType;
 
 /**
  * Definitions of Logical Device, Logical Nodes and Attributes.

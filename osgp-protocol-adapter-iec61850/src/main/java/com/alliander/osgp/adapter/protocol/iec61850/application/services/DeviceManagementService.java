@@ -21,8 +21,8 @@ import com.alliander.osgp.adapter.protocol.iec61850.infra.messaging.OsgpRequestM
 import com.alliander.osgp.core.db.api.iec61850.entities.DeviceOutputSetting;
 import com.alliander.osgp.core.db.api.iec61850.entities.Ssld;
 import com.alliander.osgp.core.db.api.iec61850.repositories.SsldDataRepository;
-import com.alliander.osgp.dto.valueobjects.DeviceFunction;
-import com.alliander.osgp.dto.valueobjects.EventNotification;
+import com.alliander.osgp.dto.valueobjects.DeviceFunctionDto;
+import com.alliander.osgp.dto.valueobjects.EventNotificationDto;
 import com.alliander.osgp.shared.infra.jms.RequestMessage;
 
 @Service(value = "iec61850DeviceManagementService")
@@ -50,7 +50,8 @@ public class DeviceManagementService {
      *            The event notifications
      * @throws ProtocolAdapterException
      */
-    public void addEventNotifications(final String deviceIdentification, final List<EventNotification> eventNotifications)
+    public void addEventNotifications(final String deviceIdentification,
+            final List<EventNotificationDto> eventNotifications)
             throws ProtocolAdapterException {
 
         final Ssld ssldDevice = this.ssldDataRepository.findByDeviceIdentification(deviceIdentification);
@@ -64,7 +65,7 @@ public class DeviceManagementService {
         final RequestMessage requestMessage = new RequestMessage("no-correlationUid", "no-organisation",
                 deviceIdentification, new ArrayList<>(eventNotifications));
 
-        this.osgpRequestMessageSender.send(requestMessage, DeviceFunction.ADD_EVENT_NOTIFICATION.name());
+        this.osgpRequestMessageSender.send(requestMessage, DeviceFunctionDto.ADD_EVENT_NOTIFICATION.name());
     }
 
     public List<DeviceOutputSetting> getDeviceOutputSettings(final String deviceIdentification)

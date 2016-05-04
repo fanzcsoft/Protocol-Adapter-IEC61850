@@ -27,8 +27,8 @@ import org.slf4j.LoggerFactory;
 import com.alliander.osgp.adapter.protocol.iec61850.application.services.DeviceManagementService;
 import com.alliander.osgp.adapter.protocol.iec61850.exceptions.ProtocolAdapterException;
 import com.alliander.osgp.core.db.api.iec61850.entities.DeviceOutputSetting;
-import com.alliander.osgp.dto.valueobjects.EventNotification;
-import com.alliander.osgp.dto.valueobjects.EventType;
+import com.alliander.osgp.dto.valueobjects.EventNotificationDto;
+import com.alliander.osgp.dto.valueobjects.EventTypeDto;
 
 public class Iec61850ClientEventListener implements ClientEventListener {
 
@@ -53,61 +53,61 @@ public class Iec61850ClientEventListener implements ClientEventListener {
     private static final String EVENT_NODE_REMARK = "remark";
 
     private static final Map<Short, String> EVN_TYPE_DESCRIPTION_PER_CODE = new TreeMap<>();
-    private static final Map<Short, EventType> OSGP_EVENT_TYPE_PER_CODE = new TreeMap<>();
+    private static final Map<Short, EventTypeDto> OSGP_EVENT_TYPE_PER_CODE = new TreeMap<>();
     private static final Map<Short, String> TRG_TYPE_DESCRIPTION_PER_CODE = new TreeMap<>();
 
-    private static final Comparator<EventNotification> NOTIFICATIONS_BY_TIME = new Comparator<EventNotification>() {
+    private static final Comparator<EventNotificationDto> NOTIFICATIONS_BY_TIME = new Comparator<EventNotificationDto>() {
         @Override
-        public int compare(final EventNotification o1, final EventNotification o2) {
+        public int compare(final EventNotificationDto o1, final EventNotificationDto o2) {
             return o1.getDateTime().compareTo(o2.getDateTime());
         }
     };
 
     static {
         EVN_TYPE_DESCRIPTION_PER_CODE.put((short) 1, "DIAG_EVENTS_GENERAL");
-        OSGP_EVENT_TYPE_PER_CODE.put((short) 1, EventType.DIAG_EVENTS_GENERAL);
+        OSGP_EVENT_TYPE_PER_CODE.put((short) 1, EventTypeDto.DIAG_EVENTS_GENERAL);
         EVN_TYPE_DESCRIPTION_PER_CODE.put((short) 2, "LIGHT_EVENTS_LIGHT_ON");
-        OSGP_EVENT_TYPE_PER_CODE.put((short) 2, EventType.LIGHT_EVENTS_LIGHT_ON);
+        OSGP_EVENT_TYPE_PER_CODE.put((short) 2, EventTypeDto.LIGHT_EVENTS_LIGHT_ON);
         EVN_TYPE_DESCRIPTION_PER_CODE.put((short) 3, "LIGHT_EVENTS_LIGHT_OFF");
-        OSGP_EVENT_TYPE_PER_CODE.put((short) 3, EventType.LIGHT_EVENTS_LIGHT_OFF);
+        OSGP_EVENT_TYPE_PER_CODE.put((short) 3, EventTypeDto.LIGHT_EVENTS_LIGHT_OFF);
         EVN_TYPE_DESCRIPTION_PER_CODE.put((short) 4, "TARIFF_EVENTS_TARIFF_ON");
-        OSGP_EVENT_TYPE_PER_CODE.put((short) 4, EventType.TARIFF_EVENTS_TARIFF_ON);
+        OSGP_EVENT_TYPE_PER_CODE.put((short) 4, EventTypeDto.TARIFF_EVENTS_TARIFF_ON);
         EVN_TYPE_DESCRIPTION_PER_CODE.put((short) 5, "TARIFF_EVENTS_TARIFF_OFF");
-        OSGP_EVENT_TYPE_PER_CODE.put((short) 5, EventType.TARIFF_EVENTS_TARIFF_OFF);
+        OSGP_EVENT_TYPE_PER_CODE.put((short) 5, EventTypeDto.TARIFF_EVENTS_TARIFF_OFF);
         EVN_TYPE_DESCRIPTION_PER_CODE.put((short) 6, "MONITOR_EVENTS_LOSS_OF_POWER");
-        OSGP_EVENT_TYPE_PER_CODE.put((short) 6, EventType.MONITOR_EVENTS_LOSS_OF_POWER);
+        OSGP_EVENT_TYPE_PER_CODE.put((short) 6, EventTypeDto.MONITOR_EVENTS_LOSS_OF_POWER);
         EVN_TYPE_DESCRIPTION_PER_CODE.put((short) 7, "FUNCTION_FIRMWARE_EVENTS_ACTIVATING");
-        OSGP_EVENT_TYPE_PER_CODE.put((short) 7, EventType.FIRMWARE_EVENTS_ACTIVATING);
+        OSGP_EVENT_TYPE_PER_CODE.put((short) 7, EventTypeDto.FIRMWARE_EVENTS_ACTIVATING);
         EVN_TYPE_DESCRIPTION_PER_CODE.put((short) 8, "FUNCTION_FIRMWARE_EVENTS_DOWNLOAD_NOTFOUND");
-        OSGP_EVENT_TYPE_PER_CODE.put((short) 8, EventType.FIRMWARE_EVENTS_DOWNLOAD_NOTFOUND);
+        OSGP_EVENT_TYPE_PER_CODE.put((short) 8, EventTypeDto.FIRMWARE_EVENTS_DOWNLOAD_NOTFOUND);
         EVN_TYPE_DESCRIPTION_PER_CODE.put((short) 9, "FUNCTION_FIRMWARE_EVENTS_DOWNLOAD_FAILED");
-        OSGP_EVENT_TYPE_PER_CODE.put((short) 9, EventType.FIRMWARE_EVENTS_DOWNLOAD_FAILED);
+        OSGP_EVENT_TYPE_PER_CODE.put((short) 9, EventTypeDto.FIRMWARE_EVENTS_DOWNLOAD_FAILED);
         EVN_TYPE_DESCRIPTION_PER_CODE.put((short) 10, "FUNCTION_FIRMWARE_EVENTS_DOWNLOAD_SUCCESS");
-        OSGP_EVENT_TYPE_PER_CODE.put((short) 10, EventType.FIRMWARE_EVENTS_DOWNLOAD_SUCCESS);
+        OSGP_EVENT_TYPE_PER_CODE.put((short) 10, EventTypeDto.FIRMWARE_EVENTS_DOWNLOAD_SUCCESS);
         EVN_TYPE_DESCRIPTION_PER_CODE.put((short) 11, "SECURITY_FIRMWARE_EVENTS_ACTIVATING");
-        OSGP_EVENT_TYPE_PER_CODE.put((short) 11, EventType.FIRMWARE_EVENTS_ACTIVATING);
+        OSGP_EVENT_TYPE_PER_CODE.put((short) 11, EventTypeDto.FIRMWARE_EVENTS_ACTIVATING);
         EVN_TYPE_DESCRIPTION_PER_CODE.put((short) 12, "SECURITY_FIRMWARE_EVENTS_DOWNLOAD_NOTFOUND");
-        OSGP_EVENT_TYPE_PER_CODE.put((short) 12, EventType.FIRMWARE_EVENTS_DOWNLOAD_NOTFOUND);
+        OSGP_EVENT_TYPE_PER_CODE.put((short) 12, EventTypeDto.FIRMWARE_EVENTS_DOWNLOAD_NOTFOUND);
         EVN_TYPE_DESCRIPTION_PER_CODE.put((short) 13, "SECURITY_FIRMWARE_EVENTS_DOWNLOAD_FAILED");
-        OSGP_EVENT_TYPE_PER_CODE.put((short) 13, EventType.FIRMWARE_EVENTS_DOWNLOAD_FAILED);
+        OSGP_EVENT_TYPE_PER_CODE.put((short) 13, EventTypeDto.FIRMWARE_EVENTS_DOWNLOAD_FAILED);
         EVN_TYPE_DESCRIPTION_PER_CODE.put((short) 14, "SECURITY_FIRMWARE_EVENTS_DOWNLOAD_SUCCESS");
-        OSGP_EVENT_TYPE_PER_CODE.put((short) 14, EventType.FIRMWARE_EVENTS_DOWNLOAD_SUCCESS);
+        OSGP_EVENT_TYPE_PER_CODE.put((short) 14, EventTypeDto.FIRMWARE_EVENTS_DOWNLOAD_SUCCESS);
         EVN_TYPE_DESCRIPTION_PER_CODE.put((short) 15, "CA_FILE_EVENTS_ACTIVATING");
-        OSGP_EVENT_TYPE_PER_CODE.put((short) 15, EventType.CA_FILE_EVENTS_ACTIVATING);
+        OSGP_EVENT_TYPE_PER_CODE.put((short) 15, EventTypeDto.CA_FILE_EVENTS_ACTIVATING);
         EVN_TYPE_DESCRIPTION_PER_CODE.put((short) 16, "CA_FILE_FIRMWARE_EVENTS_DOWNLOAD_NOTFOUND");
-        OSGP_EVENT_TYPE_PER_CODE.put((short) 16, EventType.CA_FILE_FIRMWARE_EVENTS_DOWNLOAD_NOT_FOUND);
+        OSGP_EVENT_TYPE_PER_CODE.put((short) 16, EventTypeDto.CA_FILE_FIRMWARE_EVENTS_DOWNLOAD_NOT_FOUND);
         EVN_TYPE_DESCRIPTION_PER_CODE.put((short) 17, "CA_FILE_EVENTS_DOWNLOAD_FAILED");
-        OSGP_EVENT_TYPE_PER_CODE.put((short) 17, EventType.CA_FILE_EVENTS_DOWNLOAD_FAILED);
+        OSGP_EVENT_TYPE_PER_CODE.put((short) 17, EventTypeDto.CA_FILE_EVENTS_DOWNLOAD_FAILED);
         EVN_TYPE_DESCRIPTION_PER_CODE.put((short) 18, "CA_FILE_EVENTS_DOWNLOAD_SUCCESS");
-        OSGP_EVENT_TYPE_PER_CODE.put((short) 18, EventType.CA_FILE_EVENTS_DOWNLOAD_SUCCESS);
+        OSGP_EVENT_TYPE_PER_CODE.put((short) 18, EventTypeDto.CA_FILE_EVENTS_DOWNLOAD_SUCCESS);
         EVN_TYPE_DESCRIPTION_PER_CODE.put((short) 19, "NTP_SERVER_NOT_REACH");
-        OSGP_EVENT_TYPE_PER_CODE.put((short) 19, EventType.NTP_SERVER_NOT_REACH);
+        OSGP_EVENT_TYPE_PER_CODE.put((short) 19, EventTypeDto.NTP_SERVER_NOT_REACH);
         EVN_TYPE_DESCRIPTION_PER_CODE.put((short) 20, "NTP_SYNC_ALARM_OFFSET");
-        OSGP_EVENT_TYPE_PER_CODE.put((short) 20, EventType.NTP_SYNC_ALARM_OFFSET);
+        OSGP_EVENT_TYPE_PER_CODE.put((short) 20, EventTypeDto.NTP_SYNC_ALARM_OFFSET);
         EVN_TYPE_DESCRIPTION_PER_CODE.put((short) 21, "NTP_SYNC_MAX_OFFSET");
-        OSGP_EVENT_TYPE_PER_CODE.put((short) 21, EventType.NTP_SYNC_MAX_OFFSET);
+        OSGP_EVENT_TYPE_PER_CODE.put((short) 21, EventTypeDto.NTP_SYNC_MAX_OFFSET);
         EVN_TYPE_DESCRIPTION_PER_CODE.put((short) 22, "AUTHENTICATION_FAIL");
-        OSGP_EVENT_TYPE_PER_CODE.put((short) 22, EventType.AUTHENTICATION_FAIL);
+        OSGP_EVENT_TYPE_PER_CODE.put((short) 22, EventTypeDto.AUTHENTICATION_FAIL);
 
         TRG_TYPE_DESCRIPTION_PER_CODE.put((short) 1, "light trigger (sensor trigger)");
         TRG_TYPE_DESCRIPTION_PER_CODE.put((short) 2, "ad-hoc trigger");
@@ -117,7 +117,7 @@ public class Iec61850ClientEventListener implements ClientEventListener {
 
     private final String deviceIdentification;
     private final DeviceManagementService deviceManagementService;
-    private final List<EventNotification> eventNotifications = new ArrayList<>();
+    private final List<EventNotificationDto> eventNotifications = new ArrayList<>();
     private final Map<Integer, Integer> externalIndexByInternalIndex = new TreeMap<>();
     private Integer firstNewSqNum = null;
 
@@ -210,19 +210,19 @@ public class Iec61850ClientEventListener implements ClientEventListener {
             final String reportDescription)
                     throws ProtocolAdapterException {
 
-        final EventType eventType = this.determineEventType(evnRpn, reportDescription);
+        final EventTypeDto eventType = this.determineEventType(evnRpn, reportDescription);
         final Integer index = this.determineRelayIndex(evnRpn, reportDescription);
         final String description = this.determineDescription(evnRpn);
         final DateTime dateTime = this.determineDateTime(evnRpn, timeOfEntry);
 
-        final EventNotification eventNotification = new EventNotification(this.deviceIdentification, dateTime,
+        final EventNotificationDto eventNotification = new EventNotificationDto(this.deviceIdentification, dateTime,
                 eventType, description, index);
         synchronized (this.eventNotifications) {
             this.eventNotifications.add(eventNotification);
         }
     }
 
-    private EventType determineEventType(final FcModelNode evnRpn, final String reportDescription) {
+    private EventTypeDto determineEventType(final FcModelNode evnRpn, final String reportDescription) {
 
         final BdaInt8U evnTypeNode = (BdaInt8U) evnRpn.getChild(EVENT_NODE_EVENT_TYPE);
         if (evnTypeNode == null) {
@@ -230,7 +230,7 @@ public class Iec61850ClientEventListener implements ClientEventListener {
         }
 
         final Short evnTypeCode = evnTypeNode.getValue();
-        final EventType eventType = OSGP_EVENT_TYPE_PER_CODE.get(evnTypeCode);
+        final EventTypeDto eventType = OSGP_EVENT_TYPE_PER_CODE.get(evnTypeCode);
 
         if (eventType == null) {
             final String exceptionMessage;
