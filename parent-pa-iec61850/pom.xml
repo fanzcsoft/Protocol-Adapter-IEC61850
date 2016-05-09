@@ -133,7 +133,12 @@
         <artifactId>osgp-core-db-api-iec61850</artifactId>
         <version>${osgp.version}</version>
       </dependency>
-
+      <dependency>
+        <groupId>com.alliander.osgp</groupId>
+        <artifactId>osgp-communication-smgwa-client</artifactId>
+        <version>${osgp.version}</version>
+      </dependency>
+      
       <!-- Guava for Joiner class -->
       <dependency>
         <groupId>com.google.guava</groupId>
