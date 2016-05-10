@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:smgwa="urn:X-zonos:smgwa" attributeFormDefault="unqualified"
+	elementFormDefault="qualified" targetNamespace="urn:X-zonos:smgwa"
+	version="1.0">
+
+	<xsd:include schemaLocation="types.xsd" />
+
+	<xsd:complexType name="TYPE_cls_comm_profile">
+		<xsd:sequence>
+			<xsd:element name="profile_name" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>(informative) name of the CLS comm profile
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<xsd:element name="dest_addresses" type="smgwa:TYPE_dest_addresses">
+				<xsd:annotation>
+					<xsd:documentation>list communication endpoints at the CLS, at
+						least one address, e.g.
+						an IP address
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<xsd:element name="tls_keepalive" type="xsd:boolean">
+				<xsd:annotation>
+					<xsd:documentation>should the TLS connection should be kept open by
+						the SMGW
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<xsd:element name="tls_max_idle_time" type="xsd:unsignedInt">
+				<xsd:annotation>
+					<xsd:documentation>if tls_keepalive is false, the connection will
+						be closed after this
+						amount of seconds inactivity
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<xsd:element name="tls_max_session_time" type="xsd:unsignedInt">
+				<xsd:annotation>
+					<xsd:documentation>if tls_keepalive is true, the connection will be
+						closed after this
+						amount of seconds
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<xsd:element name="c_tls" type="xsd:hexBinary">
+				<xsd:annotation>
+					<xsd:documentation>self-signed TLS certificate (X.509 DER) of the
+						CLS</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+		</xsd:sequence>
+	</xsd:complexType>
+
+</xsd:schema>

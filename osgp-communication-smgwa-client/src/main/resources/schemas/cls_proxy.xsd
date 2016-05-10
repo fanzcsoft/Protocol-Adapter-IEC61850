@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:smgwa="urn:X-zonos:smgwa" attributeFormDefault="unqualified"
+	elementFormDefault="qualified" targetNamespace="urn:X-zonos:smgwa"
+	version="1.0">
+
+	<xsd:complexType name="TYPE_cls_proxy">
+		<xsd:sequence>
+
+			<xsd:element name="emt" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>id of the emt, e.g eemt0101234567
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<xsd:element name="cls" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation> id of the cls, e.g. ecls0012345678
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<xsd:element minOccurs="0" maxOccurs="1" name="session_timer"
+				type="xsd:unsignedInt">
+				<xsd:annotation>
+					<xsd:documentation>time in seconds, after which the connection
+						should be established,
+						if not given, connect immediately
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+
+	</xsd:complexType>
+
+</xsd:schema>

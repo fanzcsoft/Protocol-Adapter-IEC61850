@@ -21,6 +21,87 @@
     <display.version>${project.version}-${BUILD_TAG}</display.version>
   </properties>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>jaxb2-maven-plugin</artifactId>
+                <version>1.5</version>
+                <executions>
+
+                    <!-- zonos smgwa -->
+                    <execution>
+                        <id>zonos-smgwa</id>
+                        <goals>
+                            <goal>xjc</goal>
+                        </goals>
+                        <configuration>
+<!--                             <bindingDirectory>src/main/resources/schemas</bindingDirectory> -->
+<!--                              <bindingFiles>zonos_smgwa.xjb</bindingFiles> -->
+                            <schemaDirectory>src/main/resources/schemas</schemaDirectory>
+                            <schemaFiles>zonos_smgwa.xsd</schemaFiles>
+                            <packageName>com.alliander.osgp.communication.schemas.zonos.smgwa</packageName>
+                            <wsdl>false</wsdl>
+                            <xmlschema>true</xmlschema>
+                            <staleFile>${project.build.directory}/jaxb2/.schema-zonos-smgwa-stale-flag</staleFile>
+                            <clearOutputDir>true</clearOutputDir>
+                        </configuration>
+                    </execution>
+
+<!--                     emt communication profile -->
+<!--                     <execution> -->
+<!--                         <id>emt_comm_profile</id> -->
+<!--                         <goals> -->
+<!--                             <goal>xjc</goal> -->
+<!--                         </goals> -->
+<!--                         <configuration> -->
+<!--                             <schemaDirectory>src/main/resources/schemas</schemaDirectory> -->
+<!--                             <schemaFiles>emt_comm_profile.xsd</schemaFiles> -->
+<!--                             <packageName>com.alliander.osgp.communication.schemas.smgwa.emt_comm_profile</packageName> -->
+<!--                             <wsdl>false</wsdl> -->
+<!--                             <xmlschema>true</xmlschema> -->
+<!--                             <staleFile>${project.build.directory}/jaxb2/.schema-emt-comm-profile-stale-flag</staleFile> -->
+<!--                              Set clear output dir to true only for the first execution, set to false for other executions -->
+<!--                             <clearOutputDir>true</clearOutputDir> -->
+<!--                         </configuration> -->
+<!--                     </execution> -->
+<!--                     cls communication profile -->
+<!--                     <execution> -->
+<!--                         <id>cls_comm_profile</id> -->
+<!--                         <goals> -->
+<!--                             <goal>xjc</goal> -->
+<!--                         </goals> -->
+<!--                         <configuration> -->
+<!--                             <schemaDirectory>src/main/resources/schemas</schemaDirectory> -->
+<!--                             <schemaFiles>cls_comm_profile.xsd</schemaFiles> -->
+<!--                             <packageName>com.alliander.osgp.communication.schemas.smgwa.cls_comm_profile</packageName> -->
+<!--                             <wsdl>false</wsdl> -->
+<!--                             <xmlschema>true</xmlschema> -->
+<!--                             <staleFile>${project.build.directory}/jaxb2/.schema-cls-comm-profile-stale-flag</staleFile> -->
+<!--                             <clearOutputDir>false</clearOutputDir> -->
+<!--                         </configuration> -->
+<!--                     </execution> -->
+<!--                     cls proxy -->
+<!--                     <execution> -->
+<!--                         <id>cls_proxy</id> -->
+<!--                         <goals> -->
+<!--                             <goal>xjc</goal> -->
+<!--                         </goals> -->
+<!--                         <configuration> -->
+<!--                             <schemaDirectory>src/main/resources/schemas</schemaDirectory> -->
+<!--                             <schemaFiles>cls_proxy.xsd</schemaFiles> -->
+<!--                             <packageName>com.alliander.osgp.communication.schemas.smgwa.cls_proxy</packageName> -->
+<!--                             <wsdl>false</wsdl> -->
+<!--                             <xmlschema>true</xmlschema> -->
+<!--                             <staleFile>${project.build.directory}/jaxb2/.schema-cls-proxy-stale-flag</staleFile> -->
+<!--                             <clearOutputDir>false</clearOutputDir> -->
+<!--                         </configuration> -->
+<!--                     </execution> -->
+                    
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
 <!--   <dependencies> -->
 <!--     Alliander -->

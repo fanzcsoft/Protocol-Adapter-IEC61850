@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:smgwa="urn:X-zonos:smgwa" attributeFormDefault="unqualified"
+	elementFormDefault="qualified" targetNamespace="urn:X-zonos:smgwa"
+	version="1.0">
+
+	<xsd:complexType name="TYPE_dest_addresses">
+		<xsd:sequence>
+			<xsd:element minOccurs="1" maxOccurs="10" name="dest_address"
+				type="xsd:anyURI" />
+		</xsd:sequence>
+	</xsd:complexType>
+
+</xsd:schema>

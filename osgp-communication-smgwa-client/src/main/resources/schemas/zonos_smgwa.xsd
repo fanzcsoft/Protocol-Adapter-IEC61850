@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	elementFormDefault="qualified" targetNamespace="urn:X-zonos:smgwa">
+
+	<xsd:include schemaLocation="emt_comm_profile.xsd" />
+	<xsd:include schemaLocation="cls_comm_profile.xsd" />
+	<xsd:include schemaLocation="cls_proxy.xsd" /> 
+
+</xsd:schema>
