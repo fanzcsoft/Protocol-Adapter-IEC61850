@@ -19,13 +19,12 @@ public class SmgwaClientConfig {
     @Resource
     private Environment environment;
 
-    @Bean
-    public String smartMeterGatewayAdministratorUri() {
+    private String smgwaUri() {
         return this.environment.getRequiredProperty(PROPERTY_NAME_SMGWA_URI);
     }
 
     @Bean
     public SmgwaClientService smgwaClientService() {
-        return new ZonosSmgwaClientService();
+        return new ZonosSmgwaClientService(this.smgwaUri());
     }
 }

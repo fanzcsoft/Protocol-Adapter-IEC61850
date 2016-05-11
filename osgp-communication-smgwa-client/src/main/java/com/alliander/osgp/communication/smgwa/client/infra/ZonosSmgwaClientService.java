@@ -26,8 +26,11 @@ public class ZonosSmgwaClientService implements SmgwaClientService {
     @Autowired
     private MapperFacade smgwaClientMapper;
 
-    @Autowired
     private String smartMeterGatewayAdministratorUri;
+
+    public ZonosSmgwaClientService(final String smwgaUri) {
+        this.smartMeterGatewayAdministratorUri = smwgaUri;
+    }
 
     @Override
     public void ConfigurePlatformCommunicationProfile(final String platformIdentification,
