@@ -11,5 +11,6 @@ public class DomainMapper extends ConfigurableMapper {
     protected void configure(final MapperFactory factory) {
         super.configure(factory);
         factory.getConverterFactory().registerConverter(new PlatformCommunicationProfileConverter());
+        factory.getConverterFactory().registerConverter(new DeviceCommunicationProfileConverter());
     }
 }
