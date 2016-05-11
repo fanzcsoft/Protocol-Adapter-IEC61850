@@ -15,16 +15,16 @@ import com.alliander.osgp.communication.schemas.zonos.smgwa.TYPEEmtCommProfile;
 import com.alliander.osgp.communication.smgwa.client.domain.DeviceCommunicationProfile;
 import com.alliander.osgp.communication.smgwa.client.domain.PlatformCommunicationProfile;
 import com.alliander.osgp.communication.smgwa.client.domain.ProxyServer;
-import com.alliander.osgp.communication.smgwa.client.domain.SmartMeterGatewayAdministratorClient;
+import com.alliander.osgp.communication.smgwa.client.domain.SmgwaClientService;
 
 import ma.glasnost.orika.MapperFacade;
 
-public class ZonosSmartMeterGatewayAdministratorClient implements SmartMeterGatewayAdministratorClient {
+public class ZonosSmgwaClientService implements SmgwaClientService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ZonosSmartMeterGatewayAdministratorClient.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ZonosSmgwaClientService.class);
 
     @Autowired
-    private MapperFacade mapper;
+    private MapperFacade smgwaClientMapper;
 
     @Autowired
     private String smartMeterGatewayAdministratorUri;
@@ -32,7 +32,7 @@ public class ZonosSmartMeterGatewayAdministratorClient implements SmartMeterGate
     @Override
     public void ConfigurePlatformCommunicationProfile(final String platformIdentification,
             final PlatformCommunicationProfile profile) {
-        final TYPEEmtCommProfile emtCommProfile = this.mapper.map(profile, TYPEEmtCommProfile.class);
+        final TYPEEmtCommProfile emtCommProfile = this.smgwaClientMapper.map(profile, TYPEEmtCommProfile.class);
 
         final WebClient client = WebClient.create(this.smartMeterGatewayAdministratorUri);
         client.path(String.format("/v1/emt/{}/comm_profile", platformIdentification));
@@ -50,7 +50,7 @@ public class ZonosSmartMeterGatewayAdministratorClient implements SmartMeterGate
     @Override
     public void ConfigureDeviceCommunicationProfile(final String deviceIdentification,
             final DeviceCommunicationProfile profile) {
-        final TYPEClsCommProfile clsCommProfile = this.mapper.map(profile, TYPEClsCommProfile.class);
+        final TYPEClsCommProfile clsCommProfile = this.smgwaClientMapper.map(profile, TYPEClsCommProfile.class);
 
         final WebClient client = WebClient.create(this.smartMeterGatewayAdministratorUri);
         client.path(String.format("/v1/cls/{}/comm_profile", deviceIdentification));
@@ -67,7 +67,7 @@ public class ZonosSmartMeterGatewayAdministratorClient implements SmartMeterGate
 
     @Override
     public void ConfigureProxyServer(final String smartMeterGatewayIdentification, final ProxyServer proxy) {
-        final TYPEClsProxy clsProxy = this.mapper.map(proxy, TYPEClsProxy.class);
+        final TYPEClsProxy clsProxy = this.smgwaClientMapper.map(proxy, TYPEClsProxy.class);
 
         final WebClient client = WebClient.create(this.smartMeterGatewayAdministratorUri);
         client.path(String.format("/v1/smgw/{}/cls_proxy", smartMeterGatewayIdentification));

@@ -1,6 +1,6 @@
 package com.alliander.osgp.communication.smgwa.client.domain;
 
-public interface SmartMeterGatewayAdministratorClient {
+public interface SmgwaClientService {
     void ConfigurePlatformCommunicationProfile(String PlatformIdentification, PlatformCommunicationProfile profile);
 
     void ConfigureDeviceCommunicationProfile(String DeviceIdentification, DeviceCommunicationProfile profile);
