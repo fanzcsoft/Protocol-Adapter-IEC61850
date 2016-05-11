@@ -6,7 +6,7 @@ import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.impl.ConfigurableMapper;
 
 @Component
-public class DomainMapper extends ConfigurableMapper {
+public class SmgwaClientMapper extends ConfigurableMapper {
     @Override
     protected void configure(final MapperFactory factory) {
         super.configure(factory);
