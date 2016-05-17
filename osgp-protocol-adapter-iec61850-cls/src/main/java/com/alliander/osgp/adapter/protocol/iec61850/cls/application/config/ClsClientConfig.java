@@ -41,7 +41,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @Configuration
 @EnableTransactionManagement()
-@PropertySource("file:${osp/osgpAdapterProtocolIec61850/config}")
+@PropertySource("file:${osp/osgpAdapterProtocolIec61850Cls/config}")
 public class ClsClientConfig {
 
     // private static final Logger LOGGER =
