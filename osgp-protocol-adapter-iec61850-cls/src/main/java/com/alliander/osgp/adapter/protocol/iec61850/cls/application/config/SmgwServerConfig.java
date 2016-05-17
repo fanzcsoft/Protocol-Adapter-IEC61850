@@ -1,6 +1,14 @@
 package com.alliander.osgp.adapter.protocol.iec61850.cls.application.config;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetSocketAddress;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.Security;
+import java.security.cert.CertificateException;
 import java.util.concurrent.Executors;
 
 import javax.annotation.Resource;
@@ -30,9 +38,22 @@ public class SmgwServerConfig {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SmgwServerConfig.class);
 
-    private static final String PROPERTY_NAME_SMGW_TIMEOUT_CONNECT = "smgw.timeout.connect";
-    private static final String PROPERTY_NAME_SMGW_SERVER_PORT = "smgw.server.port";
+    private static final String PROPERTY_NAME_SMGW_SERVER_TIMEOUT_CONNECT = "smgw.server.timeout.connect";
     private static final String PROPERTY_NAME_SMGW_SERVER_LISTENER_PORT = "smgw.server.listener.port";
+
+    private static final String PROPERTY_NAME_SMGW_SERVER_SECURE_SOCKET_PROTOCOL = "smgw.server.secure.socket.protocol";
+    private static final String PROPERTY_NAME_SMGW_SERVER_ALGORITHM_PROPERTY = "smgw.server.algorithm.property";
+    private static final String PROPERTY_NAME_SMGW_SERVER_ALGORITHM_DEFAULT = "smgw.server.algorithm.default";
+
+    private static final String PROPERTY_NAME_SMGW_SERVER_KEYSTORE_FILE = "smgw.server.keystore.file";
+    private static final String PROPERTY_NAME_SMGW_SERVER_KEYSTORE_TYPE = "smgw.server.keystore.type";
+    private static final String PROPERTY_NAME_SMGW_SERVER_KEYSTORE_PWD = "smgw.server.keystore.pwd";
+
+    private static final String PROPERTY_NAME_SMGW_SERVER_CERTIFICATE_PWD = "smgw.server.certificate.pwd";
+
+    private static final String PROPERTY_NAME_SMGW_SERVER_TRUSTSTORE_FILE = "smgw.server.truststore.file";
+    private static final String PROPERTY_NAME_SMGW_SERVER_TRUSTSTORE_TYPE = "smgw.server.truststore.type";
+    private static final String PROPERTY_NAME_SMGW_SERVER_TRUSTSTORE_PWD = "smgw.server.truststore.pwd";
 
     @Resource
     private Environment environment;
@@ -43,14 +64,66 @@ public class SmgwServerConfig {
 
     @Bean
     public int connectionTimeout() {
-        final int timeout = Integer.parseInt(this.environment.getProperty(PROPERTY_NAME_SMGW_TIMEOUT_CONNECT));
+        final int timeout = Integer.parseInt(this.environment.getProperty(PROPERTY_NAME_SMGW_SERVER_TIMEOUT_CONNECT));
         LOGGER.debug("Bean Connetion Timeout set to {}", timeout);
         return timeout;
     }
 
     @Bean
-    public int smgwPortServer() {
-        return Integer.parseInt(this.environment.getProperty(PROPERTY_NAME_SMGW_SERVER_PORT));
+    private String algorithm() {
+        String algorithm = Security
+                .getProperty(this.environment.getRequiredProperty(PROPERTY_NAME_SMGW_SERVER_ALGORITHM_PROPERTY));
+        if (algorithm == null) {
+            algorithm = this.environment.getRequiredProperty(PROPERTY_NAME_SMGW_SERVER_ALGORITHM_DEFAULT);
+        }
+        return algorithm;
+    }
+
+    @Bean
+    private char[] certificatePassword() {
+        return this.environment.getRequiredProperty(PROPERTY_NAME_SMGW_SERVER_CERTIFICATE_PWD).toCharArray();
+    }
+
+    @Bean
+    private String protocol() {
+        return this.environment.getRequiredProperty(PROPERTY_NAME_SMGW_SERVER_SECURE_SOCKET_PROTOCOL);
+    }
+
+    @Bean
+    private KeyStore keyStore() {
+        InputStream stream = null;
+        KeyStore keyStore = null;
+        try {
+            keyStore = KeyStore
+                    .getInstance(this.environment.getRequiredProperty(PROPERTY_NAME_SMGW_SERVER_KEYSTORE_TYPE));
+            stream = new FileInputStream(this.environment.getRequiredProperty(PROPERTY_NAME_SMGW_SERVER_KEYSTORE_FILE));
+            keyStore.load(stream,
+                    this.environment.getRequiredProperty(PROPERTY_NAME_SMGW_SERVER_KEYSTORE_PWD).toCharArray());
+
+        } catch (KeyStoreException | IllegalStateException | NoSuchAlgorithmException | CertificateException
+                | IOException e) {
+            LOGGER.error("Keystore initialization failed.", e);
+        }
+        return keyStore;
+    }
+
+    @Bean
+    private KeyStore trustStore() {
+        InputStream stream = null;
+        KeyStore trustStore = null;
+        try {
+            trustStore = KeyStore
+                    .getInstance(this.environment.getRequiredProperty(PROPERTY_NAME_SMGW_SERVER_TRUSTSTORE_TYPE));
+            stream = new FileInputStream(
+                    this.environment.getRequiredProperty(PROPERTY_NAME_SMGW_SERVER_TRUSTSTORE_FILE));
+            trustStore.load(stream,
+                    this.environment.getRequiredProperty(PROPERTY_NAME_SMGW_SERVER_TRUSTSTORE_PWD).toCharArray());
+
+        } catch (KeyStoreException | IllegalStateException | NoSuchAlgorithmException | CertificateException
+                | IOException e) {
+            LOGGER.error("Keystore initialization failed.", e);
+        }
+        return trustStore;
     }
 
     /**
