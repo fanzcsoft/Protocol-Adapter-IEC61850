@@ -88,7 +88,7 @@ public class SmgwServerSslContextFactory {
                 | CertificateException | IOException e) {
             final String message = "Initialization of SMGW Server SSL Context Factory failed";
             LOGGER.error(message, e);
-            throw new TechnicalException(ComponentType.PROTOCOL_IEC61850, message, e);
+            throw new TechnicalException(ComponentType.PROTOCOL_IEC61850_CLS, message, e);
         }
 
         return context;
