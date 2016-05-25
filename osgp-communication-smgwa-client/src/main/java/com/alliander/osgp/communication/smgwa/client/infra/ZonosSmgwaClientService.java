@@ -33,7 +33,7 @@ public class ZonosSmgwaClientService implements SmgwaClientService {
     }
 
     @Override
-    public void ConfigurePlatformCommunicationProfile(final String platformIdentification,
+    public void configurePlatformCommunicationProfile(final String platformIdentification,
             final PlatformCommunicationProfile profile) {
         final TYPEEmtCommProfile emtCommProfile = this.smgwaClientMapper.map(profile, TYPEEmtCommProfile.class);
 
@@ -51,7 +51,7 @@ public class ZonosSmgwaClientService implements SmgwaClientService {
     }
 
     @Override
-    public void ConfigureDeviceCommunicationProfile(final String deviceIdentification,
+    public void configureDeviceCommunicationProfile(final String deviceIdentification,
             final DeviceCommunicationProfile profile) {
         final TYPEClsCommProfile clsCommProfile = this.smgwaClientMapper.map(profile, TYPEClsCommProfile.class);
 
@@ -69,7 +69,7 @@ public class ZonosSmgwaClientService implements SmgwaClientService {
     }
 
     @Override
-    public void ConfigureProxyServer(final String smartMeterGatewayIdentification, final ProxyServer proxy) {
+    public void configureProxyServer(final String smartMeterGatewayIdentification, final ProxyServer proxy) {
         final TYPEClsProxy clsProxy = this.smgwaClientMapper.map(proxy, TYPEClsProxy.class);
 
         final WebClient client = WebClient.create(this.smartMeterGatewayAdministratorUri);
