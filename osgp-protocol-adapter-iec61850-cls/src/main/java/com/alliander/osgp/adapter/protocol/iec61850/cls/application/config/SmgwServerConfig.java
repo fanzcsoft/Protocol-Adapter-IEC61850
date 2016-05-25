@@ -24,15 +24,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import com.alliander.osgp.adapter.protocol.iec61850.cls.infra.networking.SmgwServerChannelHandler;
 import com.alliander.osgp.adapter.protocol.iec61850.cls.infra.networking.SmgwServerPipelineFactory;
-import com.alliander.osgp.adapter.protocol.iec61850.cls.infra.networking.SmgwServerSslContextFactory;
-import com.alliander.osgp.shared.exceptionhandling.TechnicalException;
 
 @Configuration
-@EnableTransactionManagement()
 @PropertySource("file:${osp/osgpAdapterProtocolIec61850Cls/config}")
 public class SmgwServerConfig {
 
@@ -45,13 +41,13 @@ public class SmgwServerConfig {
     private static final String PROPERTY_NAME_SMGW_SERVER_ALGORITHM_PROPERTY = "smgw.server.algorithm.property";
     private static final String PROPERTY_NAME_SMGW_SERVER_ALGORITHM_DEFAULT = "smgw.server.algorithm.default";
 
-    private static final String PROPERTY_NAME_SMGW_SERVER_KEYSTORE_FILE = "smgw.server.keystore.file";
+    private static final String PROPERTY_NAME_SMGW_SERVER_KEYSTORE_LOCATION = "smgw.server.keystore.location";
     private static final String PROPERTY_NAME_SMGW_SERVER_KEYSTORE_TYPE = "smgw.server.keystore.type";
     private static final String PROPERTY_NAME_SMGW_SERVER_KEYSTORE_PWD = "smgw.server.keystore.pwd";
 
     private static final String PROPERTY_NAME_SMGW_SERVER_CERTIFICATE_PWD = "smgw.server.certificate.pwd";
 
-    private static final String PROPERTY_NAME_SMGW_SERVER_TRUSTSTORE_FILE = "smgw.server.truststore.file";
+    private static final String PROPERTY_NAME_SMGW_SERVER_TRUSTSTORE_LOCATION = "smgw.server.truststore.location";
     private static final String PROPERTY_NAME_SMGW_SERVER_TRUSTSTORE_TYPE = "smgw.server.truststore.type";
     private static final String PROPERTY_NAME_SMGW_SERVER_TRUSTSTORE_PWD = "smgw.server.truststore.pwd";
 
@@ -65,63 +61,73 @@ public class SmgwServerConfig {
     @Bean
     public int connectionTimeout() {
         final int timeout = Integer.parseInt(this.environment.getProperty(PROPERTY_NAME_SMGW_SERVER_TIMEOUT_CONNECT));
-        LOGGER.debug("Bean Connetion Timeout set to {}", timeout);
+
+        LOGGER.debug("Bean Connection Timeout set to: {}", timeout);
+
         return timeout;
     }
 
     @Bean
-    private String algorithm() {
+    public String algorithm() {
         String algorithm = Security
                 .getProperty(this.environment.getRequiredProperty(PROPERTY_NAME_SMGW_SERVER_ALGORITHM_PROPERTY));
         if (algorithm == null) {
             algorithm = this.environment.getRequiredProperty(PROPERTY_NAME_SMGW_SERVER_ALGORITHM_DEFAULT);
         }
+        LOGGER.debug("Bean Algorithm bean set to: {}", algorithm);
+
         return algorithm;
     }
 
     @Bean
-    private char[] certificatePassword() {
-        return this.environment.getRequiredProperty(PROPERTY_NAME_SMGW_SERVER_CERTIFICATE_PWD).toCharArray();
+    public String certificatePassword() {
+        final String pwd = this.environment.getRequiredProperty(PROPERTY_NAME_SMGW_SERVER_CERTIFICATE_PWD);
+        LOGGER.debug("Bean Certificate Password set to: {}", pwd);
+        return pwd;
+
     }
 
     @Bean
-    private String protocol() {
-        return this.environment.getRequiredProperty(PROPERTY_NAME_SMGW_SERVER_SECURE_SOCKET_PROTOCOL);
+    public String protocol() {
+        final String protocol = this.environment.getRequiredProperty(PROPERTY_NAME_SMGW_SERVER_SECURE_SOCKET_PROTOCOL);
+        LOGGER.debug("Bean Protocol set to: {}", protocol);
+        return protocol;
     }
 
     @Bean
-    private KeyStore keyStore() {
+    public KeyStore keyStore() {
         InputStream stream = null;
         KeyStore keyStore = null;
         try {
             keyStore = KeyStore
                     .getInstance(this.environment.getRequiredProperty(PROPERTY_NAME_SMGW_SERVER_KEYSTORE_TYPE));
-            stream = new FileInputStream(this.environment.getRequiredProperty(PROPERTY_NAME_SMGW_SERVER_KEYSTORE_FILE));
+            stream = new FileInputStream(
+                    this.environment.getRequiredProperty(PROPERTY_NAME_SMGW_SERVER_KEYSTORE_LOCATION));
             keyStore.load(stream,
                     this.environment.getRequiredProperty(PROPERTY_NAME_SMGW_SERVER_KEYSTORE_PWD).toCharArray());
-
+            LOGGER.debug("Bean KeyStore loaded");
         } catch (KeyStoreException | IllegalStateException | NoSuchAlgorithmException | CertificateException
                 | IOException e) {
-            LOGGER.error("Keystore initialization failed.", e);
+            LOGGER.error("Bean KeyStore initialization failed.", e);
         }
         return keyStore;
     }
 
     @Bean
-    private KeyStore trustStore() {
+    public KeyStore trustStore() {
         InputStream stream = null;
         KeyStore trustStore = null;
         try {
             trustStore = KeyStore
                     .getInstance(this.environment.getRequiredProperty(PROPERTY_NAME_SMGW_SERVER_TRUSTSTORE_TYPE));
             stream = new FileInputStream(
-                    this.environment.getRequiredProperty(PROPERTY_NAME_SMGW_SERVER_TRUSTSTORE_FILE));
+                    this.environment.getRequiredProperty(PROPERTY_NAME_SMGW_SERVER_TRUSTSTORE_LOCATION));
             trustStore.load(stream,
                     this.environment.getRequiredProperty(PROPERTY_NAME_SMGW_SERVER_TRUSTSTORE_PWD).toCharArray());
-
+            LOGGER.debug("Bean TrustStore loaded");
         } catch (KeyStoreException | IllegalStateException | NoSuchAlgorithmException | CertificateException
                 | IOException e) {
-            LOGGER.error("Keystore initialization failed.", e);
+            LOGGER.error("Bean TrustStore initialization failed.", e);
         }
         return trustStore;
     }
@@ -134,12 +140,9 @@ public class SmgwServerConfig {
      */
     @Bean
     public int smgwServerListenerPort() {
-        return Integer.parseInt(this.environment.getProperty(PROPERTY_NAME_SMGW_SERVER_LISTENER_PORT));
-    }
-
-    @Bean
-    public SmgwServerSslContextFactory smgwServerSslContextFactory() throws TechnicalException {
-        return new SmgwServerSslContextFactory();
+        final int port = Integer.parseInt(this.environment.getProperty(PROPERTY_NAME_SMGW_SERVER_LISTENER_PORT));
+        LOGGER.debug("Bean SMGW Server Listener Port set to: {}", port);
+        return port;
     }
 
     @Bean

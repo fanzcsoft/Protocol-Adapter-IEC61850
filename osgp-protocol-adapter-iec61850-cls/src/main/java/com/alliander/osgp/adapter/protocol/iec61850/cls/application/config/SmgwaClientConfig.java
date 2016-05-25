@@ -14,7 +14,7 @@ import com.alliander.osgp.communication.smgwa.client.infra.ZonosSmgwaClientServi
 @PropertySource("file:${osp/osgpAdapterProtocolIec61850Cls/config}")
 public class SmgwaClientConfig {
 
-    private static final String PROPERTY_NAME_SMGWA_URI = "smgwa.uri";
+    private static final String PROPERTY_NAME_SMGWA_URI = "smgwa.client.uri";
 
     @Resource
     private Environment environment;

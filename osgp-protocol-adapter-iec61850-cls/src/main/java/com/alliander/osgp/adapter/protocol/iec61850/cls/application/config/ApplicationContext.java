@@ -25,15 +25,14 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  * configuration requires Spring Framework 3.0
  */
 @Configuration
-@ComponentScan(basePackages = { "com.alliander.osgp.adapter.protocol.iec61850.cls",
-        "com.alliander.osgp.communication.smgwa.client", "com.alliander.osgp.core.db.api" })
 @EnableTransactionManagement()
 @Import({ ClsClientConfig.class, MessagingConfig.class, SmgwaClientConfig.class, SmgwServerConfig.class })
+@ComponentScan(basePackages = { "com.alliander.osgp.adapter.protocol.iec61850.cls",
+        "com.alliander.osgp.communication.smgwa.client" })
 @PropertySource("file:${osp/osgpAdapterProtocolIec61850Cls/config}")
 public class ApplicationContext {
 
     private static final String PROPERTY_NAME_MAX_RETRY_COUNT = "retrycount.max";
-    private static final String PROPERTY_NAME_SELFTEST_TIMEOUT = "selftest.timeout";
 
     private static final String PROPERTY_NAME_CONNECTION_RESPONSE_TIMEOUT = "connection.reponse.timeout";
 
@@ -63,22 +62,5 @@ public class ApplicationContext {
     public int responseTimeout() {
         return Integer.parseInt(this.environment.getProperty(PROPERTY_NAME_CONNECTION_RESPONSE_TIMEOUT));
     }
-
-    /**
-     * The amount of time, in milliseconds, between the switching of the relays
-     * and the status check in the selftest
-     */
-    @Bean
-    public int selftestTimeout() {
-        return Integer.parseInt(this.environment.getProperty(PROPERTY_NAME_SELFTEST_TIMEOUT));
-    }
-
-    // @Bean
-    // public FirmwareLocation firmwareLocation() {
-    // return new
-    // FirmwareLocation(this.environment.getProperty(PROPERTY_NAME_FIRMWARE_DOMAIN),
-    // this.environment.getProperty(PROPERTY_NAME_FIRMWARE_PATH),
-    // this.environment.getProperty(PROPERTY_NAME_FIRMWARE_FILE_EXTENSION));
-    // }
 
 }

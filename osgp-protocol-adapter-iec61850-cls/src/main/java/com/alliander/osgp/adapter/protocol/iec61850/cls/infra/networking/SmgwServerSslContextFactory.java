@@ -6,6 +6,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 
+import javax.annotation.PostConstruct;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
@@ -13,10 +14,12 @@ import javax.net.ssl.TrustManagerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import com.alliander.osgp.shared.exceptionhandling.ComponentType;
 import com.alliander.osgp.shared.exceptionhandling.TechnicalException;
 
+@Component
 public class SmgwServerSslContextFactory {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SmgwServerSslContextFactory.class);
@@ -24,28 +27,25 @@ public class SmgwServerSslContextFactory {
     private SSLContext sslContext;
 
     @Autowired
-    char[] certificatePassword;
+    private String certificatePassword;
 
     @Autowired
-    KeyStore keyStore;
+    private KeyStore keyStore;
 
     @Autowired
-    KeyStore trustStore;
+    private KeyStore trustStore;
 
     @Autowired
-    String algorithm;
+    private String algorithm;
 
     @Autowired
-    String protocol;
-
-    public SmgwServerSslContextFactory() throws TechnicalException {
-        this.sslContext = this.initializeContext();
-    }
+    private String protocol;
 
     public SSLContext getServerContext() {
         return this.sslContext;
     }
 
+    @PostConstruct
     private SSLContext initializeContext() throws TechnicalException {
 
         SSLContext context = null;
@@ -53,7 +53,7 @@ public class SmgwServerSslContextFactory {
         try {
             // Set up keymanager factory to use the keystore
             final KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(this.algorithm);
-            keyManagerFactory.init(this.keyStore, this.certificatePassword);
+            keyManagerFactory.init(this.keyStore, this.certificatePassword.toCharArray());
 
             // Set up truststore factory to use the truststore
             final TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(this.algorithm);
