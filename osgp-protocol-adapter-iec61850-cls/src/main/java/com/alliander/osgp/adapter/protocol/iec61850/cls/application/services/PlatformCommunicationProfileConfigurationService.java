@@ -1,10 +1,16 @@
 package com.alliander.osgp.adapter.protocol.iec61850.cls.application.services;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,57 +23,97 @@ import com.alliander.osgp.communication.smgwa.client.domain.TlsSettings;
 @Service
 public class PlatformCommunicationProfileConfigurationService {
 
-    // TODO - Refactor
-    private static final String PLATFORM_IDENTIFICATION = "osgp-iec61850-cls";
-    private static final String DESTINATION_ADDRESS = "127.0.0.1";
-    private static final boolean KEEP_ALIVE = false;
-    private static final long MAX_IDLE_TIME = 300000;
-    private static final long MAX_SESSION_TIME = 1800000;
-    private static final byte[] CERTIFICATE = new byte[] {};
-    private static final byte[] ENCRYPTION_CERTIFICATE = new byte[] {};
-    private static final byte[] SIGNING_CERTIFICATE = new byte[] {};
+    private static Logger LOGGER = LoggerFactory.getLogger(PlatformCommunicationProfileConfigurationService.class);
 
     @Autowired
     private SmgwaClientService smgwaClientService;
 
     @Autowired
-    private String smgwaPlatformCommunicationProfileName;
-
-    @Autowired
     private PlatformCommunicationProfileRepository platformCommunicationProfileRepository;
 
-    private PlatformCommunicationProfile profile = null;
+    @Autowired
+    private String platformIdentification;
+
+    @Autowired
+    private boolean sendProfileOnStartup;
+
+    @Autowired
+    private boolean storageEnabled;
+
+    @Autowired
+    private String profileName;
+
+    @Autowired
+    private String destinationAddress;
+
+    @Autowired
+    private boolean keepAlive;
+
+    @Autowired
+    private long maxIdleTime;
+
+    @Autowired
+    private long maxSessionTime;
+
+    @Autowired
+    private String platformCertificateLocation;
+
+    @Autowired
+    private String encryptionCertificateLocation;
+
+    @Autowired
+    private String signingCertificateLocation;
 
     @PostConstruct
     public void configure() {
 
-        // Try to retrieve existing profile from repository
-        this.profile = this.platformCommunicationProfileRepository
-                .getByProfileName(this.smgwaPlatformCommunicationProfileName);
-        if (this.profile == null) {
-            this.profile = this.createDefaultProfile();
-            this.profile = this.platformCommunicationProfileRepository.save(this.profile);
-        }
-
-        if (!this.profile.isConfigured()) {
-            this.smgwaClientService.configurePlatformCommunicationProfile(PLATFORM_IDENTIFICATION, this.profile);
-            this.profile.setConfigurationCompleted();
-            this.profile = this.platformCommunicationProfileRepository.save(this.profile);
+        if (this.sendProfileOnStartup) {
+            this.sendProfile();
         }
     }
 
-    private PlatformCommunicationProfile createDefaultProfile() {
+    private void sendProfile() {
+        PlatformCommunicationProfile profile = null;
 
-        final String profileName = this.smgwaPlatformCommunicationProfileName;
+        try {
+            if (this.storageEnabled) {
+                profile = this.platformCommunicationProfileRepository.getByProfileName(this.profileName);
+            }
+
+            if (profile == null) {
+                profile = this.createProfile();
+            }
+            this.smgwaClientService.configurePlatformCommunicationProfile(this.platformIdentification, profile);
+
+            if (this.storageEnabled) {
+                profile.setConfigurationCompleted();
+                profile = this.platformCommunicationProfileRepository.save(profile);
+            }
+        } catch (IllegalStateException | IOException e) {
+            LOGGER.error("Error creating Platform Communication Profile", e);
+        }
+
+    }
+
+    private PlatformCommunicationProfile createProfile() throws IllegalStateException, IOException {
 
         final List<String> destinationAddresses = new ArrayList<>();
-        destinationAddresses.add(DESTINATION_ADDRESS);
+        destinationAddresses.add(this.destinationAddress);
 
-        final TlsSettings tlsSettings = new TlsSettings(KEEP_ALIVE, MAX_IDLE_TIME, MAX_SESSION_TIME, CERTIFICATE);
+        final TlsSettings tlsSettings = new TlsSettings(this.keepAlive, this.maxIdleTime, this.maxSessionTime,
+                this.loadCertificate(this.platformCertificateLocation));
 
-        final SecuritySettings securitySettings = new SecuritySettings(ENCRYPTION_CERTIFICATE, SIGNING_CERTIFICATE);
+        final SecuritySettings securitySettings = new SecuritySettings(
+                this.loadCertificate(this.encryptionCertificateLocation),
+                this.loadCertificate(this.signingCertificateLocation));
 
-        return new PlatformCommunicationProfile(profileName, destinationAddresses, tlsSettings, securitySettings);
+        return new PlatformCommunicationProfile(this.profileName, destinationAddresses, tlsSettings, securitySettings);
+    }
+
+    private byte[] loadCertificate(final String location) throws IOException {
+        LOGGER.debug("Loading certificate from file {}", location);
+        final Path path = Paths.get(location);
+        return Files.readAllBytes(path);
     }
 
 }
