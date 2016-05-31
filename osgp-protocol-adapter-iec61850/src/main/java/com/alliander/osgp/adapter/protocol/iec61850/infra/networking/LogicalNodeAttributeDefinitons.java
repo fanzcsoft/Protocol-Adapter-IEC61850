@@ -186,6 +186,17 @@ public final class LogicalNodeAttributeDefinitons {
     public static final String PROPERTY_SWITCH_TYPE = ".SwType";
 
     /**
+     * Attribute of Property SwType, Oper, sets the switch type of a relay.
+     */
+    public static final String PROPERTY_SWITCH_TYPE_ATTRIBUTE_OPER = "Oper";
+
+    /**
+     * Attribute of Property Oper, used to set the switch type (0=Tariff switch,
+     * 1=Light switch).
+     */
+    public static final String PROPERTY_SWITCH_TYPE_OPER_ATTRIBUTE_CONTROL = "ctlVal";
+
+    /**
      * Property of XSWC Node, On Interval Buffer
      */
     public static final String PROPERTY_SWITCH_ON_ITV_B = ".OnItvB";
@@ -256,6 +267,12 @@ public final class LogicalNodeAttributeDefinitons {
     // SWCf
 
     /**
+     * Attribute of Property SwType, used to read the type (tariff=0/light=1) of
+     * the switch.
+     */
+    public static final String PROPERTY_SW_TYPE_ATTRIBUTE_VALUE = "stVal";
+
+    /**
      * Attribute of Property Pos, used to read the status of the relay.
      */
     public static final String PROPERTY_POSITION_ATTRIBUTE_STATE = "stVal";
@@ -264,7 +281,7 @@ public final class LogicalNodeAttributeDefinitons {
      * Attribute of Property SWCf, used to read the value of the offset from
      * astronomic sunrise.
      */
-    public static final String PROPERTY_POSITION_OFFSET_SUNRISE = "osRise";
+    public static final String PROPERTY_POSITION_OFFSET_SUNRISE = "adRiseOft";
 
     /**
      * Attribute of Property Clock, used to read the value of time sync period.
@@ -285,7 +302,7 @@ public final class LogicalNodeAttributeDefinitons {
      * Attribute of Property SWCf, used to read the value of the offset from
      * astronomic sunset.
      */
-    public static final String PROPERTY_POSITION_OFFSET_SUNSET = "osSet";
+    public static final String PROPERTY_POSITION_OFFSET_SUNSET = "adSetOft";
 
     /**
      * Attribute of Property SWCf, used to read the value of the
