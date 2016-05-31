@@ -90,6 +90,29 @@ public enum EventType {
         return eventTypes;
     }
 
+    public static final Set<EventNotificationTypeDto> getNotificationTypesForFilter(final String filter) {
+        final Set<EventType> eventTypesForFilter = getEventTypesForFilter(filter);
+        if (eventTypesForFilter == null) {
+            return null;
+        }
+        final Set<EventNotificationTypeDto> notificationTypes = EnumSet.noneOf(EventNotificationTypeDto.class);
+        for (final EventType eventType : eventTypesForFilter) {
+            notificationTypes.add(eventType.getNotificationType());
+        }
+
+        /*
+         * Verify that either all or none of the event types per notification
+         * type were set, by checking the filter for the observed notification
+         * types against the filter used to determine these notification types.
+         */
+        final String verifyFilter = getEventTypeFilterMaskForNotificationTypes(notificationTypes);
+        if (!filter.equals(verifyFilter)) {
+            throw new IllegalArgumentException("The event filter received (" + filter
+                    + ") belongs with notification types for which some, but not all of the events are filtered.");
+        }
+        return notificationTypes;
+    }
+
     private final int code;
     private final String description;
     private final EventNotificationTypeDto notificationType;
@@ -114,7 +137,7 @@ public enum EventType {
     }
 
     public int bitmaskValue() {
-        return (int) Math.pow(2, this.code - 1);
+        return 1 << (this.code - 1);
     }
 
     public String getDescription() {
