@@ -62,7 +62,7 @@ public class ClsDeviceCommunicationProfileConfigurationService {
 
     private DeviceCommunicationProfile createProfile(final ClsDeviceDto device) {
 
-        final String profileName = String.format(this.profileNameTemplate, device.getDeviceIdentification());
+        final String profileName = this.profileNameTemplate.replace("<<<deviceid>>>", device.getDeviceIdentification());
 
         final List<String> destinationAddresses = new ArrayList<>();
         destinationAddresses.add(device.getDestinationAddress());
