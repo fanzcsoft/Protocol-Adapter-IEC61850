@@ -3,18 +3,21 @@ package com.alliander.osgp.adapter.protocol.iec61850.cls.domain;
 // TODO - Move this class to dto library
 
 public class ClsDeviceDto {
-    private String DeviceIdentification;
-    private String DestinationAddress;
+    private String deviceIdentification;
+    private String destinationAddress;
+    private String gatewayIdentification;
     private boolean keepAlive;
     private long maxIdleTime;
     private long maxSessionTime;
     private byte[] certificate;
 
-    public ClsDeviceDto(final String deviceIdentification, final String destinationAddress, final boolean keepAlive,
-            final long maxIdleTime, final long maxSessionTime, final byte[] certificate) {
+    public ClsDeviceDto(final String deviceIdentification, final String destinationAddress,
+            final String gatewayIdentification, final boolean keepAlive, final long maxIdleTime,
+            final long maxSessionTime, final byte[] certificate) {
         super();
-        this.DeviceIdentification = deviceIdentification;
-        this.DestinationAddress = destinationAddress;
+        this.deviceIdentification = deviceIdentification;
+        this.destinationAddress = destinationAddress;
+        this.gatewayIdentification = gatewayIdentification;
         this.keepAlive = keepAlive;
         this.maxIdleTime = maxIdleTime;
         this.maxSessionTime = maxSessionTime;
@@ -22,11 +25,15 @@ public class ClsDeviceDto {
     }
 
     public String getDeviceIdentification() {
-        return this.DeviceIdentification;
+        return this.deviceIdentification;
     }
 
     public String getDestinationAddress() {
-        return this.DestinationAddress;
+        return this.destinationAddress;
+    }
+
+    public String getGatewayIdentification() {
+        return this.gatewayIdentification;
     }
 
     public boolean isKeepAlive() {
