@@ -17,22 +17,29 @@ public abstract class CommunicationProfile extends AbstractEntity {
     private static final long serialVersionUID = 5677658040368957987L;
 
     @Column(unique = true)
-    protected String profileName;
+    private String profileName;
 
     @ElementCollection
-    protected List<String> destinationAddresses;
+    private List<String> destinationAddresses;
 
     @Embedded
-    protected TlsSettings tlsSettings;
+    private TlsSettings tlsSettings;
 
     @Column
-    protected boolean configured;
+    private boolean configured;
 
     @Column
-    protected Date configurationTime;
+    private Date configurationTime;
 
-    public CommunicationProfile() {
+    protected CommunicationProfile() {
+    }
+
+    public CommunicationProfile(final String profileName, final List<String> destinationAddresses,
+            final TlsSettings tlsSettings) {
         super();
+        this.profileName = profileName;
+        this.destinationAddresses = destinationAddresses;
+        this.tlsSettings = tlsSettings;
     }
 
     public String getProfileName() {

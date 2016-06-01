@@ -19,10 +19,7 @@ public class PlatformCommunicationProfile extends CommunicationProfile {
 
     public PlatformCommunicationProfile(final String profileName, final List<String> destinationAddresses,
             final TlsSettings tlsSettings, final SecuritySettings securitySettings) {
-        super();
-        this.profileName = profileName;
-        this.destinationAddresses = destinationAddresses;
-        this.tlsSettings = tlsSettings;
+        super(profileName, destinationAddresses, tlsSettings);
         this.securitySettings = securitySettings;
     }
 

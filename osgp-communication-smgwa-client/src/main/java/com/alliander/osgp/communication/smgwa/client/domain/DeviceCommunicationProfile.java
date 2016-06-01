@@ -15,11 +15,8 @@ public class DeviceCommunicationProfile extends CommunicationProfile {
 
     public DeviceCommunicationProfile(final String deviceIdentification, final String profileName,
             final List<String> destinationAddresses, final TlsSettings tlsSettings) {
-        super();
+        super(profileName, destinationAddresses, tlsSettings);
         this.deviceIdentification = deviceIdentification;
-        this.profileName = profileName;
-        this.destinationAddresses = destinationAddresses;
-        this.tlsSettings = tlsSettings;
     }
 
     public String getDeviceIdentification() {
