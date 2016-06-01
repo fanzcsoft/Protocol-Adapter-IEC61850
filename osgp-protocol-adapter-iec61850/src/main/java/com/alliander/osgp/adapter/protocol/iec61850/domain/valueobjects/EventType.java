@@ -34,6 +34,19 @@ public enum EventType {
     NTP_SYNC_ALARM_OFFSET(23, "NTP_SYNC_ALARM_OFFSET", EventNotificationTypeDto.COMM_EVENTS, EventTypeDto.NTP_SYNC_ALARM_OFFSET),
     NTP_SYNC_MAX_OFFSET(24, "NTP_SYNC_MAX_OFFSET", EventNotificationTypeDto.COMM_EVENTS, EventTypeDto.NTP_SYNC_MAX_OFFSET),
     AUTHENTICATION_FAIL(25, "AUTHENTICATION_FAIL", EventNotificationTypeDto.SECURITY_EVENTS, EventTypeDto.AUTHENTICATION_FAIL);
+    
+    private final int code;
+    private final String description;
+    private final EventNotificationTypeDto notificationType;
+    private final EventTypeDto osgpEventType;
+
+    EventType(final int code, final String description, final EventNotificationTypeDto notificationType,
+            final EventTypeDto osgpEventType) {
+        this.code = code;
+        this.description = description;
+        this.notificationType = notificationType;
+        this.osgpEventType = osgpEventType;
+    }
 
     public static EventType forCode(final int code) {
         for (final EventType eventType : EventType.values()) {
@@ -111,19 +124,6 @@ public enum EventType {
                     + ") belongs with notification types for which some, but not all of the events are filtered.");
         }
         return notificationTypes;
-    }
-
-    private final int code;
-    private final String description;
-    private final EventNotificationTypeDto notificationType;
-    private final EventTypeDto osgpEventType;
-
-    EventType(final int code, final String description, final EventNotificationTypeDto notificationType,
-            final EventTypeDto osgpEventType) {
-        this.code = code;
-        this.description = description;
-        this.notificationType = notificationType;
-        this.osgpEventType = osgpEventType;
     }
 
     @Override
