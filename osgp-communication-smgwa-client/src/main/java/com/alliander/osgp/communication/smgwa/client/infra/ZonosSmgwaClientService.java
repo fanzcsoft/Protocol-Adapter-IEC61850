@@ -26,10 +26,10 @@ public class ZonosSmgwaClientService implements SmgwaClientService {
     @Autowired
     private MapperFacade smgwaClientMapper;
 
-    private String smartMeterGatewayAdministratorUri;
+    private String smgwaUri;
 
     public ZonosSmgwaClientService(final String smwgaUri) {
-        this.smartMeterGatewayAdministratorUri = smwgaUri;
+        this.smgwaUri = smwgaUri;
     }
 
     @Override
@@ -37,7 +37,7 @@ public class ZonosSmgwaClientService implements SmgwaClientService {
             final PlatformCommunicationProfile profile) {
         final TYPEEmtCommProfile emtCommProfile = this.smgwaClientMapper.map(profile, TYPEEmtCommProfile.class);
 
-        final WebClient client = WebClient.create(this.smartMeterGatewayAdministratorUri);
+        final WebClient client = WebClient.create(this.smgwaUri);
         client.path(String.format("/v1/emt/{}/comm_profile", platformIdentification));
         client.type(MediaType.APPLICATION_XML_TYPE);
 
@@ -55,7 +55,7 @@ public class ZonosSmgwaClientService implements SmgwaClientService {
             final DeviceCommunicationProfile profile) {
         final TYPEClsCommProfile clsCommProfile = this.smgwaClientMapper.map(profile, TYPEClsCommProfile.class);
 
-        final WebClient client = WebClient.create(this.smartMeterGatewayAdministratorUri);
+        final WebClient client = WebClient.create(this.smgwaUri);
         client.path(String.format("/v1/cls/{}/comm_profile", deviceIdentification));
         client.type(MediaType.APPLICATION_XML_TYPE);
 
@@ -72,7 +72,7 @@ public class ZonosSmgwaClientService implements SmgwaClientService {
     public void configureProxyServer(final String smartMeterGatewayIdentification, final ProxyServer proxy) {
         final TYPEClsProxy clsProxy = this.smgwaClientMapper.map(proxy, TYPEClsProxy.class);
 
-        final WebClient client = WebClient.create(this.smartMeterGatewayAdministratorUri);
+        final WebClient client = WebClient.create(this.smgwaUri);
         client.path(String.format("/v1/smgw/{}/cls_proxy", smartMeterGatewayIdentification));
         client.type(MediaType.APPLICATION_XML_TYPE);
 
