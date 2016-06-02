@@ -51,6 +51,8 @@ public class SmgwServerConfig {
     private static final String PROPERTY_NAME_SMGW_SERVER_TRUSTSTORE_TYPE = "smgw.server.truststore.type";
     private static final String PROPERTY_NAME_SMGW_SERVER_TRUSTSTORE_PWD = "smgw.server.truststore.pwd";
 
+    private static final String PROPERTY_NAME_SMGW_SERVER_SSL_HANDLER_ENABLED = "smgw.server.ssl.handler.enabled";
+
     @Resource
     private Environment environment;
 
@@ -175,5 +177,13 @@ public class SmgwServerConfig {
         bootstrap.bind(new InetSocketAddress(this.smgwServerListenerPort()));
 
         return bootstrap;
+    }
+
+    @Bean
+    public boolean sslHandlerEnabled() {
+        final boolean enabled = Boolean
+                .parseBoolean(this.environment.getRequiredProperty(PROPERTY_NAME_SMGW_SERVER_SSL_HANDLER_ENABLED));
+        LOGGER.debug("Bean SSL Handler Enabled set to {}", enabled);
+        return enabled;
     }
 }

@@ -16,17 +16,14 @@ import org.jboss.netty.channel.SimpleChannelHandler;
 import org.jboss.netty.handler.ssl.SslHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class SmgwServerChannelHandler extends SimpleChannelHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SmgwServerChannelHandler.class);
 
-    // @Autowired
-    // private Iec61850LogItemRequestMessageSender
-    // iec61850LogItemRequestMessageSender;
-
-    // @Autowired
-    // private Iec61850Client iec61850Client;
+    @Autowired
+    private boolean sslHandlerEnabled;
 
     @Override
     public void channelOpen(final ChannelHandlerContext ctx, final ChannelStateEvent e) throws Exception {
@@ -69,25 +66,18 @@ public class SmgwServerChannelHandler extends SimpleChannelHandler {
     public void channelConnected(final ChannelHandlerContext ctx, final ChannelStateEvent e) throws Exception {
         LOGGER.info("{} Channel connected", e.getChannel().getId());
 
-        final SslHandler sslHandler = ctx.getPipeline().get(SslHandler.class);
-        final ChannelFuture handshakeFuture = sslHandler.handshake();
-        handshakeFuture.addListener(new SmgwServerChannelFutureListener(sslHandler));
-        // super.channelConnected(ctx, e);
+        if (this.sslHandlerEnabled) {
+            final SslHandler sslHandler = ctx.getPipeline().get(SslHandler.class);
+            final ChannelFuture handshakeFuture = sslHandler.handshake();
+            handshakeFuture.addListener(new SmgwServerChannelFutureListener(sslHandler));
+        } else {
+            // TODO - Add cls command handling via IEC61850 client
+        }
     };
 
     @Override
     public void messageReceived(final ChannelHandlerContext ctx, final MessageEvent e) throws Exception {
         LOGGER.info("{} Message received: {}", e.getChannel().getId(), e.getMessage());
     }
-
-    // private void logMessage(final RegisterDeviceRequest message) {
-    //
-    // final Iec61850LogItemRequestMessage iec61850LogItemRequestMessage = new
-    // Iec61850LogItemRequestMessage(
-    // message.getDeviceIdentification(), true, message.isValid(), message,
-    // message.getSize());
-    //
-    // this.iec61850LogItemRequestMessageSender.send(iec61850LogItemRequestMessage);
-    // }
 
 }

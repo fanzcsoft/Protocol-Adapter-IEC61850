@@ -13,10 +13,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class SmgwServerPipelineFactory implements ChannelPipelineFactory {
 
     @Autowired
-    SmgwServerSslContextFactory smgwServerSslContextFactory;
+    private SmgwServerSslContextFactory smgwServerSslContextFactory;
 
     @Autowired
-    SmgwServerChannelHandler smgwServerChannelHandler;
+    private SmgwServerChannelHandler smgwServerChannelHandler;
+
+    @Autowired
+    private boolean sslHandlerEnabled;
 
     @Override
     public ChannelPipeline getPipeline() throws Exception {
@@ -24,10 +27,12 @@ public class SmgwServerPipelineFactory implements ChannelPipelineFactory {
 
         pipeline.addLast("loggingHandler", new LoggingHandler(InternalLogLevel.INFO, true));
 
-        final SSLEngine engine = this.smgwServerSslContextFactory.getServerContext().createSSLEngine();
-        engine.setUseClientMode(false);
+        if (this.sslHandlerEnabled) {
+            final SSLEngine engine = this.smgwServerSslContextFactory.getServerContext().createSSLEngine();
+            engine.setUseClientMode(false);
 
-        pipeline.addLast("sslHandler", new SslHandler(engine));
+            pipeline.addLast("sslHandler", new SslHandler(engine));
+        }
 
         pipeline.addLast("smgwServerChannelHandler", this.smgwServerChannelHandler);
 
