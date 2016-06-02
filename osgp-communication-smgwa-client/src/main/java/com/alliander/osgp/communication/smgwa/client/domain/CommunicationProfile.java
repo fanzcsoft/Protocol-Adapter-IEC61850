@@ -58,7 +58,7 @@ public abstract class CommunicationProfile extends AbstractEntity {
         return this.configured;
     }
 
-    public Date configurationTime() {
+    public Date getConfigurationTime() {
         return this.configurationTime;
     }
 
