@@ -8,18 +8,18 @@
 package com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper;
 
 /**
- * Contains the name of the Logical Device.
+ * Contains the name of the IED.
  */
-public enum LogicalDevice {
+public enum IED {
     /**
-     * The name of the Logical Device.
+     * The name of the IED.
      */
-    LIGHTING("IO"),
-    PV("PV1");
+    FLEX_OVL("SWDeviceGeneric"),
+    ZOWN_RTU("ZOWN_POC");
 
     private String description;
 
-    private LogicalDevice(final String description) {
+    private IED(final String description) {
         this.description = description;
     }
 

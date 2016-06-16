@@ -30,6 +30,8 @@ import com.alliander.osgp.adapter.protocol.iec61850.exceptions.ProtocolAdapterEx
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.DataAttribute;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.DeviceConnection;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.Function;
+import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.IED;
+import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.LogicalDevice;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.LogicalNode;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.NodeContainer;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.SubDataAttribute;
@@ -196,9 +198,9 @@ public class Iec61850Client {
 
             @Override
             public Void apply() throws Exception {
-                final DeviceConnection deviceConnection = new DeviceConnection(new Iec61850Connection(
-                        iec61850ClientAssociation, null), deviceIdentification);
-                final NodeContainer deviceRegistration = deviceConnection.getFcModelNode(
+                final DeviceConnection deviceConnection = new DeviceConnection(
+                        new Iec61850Connection(iec61850ClientAssociation, null), deviceIdentification, IED.FLEX_OVL);
+                final NodeContainer deviceRegistration = deviceConnection.getFcModelNode(LogicalDevice.LIGHTING,
                         LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.REGISTRATION, Fc.CF);
                 deviceRegistration.writeBoolean(SubDataAttribute.DEVICE_REGISTRATION_ENABLED, false);
 

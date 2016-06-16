@@ -16,6 +16,10 @@ public enum LogicalNode {
      */
     LOGICAL_NODE_ZERO("LLN0"),
     /**
+     * LPHD1, configuration Physical Device Node one.
+     */
+    PHISICAL_DEVICE_ONE("LPHD1"),
+    /**
      * CSLC, configuration Logical Node.
      */
     STREET_LIGHT_CONFIGURATION("CSLC"),
@@ -34,7 +38,11 @@ public enum LogicalNode {
     /**
      * XSWC4, relays number 1 Logical Node.
      */
-    SWITCH_COMPONENT_FOUR("XSWC4");
+    SWITCH_COMPONENT_FOUR("XSWC4"),
+    /**
+     * ZGEN1, information exchange with generators Logical Node.
+     */
+    GENERATOR_ONE("ZGEN1");
 
     private final String description;
 

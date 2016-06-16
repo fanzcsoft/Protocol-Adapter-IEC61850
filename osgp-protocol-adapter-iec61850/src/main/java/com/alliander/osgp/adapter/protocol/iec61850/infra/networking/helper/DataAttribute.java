@@ -75,7 +75,15 @@ public enum DataAttribute {
     /**
      * Property of XSWC Node, On Interval Buffer.
      */
-    SWITCH_ON_INTERVAL_BUFFER("OnItvB");
+    SWITCH_ON_INTERVAL_BUFFER("OnItvB"),
+    /**
+     * Property of ZGEN Node, generator speed measurement.
+     */
+    GENERATOR_SPEED("GnSpd"),
+    /**
+     * Property of ZGEN Node, demanded power setpoint.
+     */
+    DEMANDED_POWER("DmdPwr");
 
     private String description;
 

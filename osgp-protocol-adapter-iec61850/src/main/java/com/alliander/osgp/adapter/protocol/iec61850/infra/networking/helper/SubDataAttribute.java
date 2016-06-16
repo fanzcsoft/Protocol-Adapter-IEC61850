@@ -197,7 +197,27 @@ public enum SubDataAttribute {
     /**
      * End of summer time.
      */
-    WINTER_TIME_DETAILS("dstEndT");
+    WINTER_TIME_DETAILS("dstEndT"),
+    /**
+     * Magnitude.
+     */
+    MAGITUDE("mag.f"),
+    /**
+     * Instantaneous magnitude.
+     */
+    MAGITUDE_INSTANTANEOUS("instMag.f"),
+    /**
+     * Setpoint for magnitude.
+     */
+    MAGITUDE_SETPOINT("setMag.f"),
+    /**
+     * Quality indicator
+     */
+    QUALITY("q"),
+    /**
+     * Timestamp
+     */
+    TIME("t");
 
     private String description;
 
