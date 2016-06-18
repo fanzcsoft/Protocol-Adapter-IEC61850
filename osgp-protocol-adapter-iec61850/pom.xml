@@ -67,6 +67,10 @@
       <groupId>com.alliander.osgp</groupId>
       <artifactId>osgp-core-db-api-iec61850</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.alliander.osgp</groupId>
+      <artifactId>osgp-domain-microgrids</artifactId>
+    </dependency>
 
     <!-- Spring Framework -->
     <dependency>

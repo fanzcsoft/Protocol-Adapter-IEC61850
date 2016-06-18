@@ -2,3 +2,7 @@
 	path = Shared
 	url = https://github.com/OSGP/Shared.git
 	branch = microgrids
+[submodule "Platform"]
+	path = Platform
+	url = https://github.com/OSGP/Platform.git
+	branch = microgrids
