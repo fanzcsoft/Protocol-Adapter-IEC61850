@@ -9,6 +9,7 @@ package com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper;
 
 import com.alliander.osgp.adapter.protocol.iec61850.domain.valueobjects.ScheduleWeekday;
 import com.alliander.osgp.adapter.protocol.iec61850.domain.valueobjects.TriggerType;
+import com.alliander.osgp.domain.core.valueobjects.LightType;
 
 /**
  * Contains a list of all sub data attributes of the IEC61850 Device.
@@ -201,15 +202,15 @@ public enum SubDataAttribute {
     /**
      * Magnitude.
      */
-    MAGITUDE("mag.f"),
+    MAGITUDE("mag"),
     /**
      * Instantaneous magnitude.
      */
-    MAGITUDE_INSTANTANEOUS("instMag.f"),
+    MAGITUDE_INSTANTANEOUS("instMag"),
     /**
      * Setpoint for magnitude.
      */
-    MAGITUDE_SETPOINT("setMag.f"),
+    MAGITUDE_SETPOINT("setMag"),
     /**
      * Quality indicator
      */
@@ -217,7 +218,11 @@ public enum SubDataAttribute {
     /**
      * Timestamp
      */
-    TIME("t");
+    TIME("t"),
+    /**
+     * Float
+     */
+    FLOAT("f");
 
     private String description;
 

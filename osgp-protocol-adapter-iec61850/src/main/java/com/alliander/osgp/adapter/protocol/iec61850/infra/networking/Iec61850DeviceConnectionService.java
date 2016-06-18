@@ -44,8 +44,8 @@ public class Iec61850DeviceConnectionService {
             if (iec61850Connection != null) {
                 // Already connected, check if connection is still usable.
                 LOGGER.info("Connection found for deviceIdentification: {}", deviceIdentification);
-                final boolean isConnectionAlive = this.iec61850Client.readAllDataValues(iec61850Connection
-                        .getClientAssociation());
+                final boolean isConnectionAlive = this.iec61850Client
+                        .readAllDataValues(iec61850Connection.getClientAssociation());
                 if (isConnectionAlive) {
                     LOGGER.info("Connection is still active for deviceIdentification: {}", deviceIdentification);
                     return;
@@ -73,8 +73,8 @@ public class Iec61850DeviceConnectionService {
             // Try to connect.
             LOGGER.info("Trying to connect to deviceIdentification: {} at IP address {}", deviceIdentification,
                     ipAddress);
-            final Iec61850ClientAssociation iec61850clientAssociation = this.iec61850Client.connect(
-                    deviceIdentification, inetAddress);
+            final Iec61850ClientAssociation iec61850clientAssociation = this.iec61850Client
+                    .connect(deviceIdentification, inetAddress);
             final ClientAssociation clientAssociation = iec61850clientAssociation.getClientAssociation();
 
             // Set response time-out
@@ -87,8 +87,8 @@ public class Iec61850DeviceConnectionService {
             this.iec61850Client.readAllDataValues(clientAssociation);
 
             // Cache the connection.
-            this.cacheIec61850Connection(deviceIdentification, new Iec61850Connection(iec61850clientAssociation,
-                    serverModel));
+            this.cacheIec61850Connection(deviceIdentification,
+                    new Iec61850Connection(iec61850clientAssociation, serverModel));
         } catch (final ServiceError e) {
             LOGGER.error("Unexpected exception when connecting to an IEC61850 device", e);
             return;
@@ -137,7 +137,8 @@ public class Iec61850DeviceConnectionService {
         return this.iec61850Client.readAllDataValues(clientAssociation);
     }
 
-    private void cacheIec61850Connection(final String deviceIdentification, final Iec61850Connection iec61850Connection) {
+    private void cacheIec61850Connection(final String deviceIdentification,
+            final Iec61850Connection iec61850Connection) {
         cache.put(deviceIdentification, iec61850Connection);
     }
 

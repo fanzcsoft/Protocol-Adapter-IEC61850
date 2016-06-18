@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.Date;
 
 import org.openmuc.openiec61850.BdaBoolean;
+import org.openmuc.openiec61850.BdaFloat32;
 import org.openmuc.openiec61850.BdaInt16;
 import org.openmuc.openiec61850.BdaInt16U;
 import org.openmuc.openiec61850.BdaInt32;
@@ -41,7 +42,9 @@ public class NodeContainer {
         } catch (final ServiceError e) {
             LOGGER.error("ServiceError during write()", e);
         } catch (final IOException e) {
-            // "if a fatal association error occurs. The association object will be closed and can no longer be used after this exception is thrown."
+            // "if a fatal association error occurs. The association object will
+            // be closed and can no longer be used after this exception is
+            // thrown."
             LOGGER.error("IOException during write()", e);
         }
     }
@@ -155,6 +158,16 @@ public class NodeContainer {
         this.writeNode(bdaInteger);
     }
 
+    public BdaFloat32 getFloat(final SubDataAttribute child) {
+        return (BdaFloat32) this.parent.getChild(child.getDescription());
+    }
+
+    public void writeFloat(final SubDataAttribute child, final Float value) {
+        final BdaFloat32 bdaFloat = (BdaFloat32) this.parent.getChild(child.getDescription());
+        bdaFloat.setFloat(value);
+        this.writeNode(bdaFloat);
+    }
+
     /**
      * Writes the new data of the node to the device
      */
@@ -165,7 +178,9 @@ public class NodeContainer {
             LOGGER.error("ServiceError during writeNode()", e);
         } catch (final IOException e) {
 
-            // "if a fatal association error occurs. The association object will be closed and can no longer be used after this exception is thrown."
+            // "if a fatal association error occurs. The association object will
+            // be closed and can no longer be used after this exception is
+            // thrown."
             LOGGER.error("IOException during writeNode()", e);
         }
     }
@@ -197,5 +212,14 @@ public class NodeContainer {
      */
     public NodeContainer getChild(final String child) {
         return new NodeContainer(this.connection, (FcModelNode) this.parent.getChild(child));
+    }
+
+    @Override
+    public String toString() {
+        if (this.parent == null) {
+            return "";
+        }
+
+        return this.parent.toString();
     }
 }

@@ -34,6 +34,7 @@ import com.alliander.osgp.adapter.protocol.iec61850.application.mapping.Iec61850
 import com.alliander.osgp.adapter.protocol.iec61850.device.DeviceMessageStatus;
 import com.alliander.osgp.adapter.protocol.iec61850.device.DeviceRequest;
 import com.alliander.osgp.adapter.protocol.iec61850.device.DeviceResponseHandler;
+import com.alliander.osgp.adapter.protocol.iec61850.device.requests.GetDataDeviceRequest;
 import com.alliander.osgp.adapter.protocol.iec61850.device.requests.GetPowerUsageHistoryDeviceRequest;
 import com.alliander.osgp.adapter.protocol.iec61850.device.requests.SetConfigurationDeviceRequest;
 import com.alliander.osgp.adapter.protocol.iec61850.device.requests.SetEventNotificationsDeviceRequest;
@@ -65,7 +66,10 @@ import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.SubD
 import com.alliander.osgp.core.db.api.iec61850.application.services.SsldDataService;
 import com.alliander.osgp.core.db.api.iec61850.entities.DeviceOutputSetting;
 import com.alliander.osgp.core.db.api.iec61850.entities.Ssld;
+import com.alliander.osgp.core.db.api.iec61850.repositories.RtuDeviceRepository;
 import com.alliander.osgp.core.db.api.iec61850valueobjects.RelayType;
+import com.alliander.osgp.domain.microgrids.valueobjects.DataRequest;
+import com.alliander.osgp.domain.microgrids.valueobjects.SystemFilter;
 import com.alliander.osgp.dto.valueobjects.ActionTimeTypeDto;
 import com.alliander.osgp.dto.valueobjects.CertificationDto;
 import com.alliander.osgp.dto.valueobjects.ConfigurationDto;
@@ -110,6 +114,10 @@ public class Iec61850DeviceService implements DeviceService {
 
     @Autowired
     private SsldDataService ssldDataService;
+
+    // TODO this is not really ok.... refactor this
+    @Autowired
+    private RtuDeviceRepository rtuDeviceRepository;
 
     @Autowired
     private Iec61850Client iec61850Client;
@@ -800,10 +808,51 @@ public class Iec61850DeviceService implements DeviceService {
         }
     }
 
+    @Override
+    public void getData(final GetDataDeviceRequest deviceRequest, final DeviceResponseHandler deviceResponseHandler) {
+        try {
+            final ServerModel serverModel = this.connectAndRetrieveServerModel(deviceRequest);
+            final ClientAssociation clientAssociation = this.iec61850DeviceConnectionService
+                    .getClientAssociation(deviceRequest.getDeviceIdentification());
+
+            this.getData(
+                    new DeviceConnection(
+                            new Iec61850Connection(new Iec61850ClientAssociation(clientAssociation, null), serverModel),
+                            deviceRequest.getDeviceIdentification(), IED.ZOWN_RTU),
+                    serverModel, clientAssociation, deviceRequest);
+
+            final EmptyDeviceResponse deviceResponse = new EmptyDeviceResponse(
+                    deviceRequest.getOrganisationIdentification(), deviceRequest.getDeviceIdentification(),
+                    deviceRequest.getCorrelationUid(), DeviceMessageStatus.OK);
+
+            deviceResponseHandler.handleResponse(deviceResponse);
+            this.iec61850DeviceConnectionService.disconnect(deviceRequest.getDeviceIdentification());
+        } catch (final ConnectionFailureException se) {
+            LOGGER.error("Could not connect to device after all retries", se);
+
+            final EmptyDeviceResponse deviceResponse = new EmptyDeviceResponse(
+                    deviceRequest.getOrganisationIdentification(), deviceRequest.getDeviceIdentification(),
+                    deviceRequest.getCorrelationUid(), DeviceMessageStatus.FAILURE);
+
+            deviceResponseHandler.handleException(se, deviceResponse, true);
+            this.iec61850DeviceConnectionService.disconnect(deviceRequest.getDeviceIdentification());
+            return;
+        } catch (final Exception e) {
+            LOGGER.error("Unexpected exception during writeDataValue", e);
+
+            final EmptyDeviceResponse deviceResponse = new EmptyDeviceResponse(
+                    deviceRequest.getOrganisationIdentification(), deviceRequest.getDeviceIdentification(),
+                    deviceRequest.getCorrelationUid(), DeviceMessageStatus.FAILURE);
+
+            deviceResponseHandler.handleException(e, deviceResponse, false);
+            this.iec61850DeviceConnectionService.disconnect(deviceRequest.getDeviceIdentification());
+            return;
+        }
+    }
+
     // ======================================
     // PRIVATE DEVICE COMMUNICATION METHODS =
     // ======================================
-
     private ServerModel connectAndRetrieveServerModel(final DeviceRequest deviceRequest)
             throws ProtocolAdapterException {
         this.iec61850DeviceConnectionService.connect(deviceRequest.getIpAddress(),
@@ -1841,6 +1890,48 @@ public class Iec61850DeviceService implements DeviceService {
         }
 
         return powerUsageHistoryDataFromRelay;
+    }
+
+    private void getData(final DeviceConnection connection, final ServerModel serverModel,
+            final ClientAssociation clientAssociation, final GetDataDeviceRequest deviceRequest)
+            throws ProtocolAdapterException {
+
+        final DataRequest requestedData = deviceRequest.getDataRequest();
+
+        final Function<Void> function = new Function<Void>() {
+
+            @Override
+            public Void apply() throws Exception {
+                for (final SystemFilter systemFilter : requestedData.getSystemFilters()) {
+                    // TODO for now, read all supported Zown POC values, but
+                    // only for PV (with id 1).
+                    if (systemFilter.getId() != 1 || !systemFilter.getSystemType().equals("PV")) {
+                        LOGGER.info("Skipping GetData for unsupported system {} with id {}",
+                                systemFilter.getSystemType(), systemFilter.getId());
+                        continue;
+                    }
+
+                    final NodeContainer generationNode = connection.getFcModelNode(LogicalDevice.PV,
+                            LogicalNode.GENERATOR_ONE, DataAttribute.GENERATOR_SPEED, Fc.MX);
+                    // final NodeContainer generationMagnitude =
+                    // generationNode.getChild(SubDataAttribute.MAGITUDE);
+                    final NodeContainer generationMagnitude = generationNode.getChild(SubDataAttribute.MAGITUDE);
+                    LOGGER.info("Read node {}, contents [{}], value [{}]", SubDataAttribute.MAGITUDE,
+                            generationMagnitude, generationMagnitude.getFloat(SubDataAttribute.FLOAT));
+                    LOGGER.info("Read node {}, value [{}]", SubDataAttribute.MAGITUDE, generationMagnitude);
+
+                    final NodeContainer generationQuality = generationNode.getChild(SubDataAttribute.QUALITY);
+                    LOGGER.info("Read node {}, value [{}]", SubDataAttribute.QUALITY, generationQuality);
+
+                    final Date generationTime = generationNode.getDate(SubDataAttribute.TIME);
+                    LOGGER.info("Read node {}, value [{}]", SubDataAttribute.TIME, generationTime);
+                }
+
+                return null;
+            }
+        };
+
+        this.iec61850Client.sendCommandWithRetry(function);
     }
 
     private boolean timePeriodContainsDateTime(final TimePeriodDto timePeriod, final DateTime date,

@@ -46,7 +46,7 @@ public class DeviceConnection {
      */
     private ObjectReference createObjectReference(final LogicalDevice logicalDevice, final LogicalNode logicalNode,
             final DataAttribute dataAttribute) {
-        final String logicalDevicePrefix = this.iedPrefix + logicalDevice.getDescription();
+        final String logicalDevicePrefix = this.iedPrefix.getDescription() + logicalDevice.getDescription();
 
         final String objectReference = logicalDevicePrefix.concat(LOGICAL_NODE_SEPARATOR)
                 .concat(logicalNode.getDescription()).concat(DATA_ATTRIBUTE_SEPARATOR)
