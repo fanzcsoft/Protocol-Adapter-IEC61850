@@ -17,13 +17,20 @@ import org.springframework.stereotype.Component;
 import com.alliander.osgp.adapter.protocol.iec61850.device.DeviceResponse;
 import com.alliander.osgp.adapter.protocol.iec61850.device.DeviceResponseHandler;
 import com.alliander.osgp.adapter.protocol.iec61850.device.requests.GetDataDeviceRequest;
+import com.alliander.osgp.adapter.protocol.iec61850.device.responses.GetDataDeviceResponse;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.messaging.DeviceRequestMessageProcessor;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.messaging.DeviceRequestMessageType;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.RequestMessageData;
 import com.alliander.osgp.dto.valueobjects.microgrids.DataRequestDto;
+import com.alliander.osgp.dto.valueobjects.microgrids.DataResponseDto;
 import com.alliander.osgp.shared.exceptionhandling.ComponentType;
 import com.alliander.osgp.shared.exceptionhandling.ConnectionFailureException;
+import com.alliander.osgp.shared.exceptionhandling.OsgpException;
+import com.alliander.osgp.shared.exceptionhandling.TechnicalException;
 import com.alliander.osgp.shared.infra.jms.Constants;
+import com.alliander.osgp.shared.infra.jms.ProtocolResponseMessage;
+import com.alliander.osgp.shared.infra.jms.ResponseMessageResultType;
+import com.alliander.osgp.shared.infra.jms.ResponseMessageSender;
 
 /**
  * Class for processing microgrids get data request messages
@@ -87,8 +94,7 @@ public class MicrogridsGetDataRequestMessageProcessor extends DeviceRequestMessa
 
             @Override
             public void handleResponse(final DeviceResponse deviceResponse) {
-                // TODO add real handler for response
-                MicrogridsGetDataRequestMessageProcessor.this.handleEmptyDeviceResponse(deviceResponse,
+                MicrogridsGetDataRequestMessageProcessor.this.handleGetDataDeviceResponse(deviceResponse,
                         MicrogridsGetDataRequestMessageProcessor.this.responseMessageSender,
                         requestMessageData.getDomain(), requestMessageData.getDomainVersion(),
                         requestMessageData.getMessageType(), requestMessageData.getRetryCount());
@@ -119,4 +125,31 @@ public class MicrogridsGetDataRequestMessageProcessor extends DeviceRequestMessa
 
         this.deviceService.getData(deviceRequest, deviceResponseHandler);
     }
+
+    private void handleGetDataDeviceResponse(final DeviceResponse deviceResponse,
+            final ResponseMessageSender responseMessageSender, final String domain, final String domainVersion,
+            final String messageType, final int retryCount) {
+
+        ResponseMessageResultType result = ResponseMessageResultType.OK;
+        OsgpException osgpException = null;
+        DataResponseDto dataResponse = null;
+
+        try {
+            final GetDataDeviceResponse response = (GetDataDeviceResponse) deviceResponse;
+
+            dataResponse = response.getDataResponse();
+        } catch (final Exception e) {
+            LOGGER.error("Device Response Exception", e);
+            result = ResponseMessageResultType.NOT_OK;
+            osgpException = new TechnicalException(ComponentType.PROTOCOL_IEC61850,
+                    "Unexpected exception while retrieving response message", e);
+        }
+
+        final ProtocolResponseMessage responseMessage = new ProtocolResponseMessage(domain, domainVersion, messageType,
+                deviceResponse.getCorrelationUid(), deviceResponse.getOrganisationIdentification(),
+                deviceResponse.getDeviceIdentification(), result, osgpException, dataResponse, retryCount);
+
+        responseMessageSender.send(responseMessage);
+    }
+
 }

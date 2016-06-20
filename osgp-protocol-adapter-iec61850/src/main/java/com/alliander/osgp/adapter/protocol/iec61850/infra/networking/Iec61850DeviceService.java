@@ -45,6 +45,7 @@ import com.alliander.osgp.adapter.protocol.iec61850.device.requests.UpdateDevice
 import com.alliander.osgp.adapter.protocol.iec61850.device.requests.UpdateFirmwareDeviceRequest;
 import com.alliander.osgp.adapter.protocol.iec61850.device.responses.EmptyDeviceResponse;
 import com.alliander.osgp.adapter.protocol.iec61850.device.responses.GetConfigurationDeviceResponse;
+import com.alliander.osgp.adapter.protocol.iec61850.device.responses.GetDataDeviceResponse;
 import com.alliander.osgp.adapter.protocol.iec61850.device.responses.GetFirmwareVersionDeviceResponse;
 import com.alliander.osgp.adapter.protocol.iec61850.device.responses.GetPowerUsageHistoryDeviceResponse;
 import com.alliander.osgp.adapter.protocol.iec61850.device.responses.GetStatusDeviceResponse;
@@ -95,6 +96,9 @@ import com.alliander.osgp.dto.valueobjects.TransitionTypeDto;
 import com.alliander.osgp.dto.valueobjects.WeekDayTypeDto;
 import com.alliander.osgp.dto.valueobjects.WindowTypeDto;
 import com.alliander.osgp.dto.valueobjects.microgrids.DataRequestDto;
+import com.alliander.osgp.dto.valueobjects.microgrids.DataResponseDto;
+import com.alliander.osgp.dto.valueobjects.microgrids.MeasurementDto;
+import com.alliander.osgp.dto.valueobjects.microgrids.MeasurementResultSystemIdentifierDto;
 import com.alliander.osgp.dto.valueobjects.microgrids.SystemFilterDto;
 import com.alliander.osgp.shared.exceptionhandling.ComponentType;
 import com.alliander.osgp.shared.exceptionhandling.FunctionalException;
@@ -810,15 +814,15 @@ public class Iec61850DeviceService implements DeviceService {
             final ClientAssociation clientAssociation = this.iec61850DeviceConnectionService
                     .getClientAssociation(deviceRequest.getDeviceIdentification());
 
-            this.getData(
+            final DataResponseDto getDataResponse = this.getData(
                     new DeviceConnection(
                             new Iec61850Connection(new Iec61850ClientAssociation(clientAssociation, null), serverModel),
                             deviceRequest.getDeviceIdentification(), IED.ZOWN_RTU),
                     serverModel, clientAssociation, deviceRequest);
 
-            final EmptyDeviceResponse deviceResponse = new EmptyDeviceResponse(
+            final GetDataDeviceResponse deviceResponse = new GetDataDeviceResponse(
                     deviceRequest.getOrganisationIdentification(), deviceRequest.getDeviceIdentification(),
-                    deviceRequest.getCorrelationUid(), DeviceMessageStatus.OK);
+                    deviceRequest.getCorrelationUid(), DeviceMessageStatus.OK, getDataResponse);
 
             deviceResponseHandler.handleResponse(deviceResponse);
             this.iec61850DeviceConnectionService.disconnect(deviceRequest.getDeviceIdentification());
@@ -1887,16 +1891,16 @@ public class Iec61850DeviceService implements DeviceService {
         return powerUsageHistoryDataFromRelay;
     }
 
-    private void getData(final DeviceConnection connection, final ServerModel serverModel,
+    private DataResponseDto getData(final DeviceConnection connection, final ServerModel serverModel,
             final ClientAssociation clientAssociation, final GetDataDeviceRequest deviceRequest)
             throws ProtocolAdapterException {
 
         final DataRequestDto requestedData = deviceRequest.getDataRequest();
 
-        final Function<Void> function = new Function<Void>() {
+        final Function<DataResponseDto> function = new Function<DataResponseDto>() {
 
             @Override
-            public Void apply() throws Exception {
+            public DataResponseDto apply() throws Exception {
                 for (final SystemFilterDto systemFilter : requestedData.getSystemFilters()) {
                     // TODO for now, read all supported Zown POC values, but
                     // only for PV (with id 1).
@@ -1906,27 +1910,42 @@ public class Iec61850DeviceService implements DeviceService {
                         continue;
                     }
 
+                    final DataResponseDto responseDto = new DataResponseDto();
+                    final List<MeasurementDto> measurements = new ArrayList<MeasurementDto>();
+
                     final NodeContainer generationNode = connection.getFcModelNode(LogicalDevice.PV,
                             LogicalNode.GENERATOR_ONE, DataAttribute.GENERATOR_SPEED, Fc.MX);
-                    // final NodeContainer generationMagnitude =
-                    // generationNode.getChild(SubDataAttribute.MAGITUDE);
                     final NodeContainer generationMagnitude = generationNode.getChild(SubDataAttribute.MAGITUDE);
-                    LOGGER.info("Read node {}, contents [{}], value [{}]", SubDataAttribute.MAGITUDE,
-                            generationMagnitude, generationMagnitude.getFloat(SubDataAttribute.FLOAT));
-                    LOGGER.info("Read node {}, value [{}]", SubDataAttribute.MAGITUDE, generationMagnitude);
-
                     final NodeContainer generationQuality = generationNode.getChild(SubDataAttribute.QUALITY);
-                    LOGGER.info("Read node {}, value [{}]", SubDataAttribute.QUALITY, generationQuality);
-
                     final Date generationTime = generationNode.getDate(SubDataAttribute.TIME);
-                    LOGGER.info("Read node {}, value [{}]", SubDataAttribute.TIME, generationTime);
+
+                    final MeasurementDto measurement = new MeasurementDto();
+                    measurement.setId(1);
+                    // Always 0 in POC.
+                    measurement.setNode(DataAttribute.GENERATOR_SPEED.getDescription());
+                    measurement.setValue(generationMagnitude.getFloat(SubDataAttribute.FLOAT).getFloat());
+                    measurement.setQualifier(0);
+                    measurement.setTime(new DateTime(generationTime));
+
+                    measurements.add(measurement);
+
+                    final MeasurementResultSystemIdentifierDto measurementIdentifier = new MeasurementResultSystemIdentifierDto();
+                    measurementIdentifier.setId(systemFilter.getId());
+                    measurementIdentifier.setSystemType(systemFilter.getSystemType());
+                    measurementIdentifier.setMeasurements(measurements);
+
+                    final List<MeasurementResultSystemIdentifierDto> identifiers = new ArrayList<MeasurementResultSystemIdentifierDto>();
+                    identifiers.add(measurementIdentifier);
+                    responseDto.setMeasurementResultSystemIdentifiers(identifiers);
+
+                    return responseDto;
                 }
 
                 return null;
             }
         };
 
-        this.iec61850Client.sendCommandWithRetry(function);
+        return this.iec61850Client.sendCommandWithRetry(function);
     }
 
     private boolean timePeriodContainsDateTime(final TimePeriodDto timePeriod, final DateTime date,
