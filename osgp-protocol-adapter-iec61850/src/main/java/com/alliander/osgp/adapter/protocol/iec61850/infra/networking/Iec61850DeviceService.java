@@ -98,6 +98,7 @@ import com.alliander.osgp.dto.valueobjects.WindowTypeDto;
 import com.alliander.osgp.dto.valueobjects.microgrids.DataRequestDto;
 import com.alliander.osgp.dto.valueobjects.microgrids.DataResponseDto;
 import com.alliander.osgp.dto.valueobjects.microgrids.MeasurementDto;
+import com.alliander.osgp.dto.valueobjects.microgrids.MeasurementFilterDto;
 import com.alliander.osgp.dto.valueobjects.microgrids.MeasurementResultSystemIdentifierDto;
 import com.alliander.osgp.dto.valueobjects.microgrids.SystemFilterDto;
 import com.alliander.osgp.shared.exceptionhandling.ComponentType;
@@ -1910,35 +1911,29 @@ public class Iec61850DeviceService implements DeviceService {
                         continue;
                     }
 
-                    final DataResponseDto responseDto = new DataResponseDto();
                     final List<MeasurementDto> measurements = new ArrayList<MeasurementDto>();
 
-                    final NodeContainer generationNode = connection.getFcModelNode(LogicalDevice.PV,
-                            LogicalNode.GENERATOR_ONE, DataAttribute.GENERATOR_SPEED, Fc.MX);
-                    final NodeContainer generationMagnitude = generationNode.getChild(SubDataAttribute.MAGITUDE);
-                    final NodeContainer generationQuality = generationNode.getChild(SubDataAttribute.QUALITY);
-                    final Date generationTime = generationNode.getDate(SubDataAttribute.TIME);
+                    for (final MeasurementFilterDto filter : systemFilter.getMeasurementFilters()) {
+                        if (filter.getNode().equalsIgnoreCase(DataAttribute.BEHAVIOR.getDescription())) {
+                            measurements.add(Iec61850DeviceService.this.getBehavior(connection));
+                        } else if (filter.getNode().equalsIgnoreCase(DataAttribute.HEALTH.getDescription())) {
+                            measurements.add(Iec61850DeviceService.this.getHealth(connection));
+                        } else if (filter.getNode().equalsIgnoreCase(DataAttribute.GENERATOR_SPEED.getDescription())) {
+                            measurements.add(Iec61850DeviceService.this.getGenerationSpeed(connection));
+                        } else if (filter.getNode()
+                                .equalsIgnoreCase(DataAttribute.OPERATIONAL_HOURS.getDescription())) {
+                            measurements.add(Iec61850DeviceService.this.getOperationalHours(connection));
+                        } else {
+                            LOGGER.warn("Unsupported data attribute [{}], skip get data for it", filter.getNode());
+                        }
+                    }
 
-                    final MeasurementDto measurement = new MeasurementDto();
-                    measurement.setId(1);
-                    // Always 0 in POC.
-                    measurement.setNode(DataAttribute.GENERATOR_SPEED.getDescription());
-                    measurement.setValue(generationMagnitude.getFloat(SubDataAttribute.FLOAT).getFloat());
-                    measurement.setQualifier(0);
-                    measurement.setTime(new DateTime(generationTime));
-
-                    measurements.add(measurement);
-
-                    final MeasurementResultSystemIdentifierDto measurementIdentifier = new MeasurementResultSystemIdentifierDto();
-                    measurementIdentifier.setId(systemFilter.getId());
-                    measurementIdentifier.setSystemType(systemFilter.getSystemType());
-                    measurementIdentifier.setMeasurements(measurements);
+                    final MeasurementResultSystemIdentifierDto measurementIdentifier = new MeasurementResultSystemIdentifierDto(
+                            systemFilter.getId(), systemFilter.getSystemType(), measurements);
 
                     final List<MeasurementResultSystemIdentifierDto> identifiers = new ArrayList<MeasurementResultSystemIdentifierDto>();
                     identifiers.add(measurementIdentifier);
-                    responseDto.setMeasurementResultSystemIdentifiers(identifiers);
-
-                    return responseDto;
+                    return new DataResponseDto(identifiers);
                 }
 
                 return null;
@@ -1946,6 +1941,43 @@ public class Iec61850DeviceService implements DeviceService {
         };
 
         return this.iec61850Client.sendCommandWithRetry(function);
+    }
+
+    private MeasurementDto getGenerationSpeed(final DeviceConnection connection) {
+        final NodeContainer containingNode = connection.getFcModelNode(LogicalDevice.PV, LogicalNode.GENERATOR_ONE,
+                DataAttribute.GENERATOR_SPEED, Fc.MX);
+        final NodeContainer generationMagnitude = containingNode.getChild(SubDataAttribute.MAGITUDE);
+
+        return new MeasurementDto(1, DataAttribute.GENERATOR_SPEED.getDescription(), 0,
+                new DateTime(containingNode.getDate(SubDataAttribute.TIME), DateTimeZone.UTC),
+                generationMagnitude.getFloat(SubDataAttribute.FLOAT).getFloat());
+    }
+
+    private MeasurementDto getOperationalHours(final DeviceConnection connection) {
+        final NodeContainer containingNode = connection.getFcModelNode(LogicalDevice.PV, LogicalNode.GENERATOR_ONE,
+                DataAttribute.OPERATIONAL_HOURS, Fc.ST);
+
+        return new MeasurementDto(1, DataAttribute.OPERATIONAL_HOURS.getDescription(), 0,
+                new DateTime(containingNode.getDate(SubDataAttribute.TIME), DateTimeZone.UTC),
+                containingNode.getInteger(SubDataAttribute.STATE).getValue());
+    }
+
+    private MeasurementDto getBehavior(final DeviceConnection connection) {
+        final NodeContainer containingNode = connection.getFcModelNode(LogicalDevice.PV, LogicalNode.GENERATOR_ONE,
+                DataAttribute.BEHAVIOR, Fc.ST);
+
+        return new MeasurementDto(1, DataAttribute.BEHAVIOR.getDescription(), 0,
+                new DateTime(containingNode.getDate(SubDataAttribute.TIME), DateTimeZone.UTC),
+                containingNode.getByte(SubDataAttribute.STATE).getValue());
+    }
+
+    private MeasurementDto getHealth(final DeviceConnection connection) {
+        final NodeContainer containingNode = connection.getFcModelNode(LogicalDevice.PV, LogicalNode.GENERATOR_ONE,
+                DataAttribute.HEALTH, Fc.ST);
+
+        return new MeasurementDto(1, DataAttribute.HEALTH.getDescription(), 0,
+                new DateTime(containingNode.getDate(SubDataAttribute.TIME), DateTimeZone.UTC),
+                containingNode.getByte(SubDataAttribute.STATE).getValue());
     }
 
     private boolean timePeriodContainsDateTime(final TimePeriodDto timePeriod, final DateTime date,
