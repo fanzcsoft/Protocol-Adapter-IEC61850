@@ -66,7 +66,6 @@ import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.SubD
 import com.alliander.osgp.core.db.api.iec61850.application.services.SsldDataService;
 import com.alliander.osgp.core.db.api.iec61850.entities.DeviceOutputSetting;
 import com.alliander.osgp.core.db.api.iec61850.entities.Ssld;
-import com.alliander.osgp.core.db.api.iec61850.repositories.RtuDeviceRepository;
 import com.alliander.osgp.core.db.api.iec61850valueobjects.RelayType;
 import com.alliander.osgp.domain.microgrids.valueobjects.DataRequest;
 import com.alliander.osgp.domain.microgrids.valueobjects.SystemFilter;
@@ -114,10 +113,6 @@ public class Iec61850DeviceService implements DeviceService {
 
     @Autowired
     private SsldDataService ssldDataService;
-
-    // TODO this is not really ok.... refactor this
-    @Autowired
-    private RtuDeviceRepository rtuDeviceRepository;
 
     @Autowired
     private Iec61850Client iec61850Client;
