@@ -67,8 +67,6 @@ import com.alliander.osgp.core.db.api.iec61850.application.services.SsldDataServ
 import com.alliander.osgp.core.db.api.iec61850.entities.DeviceOutputSetting;
 import com.alliander.osgp.core.db.api.iec61850.entities.Ssld;
 import com.alliander.osgp.core.db.api.iec61850valueobjects.RelayType;
-import com.alliander.osgp.domain.microgrids.valueobjects.DataRequest;
-import com.alliander.osgp.domain.microgrids.valueobjects.SystemFilter;
 import com.alliander.osgp.dto.valueobjects.ActionTimeTypeDto;
 import com.alliander.osgp.dto.valueobjects.CertificationDto;
 import com.alliander.osgp.dto.valueobjects.ConfigurationDto;
@@ -96,6 +94,8 @@ import com.alliander.osgp.dto.valueobjects.TransitionMessageDataContainerDto;
 import com.alliander.osgp.dto.valueobjects.TransitionTypeDto;
 import com.alliander.osgp.dto.valueobjects.WeekDayTypeDto;
 import com.alliander.osgp.dto.valueobjects.WindowTypeDto;
+import com.alliander.osgp.dto.valueobjects.microgrids.DataRequestDto;
+import com.alliander.osgp.dto.valueobjects.microgrids.SystemFilterDto;
 import com.alliander.osgp.shared.exceptionhandling.ComponentType;
 import com.alliander.osgp.shared.exceptionhandling.FunctionalException;
 import com.alliander.osgp.shared.exceptionhandling.FunctionalExceptionType;
@@ -1891,13 +1891,13 @@ public class Iec61850DeviceService implements DeviceService {
             final ClientAssociation clientAssociation, final GetDataDeviceRequest deviceRequest)
             throws ProtocolAdapterException {
 
-        final DataRequest requestedData = deviceRequest.getDataRequest();
+        final DataRequestDto requestedData = deviceRequest.getDataRequest();
 
         final Function<Void> function = new Function<Void>() {
 
             @Override
             public Void apply() throws Exception {
-                for (final SystemFilter systemFilter : requestedData.getSystemFilters()) {
+                for (final SystemFilterDto systemFilter : requestedData.getSystemFilters()) {
                     // TODO for now, read all supported Zown POC values, but
                     // only for PV (with id 1).
                     if (systemFilter.getId() != 1 || !systemFilter.getSystemType().equals("PV")) {

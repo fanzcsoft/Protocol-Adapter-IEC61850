@@ -9,7 +9,6 @@ package com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper;
 
 import com.alliander.osgp.adapter.protocol.iec61850.domain.valueobjects.ScheduleWeekday;
 import com.alliander.osgp.adapter.protocol.iec61850.domain.valueobjects.TriggerType;
-import com.alliander.osgp.domain.core.valueobjects.LightType;
 
 /**
  * Contains a list of all sub data attributes of the IEC61850 Device.

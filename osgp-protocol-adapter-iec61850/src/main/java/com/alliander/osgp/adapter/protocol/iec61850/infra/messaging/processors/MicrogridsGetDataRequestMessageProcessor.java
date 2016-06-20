@@ -20,7 +20,7 @@ import com.alliander.osgp.adapter.protocol.iec61850.device.requests.GetDataDevic
 import com.alliander.osgp.adapter.protocol.iec61850.infra.messaging.DeviceRequestMessageProcessor;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.messaging.DeviceRequestMessageType;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.RequestMessageData;
-import com.alliander.osgp.domain.microgrids.valueobjects.DataRequest;
+import com.alliander.osgp.dto.valueobjects.microgrids.DataRequestDto;
 import com.alliander.osgp.shared.exceptionhandling.ComponentType;
 import com.alliander.osgp.shared.exceptionhandling.ConnectionFailureException;
 import com.alliander.osgp.shared.infra.jms.Constants;
@@ -52,7 +52,7 @@ public class MicrogridsGetDataRequestMessageProcessor extends DeviceRequestMessa
         String ipAddress = null;
         int retryCount = 0;
         boolean isScheduled = false;
-        DataRequest getDataRequest = null;
+        DataRequestDto getDataRequest = null;
 
         try {
             correlationUid = message.getJMSCorrelationID();
@@ -65,7 +65,7 @@ public class MicrogridsGetDataRequestMessageProcessor extends DeviceRequestMessa
             retryCount = message.getIntProperty(Constants.RETRY_COUNT);
             isScheduled = message.propertyExists(Constants.IS_SCHEDULED)
                     ? message.getBooleanProperty(Constants.IS_SCHEDULED) : false;
-            getDataRequest = (DataRequest) message.getObject();
+            getDataRequest = (DataRequestDto) message.getObject();
         } catch (final JMSException e) {
             LOGGER.error("UNRECOVERABLE ERROR, unable to read ObjectMessage instance, giving up.", e);
             LOGGER.debug("correlationUid: {}", correlationUid);

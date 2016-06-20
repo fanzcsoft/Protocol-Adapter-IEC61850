@@ -8,29 +8,30 @@
 package com.alliander.osgp.adapter.protocol.iec61850.device.requests;
 
 import com.alliander.osgp.adapter.protocol.iec61850.device.DeviceRequest;
-import com.alliander.osgp.domain.microgrids.valueobjects.DataRequest;
+import com.alliander.osgp.dto.valueobjects.microgrids.DataRequestDto;
 
 public class GetDataDeviceRequest extends DeviceRequest {
 
-    private DataRequest dataRequest;
+    private DataRequestDto dataRequest;
 
     public GetDataDeviceRequest(final String organisationIdentification, final String deviceIdentification,
-            final String correlationUid, final DataRequest dataRequest) {
+            final String correlationUid, final DataRequestDto dataRequest) {
         super(organisationIdentification, deviceIdentification, correlationUid);
 
         this.dataRequest = dataRequest;
     }
 
     public GetDataDeviceRequest(final String organisationIdentification, final String deviceIdentification,
-            final String correlationUid, final DataRequest dataRequest, final String domain, final String domainVersion,
-            final String messageType, final String ipAddress, final int retryCount, final boolean isScheduled) {
+            final String correlationUid, final DataRequestDto dataRequest, final String domain,
+            final String domainVersion, final String messageType, final String ipAddress, final int retryCount,
+            final boolean isScheduled) {
         super(organisationIdentification, deviceIdentification, correlationUid, domain, domainVersion, messageType,
                 ipAddress, retryCount, isScheduled);
 
         this.dataRequest = dataRequest;
     }
 
-    public DataRequest getDataRequest() {
+    public DataRequestDto getDataRequest() {
         return this.dataRequest;
     }
 }

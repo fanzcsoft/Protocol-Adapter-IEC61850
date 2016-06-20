@@ -23,13 +23,8 @@ import com.alliander.osgp.adapter.protocol.iec61850.device.responses.GetConfigur
 import com.alliander.osgp.adapter.protocol.iec61850.device.responses.GetFirmwareVersionDeviceResponse;
 import com.alliander.osgp.adapter.protocol.iec61850.device.responses.GetPowerUsageHistoryDeviceResponse;
 import com.alliander.osgp.adapter.protocol.iec61850.device.responses.GetStatusDeviceResponse;
-import com.alliander.osgp.domain.core.valueobjects.DeviceStatus;
-import com.alliander.osgp.domain.core.valueobjects.LightValue;
-import com.alliander.osgp.domain.core.valueobjects.PowerUsageData;
-import com.alliander.osgp.domain.core.valueobjects.Schedule;
-import com.alliander.osgp.domain.core.valueobjects.TransitionType;
-import com.alliander.osgp.domain.microgrids.valueobjects.DataRequest;
 import com.alliander.osgp.dto.valueobjects.EventNotificationTypeDto;
+import com.alliander.osgp.dto.valueobjects.microgrids.DataRequestDto;
 
 public interface DeviceService {
 
@@ -146,7 +141,7 @@ public interface DeviceService {
             DeviceResponseHandler deviceResponseHandler);
 
     /**
-     * Reads the {@link DataRequest} from the device.
+     * Reads the {@link DataRequestDto} from the device.
      *
      * Returns a {@link GetDataDeviceResponse} via the deviceResponseHandler's
      * callback.
