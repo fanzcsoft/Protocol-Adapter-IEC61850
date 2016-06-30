@@ -201,15 +201,15 @@ public enum SubDataAttribute {
     /**
      * Magnitude.
      */
-    MAGITUDE("mag"),
+    MAGNITUDE("mag"),
     /**
      * Instantaneous magnitude.
      */
-    MAGITUDE_INSTANTANEOUS("instMag"),
+    MAGNITUDE_INSTANTANEOUS("instMag"),
     /**
      * Setpoint for magnitude.
      */
-    MAGITUDE_SETPOINT("setMag"),
+    MAGNITUDE_SETPOINT("setMag"),
     /**
      * Quality indicator
      */

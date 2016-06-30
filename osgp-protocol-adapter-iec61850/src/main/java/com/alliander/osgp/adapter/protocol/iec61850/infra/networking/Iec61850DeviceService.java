@@ -34,7 +34,6 @@ import com.alliander.osgp.adapter.protocol.iec61850.application.mapping.Iec61850
 import com.alliander.osgp.adapter.protocol.iec61850.device.DeviceMessageStatus;
 import com.alliander.osgp.adapter.protocol.iec61850.device.DeviceRequest;
 import com.alliander.osgp.adapter.protocol.iec61850.device.DeviceResponseHandler;
-import com.alliander.osgp.adapter.protocol.iec61850.device.requests.GetDataDeviceRequest;
 import com.alliander.osgp.adapter.protocol.iec61850.device.requests.GetPowerUsageHistoryDeviceRequest;
 import com.alliander.osgp.adapter.protocol.iec61850.device.requests.SetConfigurationDeviceRequest;
 import com.alliander.osgp.adapter.protocol.iec61850.device.requests.SetEventNotificationsDeviceRequest;
@@ -49,6 +48,8 @@ import com.alliander.osgp.adapter.protocol.iec61850.device.responses.GetDataDevi
 import com.alliander.osgp.adapter.protocol.iec61850.device.responses.GetFirmwareVersionDeviceResponse;
 import com.alliander.osgp.adapter.protocol.iec61850.device.responses.GetPowerUsageHistoryDeviceResponse;
 import com.alliander.osgp.adapter.protocol.iec61850.device.responses.GetStatusDeviceResponse;
+import com.alliander.osgp.adapter.protocol.iec61850.device.rtu.requests.GetDataDeviceRequest;
+import com.alliander.osgp.adapter.protocol.iec61850.device.rtu.requests.SetSetPointsDeviceRequest;
 import com.alliander.osgp.adapter.protocol.iec61850.domain.valueobjects.DaylightSavingTimeTransition;
 import com.alliander.osgp.adapter.protocol.iec61850.domain.valueobjects.EventType;
 import com.alliander.osgp.adapter.protocol.iec61850.domain.valueobjects.ScheduleEntry;
@@ -100,6 +101,8 @@ import com.alliander.osgp.dto.valueobjects.microgrids.DataResponseDto;
 import com.alliander.osgp.dto.valueobjects.microgrids.MeasurementDto;
 import com.alliander.osgp.dto.valueobjects.microgrids.MeasurementFilterDto;
 import com.alliander.osgp.dto.valueobjects.microgrids.MeasurementResultSystemIdentifierDto;
+import com.alliander.osgp.dto.valueobjects.microgrids.SetPointSystemIdentifierDto;
+import com.alliander.osgp.dto.valueobjects.microgrids.SetPointsRequestDto;
 import com.alliander.osgp.dto.valueobjects.microgrids.SystemFilterDto;
 import com.alliander.osgp.shared.exceptionhandling.ComponentType;
 import com.alliander.osgp.shared.exceptionhandling.FunctionalException;
@@ -848,6 +851,80 @@ public class Iec61850DeviceService implements DeviceService {
             this.iec61850DeviceConnectionService.disconnect(deviceRequest.getDeviceIdentification());
             return;
         }
+    }
+
+    @Override
+    public void setSetPoints(final SetSetPointsDeviceRequest deviceRequest,
+            final DeviceResponseHandler deviceResponseHandler) {
+        try {
+            final ServerModel serverModel = this.connectAndRetrieveServerModel(deviceRequest);
+            final ClientAssociation clientAssociation = this.iec61850DeviceConnectionService
+                    .getClientAssociation(deviceRequest.getDeviceIdentification());
+
+            this.setSetPoints(
+                    new DeviceConnection(
+                            new Iec61850Connection(new Iec61850ClientAssociation(clientAssociation, null), serverModel),
+                            deviceRequest.getDeviceIdentification(), IED.ZOWN_RTU),
+                    serverModel, clientAssociation, deviceRequest);
+
+        } catch (final ConnectionFailureException se) {
+            LOGGER.error("Could not connect to device after all retries", se);
+
+            final EmptyDeviceResponse deviceResponse = new EmptyDeviceResponse(
+                    deviceRequest.getOrganisationIdentification(), deviceRequest.getDeviceIdentification(),
+                    deviceRequest.getCorrelationUid(), DeviceMessageStatus.FAILURE);
+
+            deviceResponseHandler.handleException(se, deviceResponse, true);
+            this.iec61850DeviceConnectionService.disconnect(deviceRequest.getDeviceIdentification());
+            return;
+        } catch (final Exception e) {
+            LOGGER.error("Unexpected exception during writeDataValue", e);
+
+            final EmptyDeviceResponse deviceResponse = new EmptyDeviceResponse(
+                    deviceRequest.getOrganisationIdentification(), deviceRequest.getDeviceIdentification(),
+                    deviceRequest.getCorrelationUid(), DeviceMessageStatus.FAILURE);
+
+            deviceResponseHandler.handleException(e, deviceResponse, false);
+            this.iec61850DeviceConnectionService.disconnect(deviceRequest.getDeviceIdentification());
+            return;
+        }
+
+        final EmptyDeviceResponse deviceResponse = new EmptyDeviceResponse(
+                deviceRequest.getOrganisationIdentification(), deviceRequest.getDeviceIdentification(),
+                deviceRequest.getCorrelationUid(), DeviceMessageStatus.OK);
+
+        deviceResponseHandler.handleResponse(deviceResponse);
+        this.iec61850DeviceConnectionService.disconnect(deviceRequest.getDeviceIdentification());
+    }
+
+    private void setSetPoints(final DeviceConnection connection, final ServerModel serverModel,
+            final ClientAssociation clientAssociation, final SetSetPointsDeviceRequest deviceRequest)
+            throws ProtocolAdapterException {
+
+        final SetPointsRequestDto setPointsRequest = deviceRequest.getSetPointsRequest();
+
+        final Function<Void> function = new Function<Void>() {
+
+            @Override
+            public Void apply() throws Exception {
+                for (final SetPointSystemIdentifierDto spsi : setPointsRequest.getSetPointSystemIdentifiers()) {
+                    // TODO for now, read all supported Zown POC values, but
+                    // only for PV (with id 1).
+                    if (spsi.getId() != 1 || !spsi.getSystemType().equals("PV")) {
+                        LOGGER.info("Skipping Set SetPoint for unsupported system {} with id {}", spsi.getSystemType(),
+                                spsi.getId());
+                        continue;
+                    }
+
+                    Iec61850DeviceService.this.setDemandedPower(connection, spsi);
+
+                }
+
+                return null;
+            }
+        };
+
+        this.iec61850Client.sendCommandWithRetry(function);
     }
 
     // ======================================
@@ -1946,7 +2023,7 @@ public class Iec61850DeviceService implements DeviceService {
     private MeasurementDto getGenerationSpeed(final DeviceConnection connection) {
         final NodeContainer containingNode = connection.getFcModelNode(LogicalDevice.PV, LogicalNode.GENERATOR_ONE,
                 DataAttribute.GENERATOR_SPEED, Fc.MX);
-        final NodeContainer generationMagnitude = containingNode.getChild(SubDataAttribute.MAGITUDE);
+        final NodeContainer generationMagnitude = containingNode.getChild(SubDataAttribute.MAGNITUDE);
 
         return new MeasurementDto(1, DataAttribute.GENERATOR_SPEED.getDescription(), 0,
                 new DateTime(containingNode.getDate(SubDataAttribute.TIME), DateTimeZone.UTC),
@@ -1978,6 +2055,18 @@ public class Iec61850DeviceService implements DeviceService {
         return new MeasurementDto(1, DataAttribute.HEALTH.getDescription(), 0,
                 new DateTime(containingNode.getDate(SubDataAttribute.TIME), DateTimeZone.UTC),
                 containingNode.getByte(SubDataAttribute.STATE).getValue());
+    }
+
+    private void setDemandedPower(final DeviceConnection connection,
+            final SetPointSystemIdentifierDto setPointSystemIdentifier) {
+        final NodeContainer generator1Node = connection.getFcModelNode(LogicalDevice.PV, LogicalNode.GENERATOR_ONE,
+                DataAttribute.DEMANDED_POWER, Fc.SP);
+
+        final NodeContainer magnitudeSetPointNode = generator1Node.getChild(SubDataAttribute.MAGNITUDE_SETPOINT);
+
+        // TODO fix potential risk of exception due to cast from double to float
+        magnitudeSetPointNode.writeFloat(SubDataAttribute.FLOAT,
+                (float) setPointSystemIdentifier.getSetPoint().getValue());
     }
 
     private boolean timePeriodContainsDateTime(final TimePeriodDto timePeriod, final DateTime date,
@@ -2013,4 +2102,5 @@ public class Iec61850DeviceService implements DeviceService {
                 date);
         return true;
     }
+
 }

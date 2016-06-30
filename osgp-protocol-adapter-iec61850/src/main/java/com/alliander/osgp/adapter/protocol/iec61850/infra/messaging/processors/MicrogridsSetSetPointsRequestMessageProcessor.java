@@ -16,34 +16,27 @@ import org.springframework.stereotype.Component;
 
 import com.alliander.osgp.adapter.protocol.iec61850.device.DeviceResponse;
 import com.alliander.osgp.adapter.protocol.iec61850.device.DeviceResponseHandler;
-import com.alliander.osgp.adapter.protocol.iec61850.device.responses.GetDataDeviceResponse;
-import com.alliander.osgp.adapter.protocol.iec61850.device.rtu.requests.GetDataDeviceRequest;
+import com.alliander.osgp.adapter.protocol.iec61850.device.rtu.requests.SetSetPointsDeviceRequest;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.messaging.DeviceRequestMessageProcessor;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.messaging.DeviceRequestMessageType;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.RequestMessageData;
-import com.alliander.osgp.dto.valueobjects.microgrids.DataRequestDto;
-import com.alliander.osgp.dto.valueobjects.microgrids.DataResponseDto;
+import com.alliander.osgp.dto.valueobjects.microgrids.SetPointsRequestDto;
 import com.alliander.osgp.shared.exceptionhandling.ComponentType;
 import com.alliander.osgp.shared.exceptionhandling.ConnectionFailureException;
-import com.alliander.osgp.shared.exceptionhandling.OsgpException;
-import com.alliander.osgp.shared.exceptionhandling.TechnicalException;
 import com.alliander.osgp.shared.infra.jms.Constants;
-import com.alliander.osgp.shared.infra.jms.ProtocolResponseMessage;
-import com.alliander.osgp.shared.infra.jms.ResponseMessageResultType;
-import com.alliander.osgp.shared.infra.jms.ResponseMessageSender;
 
 /**
  * Class for processing microgrids get data request messages
  */
-@Component("iec61850MicrogridsGetDataRequestMessageProcessor")
-public class MicrogridsGetDataRequestMessageProcessor extends DeviceRequestMessageProcessor {
+@Component("iec61850MicrogridsSetSetPointsRequestMessageProcessor")
+public class MicrogridsSetSetPointsRequestMessageProcessor extends DeviceRequestMessageProcessor {
     /**
      * Logger for this class
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(MicrogridsGetDataRequestMessageProcessor.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MicrogridsSetSetPointsRequestMessageProcessor.class);
 
-    public MicrogridsGetDataRequestMessageProcessor() {
-        super(DeviceRequestMessageType.GET_DATA);
+    public MicrogridsSetSetPointsRequestMessageProcessor() {
+        super(DeviceRequestMessageType.SET_SETPOINTS);
     }
 
     @Override
@@ -59,7 +52,7 @@ public class MicrogridsGetDataRequestMessageProcessor extends DeviceRequestMessa
         String ipAddress = null;
         int retryCount = 0;
         boolean isScheduled = false;
-        DataRequestDto getDataRequest = null;
+        SetPointsRequestDto setSetPointsRequest = null;
 
         try {
             correlationUid = message.getJMSCorrelationID();
@@ -72,7 +65,7 @@ public class MicrogridsGetDataRequestMessageProcessor extends DeviceRequestMessa
             retryCount = message.getIntProperty(Constants.RETRY_COUNT);
             isScheduled = message.propertyExists(Constants.IS_SCHEDULED)
                     ? message.getBooleanProperty(Constants.IS_SCHEDULED) : false;
-            getDataRequest = (DataRequestDto) message.getObject();
+            setSetPointsRequest = (SetPointsRequestDto) message.getObject();
         } catch (final JMSException e) {
             LOGGER.error("UNRECOVERABLE ERROR, unable to read ObjectMessage instance, giving up.", e);
             LOGGER.debug("correlationUid: {}", correlationUid);
@@ -94,8 +87,8 @@ public class MicrogridsGetDataRequestMessageProcessor extends DeviceRequestMessa
 
             @Override
             public void handleResponse(final DeviceResponse deviceResponse) {
-                MicrogridsGetDataRequestMessageProcessor.this.handleGetDataDeviceResponse(deviceResponse,
-                        MicrogridsGetDataRequestMessageProcessor.this.responseMessageSender,
+                MicrogridsSetSetPointsRequestMessageProcessor.this.handleEmptyDeviceResponse(deviceResponse,
+                        MicrogridsSetSetPointsRequestMessageProcessor.this.responseMessageSender,
                         requestMessageData.getDomain(), requestMessageData.getDomainVersion(),
                         requestMessageData.getMessageType(), requestMessageData.getRetryCount());
             }
@@ -104,13 +97,13 @@ public class MicrogridsGetDataRequestMessageProcessor extends DeviceRequestMessa
             public void handleException(final Throwable t, final DeviceResponse deviceResponse,
                     final boolean expected) {
                 if (expected) {
-                    MicrogridsGetDataRequestMessageProcessor.this.handleExpectedError(
+                    MicrogridsSetSetPointsRequestMessageProcessor.this.handleExpectedError(
                             new ConnectionFailureException(ComponentType.PROTOCOL_IEC61850, t.getMessage()),
                             requestMessageData.getCorrelationUid(), requestMessageData.getOrganisationIdentification(),
                             requestMessageData.getDeviceIdentification(), requestMessageData.getDomain(),
                             requestMessageData.getDomainVersion(), requestMessageData.getMessageType());
                 } else {
-                    MicrogridsGetDataRequestMessageProcessor.this.handleUnExpectedError(deviceResponse, t,
+                    MicrogridsSetSetPointsRequestMessageProcessor.this.handleUnExpectedError(deviceResponse, t,
                             requestMessageData.getMessageData(), requestMessageData.getDomain(),
                             requestMessageData.getDomainVersion(), requestMessageData.getMessageType(),
                             requestMessageData.isScheduled(), requestMessageData.getRetryCount());
@@ -119,37 +112,11 @@ public class MicrogridsGetDataRequestMessageProcessor extends DeviceRequestMessa
 
         };
 
-        final GetDataDeviceRequest deviceRequest = new GetDataDeviceRequest(organisationIdentification,
-                deviceIdentification, correlationUid, getDataRequest, domain, domainVersion, messageType, ipAddress,
-                retryCount, isScheduled);
+        final SetSetPointsDeviceRequest deviceRequest = new SetSetPointsDeviceRequest(organisationIdentification,
+                deviceIdentification, correlationUid, setSetPointsRequest, domain, domainVersion, messageType,
+                ipAddress, retryCount, isScheduled);
 
-        this.deviceService.getData(deviceRequest, deviceResponseHandler);
-    }
-
-    private void handleGetDataDeviceResponse(final DeviceResponse deviceResponse,
-            final ResponseMessageSender responseMessageSender, final String domain, final String domainVersion,
-            final String messageType, final int retryCount) {
-
-        ResponseMessageResultType result = ResponseMessageResultType.OK;
-        OsgpException osgpException = null;
-        DataResponseDto dataResponse = null;
-
-        try {
-            final GetDataDeviceResponse response = (GetDataDeviceResponse) deviceResponse;
-
-            dataResponse = response.getDataResponse();
-        } catch (final Exception e) {
-            LOGGER.error("Device Response Exception", e);
-            result = ResponseMessageResultType.NOT_OK;
-            osgpException = new TechnicalException(ComponentType.PROTOCOL_IEC61850,
-                    "Unexpected exception while retrieving response message", e);
-        }
-
-        final ProtocolResponseMessage responseMessage = new ProtocolResponseMessage(domain, domainVersion, messageType,
-                deviceResponse.getCorrelationUid(), deviceResponse.getOrganisationIdentification(),
-                deviceResponse.getDeviceIdentification(), result, osgpException, dataResponse, retryCount);
-
-        responseMessageSender.send(responseMessage);
+        this.deviceService.setSetPoints(deviceRequest, deviceResponseHandler);
     }
 
 }

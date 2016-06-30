@@ -10,7 +10,6 @@ package com.alliander.osgp.adapter.protocol.iec61850.infra.networking;
 import com.alliander.osgp.adapter.protocol.iec61850.device.DeviceMessageStatus;
 import com.alliander.osgp.adapter.protocol.iec61850.device.DeviceRequest;
 import com.alliander.osgp.adapter.protocol.iec61850.device.DeviceResponseHandler;
-import com.alliander.osgp.adapter.protocol.iec61850.device.requests.GetDataDeviceRequest;
 import com.alliander.osgp.adapter.protocol.iec61850.device.requests.GetPowerUsageHistoryDeviceRequest;
 import com.alliander.osgp.adapter.protocol.iec61850.device.requests.SetConfigurationDeviceRequest;
 import com.alliander.osgp.adapter.protocol.iec61850.device.requests.SetEventNotificationsDeviceRequest;
@@ -20,11 +19,15 @@ import com.alliander.osgp.adapter.protocol.iec61850.device.requests.SetTransitio
 import com.alliander.osgp.adapter.protocol.iec61850.device.requests.UpdateDeviceSslCertificationDeviceRequest;
 import com.alliander.osgp.adapter.protocol.iec61850.device.requests.UpdateFirmwareDeviceRequest;
 import com.alliander.osgp.adapter.protocol.iec61850.device.responses.GetConfigurationDeviceResponse;
+import com.alliander.osgp.adapter.protocol.iec61850.device.responses.GetDataDeviceResponse;
 import com.alliander.osgp.adapter.protocol.iec61850.device.responses.GetFirmwareVersionDeviceResponse;
 import com.alliander.osgp.adapter.protocol.iec61850.device.responses.GetPowerUsageHistoryDeviceResponse;
 import com.alliander.osgp.adapter.protocol.iec61850.device.responses.GetStatusDeviceResponse;
+import com.alliander.osgp.adapter.protocol.iec61850.device.rtu.requests.GetDataDeviceRequest;
+import com.alliander.osgp.adapter.protocol.iec61850.device.rtu.requests.SetSetPointsDeviceRequest;
 import com.alliander.osgp.dto.valueobjects.EventNotificationTypeDto;
 import com.alliander.osgp.dto.valueobjects.microgrids.DataRequestDto;
+import com.alliander.osgp.dto.valueobjects.microgrids.SetPointsRequestDto;
 
 public interface DeviceService {
 
@@ -147,4 +150,12 @@ public interface DeviceService {
      * callback.
      */
     void getData(GetDataDeviceRequest deviceRequest, DeviceResponseHandler deviceResponseHandler);
+
+    /**
+     * Writes the {@link SetPointsRequestDto} to the device.
+     *
+     * Returns a {@link DeviceMessageStatus} via the deviceResponseHandler's
+     * callback.
+     */
+    void setSetPoints(SetSetPointsDeviceRequest deviceRequest, DeviceResponseHandler deviceResponseHandler);
 }
