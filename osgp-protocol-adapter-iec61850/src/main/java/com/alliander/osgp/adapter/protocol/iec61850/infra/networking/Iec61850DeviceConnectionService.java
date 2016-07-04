@@ -14,6 +14,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Resource;
 
 import org.openmuc.openiec61850.ClientAssociation;
+import org.openmuc.openiec61850.Fc;
+import org.openmuc.openiec61850.FcModelNode;
 import org.openmuc.openiec61850.ServerModel;
 import org.openmuc.openiec61850.ServiceError;
 import org.slf4j.Logger;
@@ -22,6 +24,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.alliander.osgp.adapter.protocol.iec61850.exceptions.ProtocolAdapterException;
+import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.DataAttribute;
+import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.IED;
+import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.LogicalDevice;
+import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.LogicalNode;
 
 @Component
 public class Iec61850DeviceConnectionService {
@@ -36,7 +42,12 @@ public class Iec61850DeviceConnectionService {
     @Resource
     private int responseTimeout;
 
-    public void connect(final String ipAddress, final String deviceIdentification) {
+    public synchronized void connect(final String ipAddress, final String deviceIdentification) {
+        this.connect(ipAddress, deviceIdentification, null, null);
+    }
+
+    public synchronized void connect(final String ipAddress, final String deviceIdentification, final IED ied,
+            final LogicalDevice logicalDevice) {
         LOGGER.info("Trying to find connection in cache for deviceIdentification: {}", deviceIdentification);
 
         try {
@@ -44,8 +55,22 @@ public class Iec61850DeviceConnectionService {
             if (iec61850Connection != null) {
                 // Already connected, check if connection is still usable.
                 LOGGER.info("Connection found for deviceIdentification: {}", deviceIdentification);
-                final boolean isConnectionAlive = this.iec61850Client
-                        .readAllDataValues(iec61850Connection.getClientAssociation());
+                final boolean isConnectionAlive = false;
+
+                // Read physical name node (only), which is much faster, but
+                // requires manual reads of remote data
+                if (ied != null && logicalDevice != null) {
+                    this.iec61850Client.readNodeDataValues(iec61850Connection.getClientAssociation(),
+                            (FcModelNode) iec61850Connection.getServerModel()
+                                    .findModelNode(ied.getDescription() + logicalDevice.getDescription() + "/"
+                                            + LogicalNode.PHISICAL_DEVICE_ONE.getDescription() + "."
+                                            + DataAttribute.PHYSICAL_NAME, Fc.DC));
+                } else {
+                    // Read all data values, which is much slower, but requires
+                    // no manual reads of remote data
+                    this.iec61850Client.readAllDataValues(iec61850Connection.getClientAssociation());
+                }
+
                 if (isConnectionAlive) {
                     LOGGER.info("Connection is still active for deviceIdentification: {}", deviceIdentification);
                     return;
@@ -95,7 +120,7 @@ public class Iec61850DeviceConnectionService {
         }
     }
 
-    public void disconnect(final String deviceIdentification) {
+    public synchronized void disconnect(final String deviceIdentification) {
         try {
             LOGGER.info("Trying to disconnect from deviceIdentification: {}", deviceIdentification);
             final Iec61850Connection iec61850Connection = this.fetchIec61850Connection(deviceIdentification);
@@ -125,6 +150,10 @@ public class Iec61850DeviceConnectionService {
 
     public ServerModel getServerModel(final String deviceIdentification) throws ProtocolAdapterException {
         final Iec61850Connection iec61850Connection = this.fetchIec61850Connection(deviceIdentification);
+        if (iec61850Connection == null) {
+            return null;
+        }
+
         return iec61850Connection.getServerModel();
     }
 
@@ -142,7 +171,7 @@ public class Iec61850DeviceConnectionService {
         cache.put(deviceIdentification, iec61850Connection);
     }
 
-    private Iec61850Connection fetchIec61850Connection(final String deviceIdentification)
+    private synchronized Iec61850Connection fetchIec61850Connection(final String deviceIdentification)
             throws ProtocolAdapterException {
         final Iec61850Connection iec61850Connection = cache.get(deviceIdentification);
         if (iec61850Connection == null) {

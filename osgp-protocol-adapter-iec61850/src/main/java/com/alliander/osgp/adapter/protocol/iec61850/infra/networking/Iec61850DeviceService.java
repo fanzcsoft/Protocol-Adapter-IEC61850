@@ -829,7 +829,6 @@ public class Iec61850DeviceService implements DeviceService {
                     deviceRequest.getCorrelationUid(), DeviceMessageStatus.OK, getDataResponse);
 
             deviceResponseHandler.handleResponse(deviceResponse);
-            this.iec61850DeviceConnectionService.disconnect(deviceRequest.getDeviceIdentification());
         } catch (final ConnectionFailureException se) {
             LOGGER.error("Could not connect to device after all retries", se);
 
@@ -838,7 +837,6 @@ public class Iec61850DeviceService implements DeviceService {
                     deviceRequest.getCorrelationUid(), DeviceMessageStatus.FAILURE);
 
             deviceResponseHandler.handleException(se, deviceResponse, true);
-            this.iec61850DeviceConnectionService.disconnect(deviceRequest.getDeviceIdentification());
             return;
         } catch (final Exception e) {
             LOGGER.error("Unexpected exception during writeDataValue", e);
@@ -848,7 +846,6 @@ public class Iec61850DeviceService implements DeviceService {
                     deviceRequest.getCorrelationUid(), DeviceMessageStatus.FAILURE);
 
             deviceResponseHandler.handleException(e, deviceResponse, false);
-            this.iec61850DeviceConnectionService.disconnect(deviceRequest.getDeviceIdentification());
             return;
         }
     }
@@ -932,8 +929,14 @@ public class Iec61850DeviceService implements DeviceService {
     // ======================================
     private ServerModel connectAndRetrieveServerModel(final DeviceRequest deviceRequest)
             throws ProtocolAdapterException {
+        /*
+         * // Check for existing connection (and serverModel) ServerModel
+         * serverModel = this.iec61850DeviceConnectionService
+         * .getServerModel(deviceRequest.getDeviceIdentification()); if
+         * (serverModel == null) { // reconnect }
+         */
         this.iec61850DeviceConnectionService.connect(deviceRequest.getIpAddress(),
-                deviceRequest.getDeviceIdentification());
+                deviceRequest.getDeviceIdentification(), IED.ZOWN_RTU, LogicalDevice.PV);
         return this.iec61850DeviceConnectionService.getServerModel(deviceRequest.getDeviceIdentification());
     }
 
@@ -1692,7 +1695,7 @@ public class Iec61850DeviceService implements DeviceService {
         final NodeContainer reporting = deviceConnection.getFcModelNode(LogicalDevice.LIGHTING,
                 LogicalNode.LOGICAL_NODE_ZERO, DataAttribute.REPORTING, Fc.BR);
 
-        final Iec61850ClientEventListener reportListener = deviceConnection.getConnection()
+        final Iec61850ClientSSLDEventListener reportListener = deviceConnection.getConnection()
                 .getIec61850ClientAssociation().getReportListener();
 
         final Integer sqNum = reporting.getUnsignedShort(SubDataAttribute.SEQUENCE_NUMBER).getValue();
@@ -2023,8 +2026,10 @@ public class Iec61850DeviceService implements DeviceService {
     private MeasurementDto getGenerationSpeed(final DeviceConnection connection) {
         final NodeContainer containingNode = connection.getFcModelNode(LogicalDevice.PV, LogicalNode.GENERATOR_ONE,
                 DataAttribute.GENERATOR_SPEED, Fc.MX);
-        final NodeContainer generationMagnitude = containingNode.getChild(SubDataAttribute.MAGNITUDE);
+        this.iec61850Client.readNodeDataValues(connection.getConnection().getClientAssociation(),
+                containingNode.getFcmodelNode());
 
+        final NodeContainer generationMagnitude = containingNode.getChild(SubDataAttribute.MAGNITUDE);
         return new MeasurementDto(1, DataAttribute.GENERATOR_SPEED.getDescription(), 0,
                 new DateTime(containingNode.getDate(SubDataAttribute.TIME), DateTimeZone.UTC),
                 generationMagnitude.getFloat(SubDataAttribute.FLOAT).getFloat());
@@ -2033,7 +2038,8 @@ public class Iec61850DeviceService implements DeviceService {
     private MeasurementDto getOperationalHours(final DeviceConnection connection) {
         final NodeContainer containingNode = connection.getFcModelNode(LogicalDevice.PV, LogicalNode.GENERATOR_ONE,
                 DataAttribute.OPERATIONAL_HOURS, Fc.ST);
-
+        this.iec61850Client.readNodeDataValues(connection.getConnection().getClientAssociation(),
+                containingNode.getFcmodelNode());
         return new MeasurementDto(1, DataAttribute.OPERATIONAL_HOURS.getDescription(), 0,
                 new DateTime(containingNode.getDate(SubDataAttribute.TIME), DateTimeZone.UTC),
                 containingNode.getInteger(SubDataAttribute.STATE).getValue());
@@ -2042,7 +2048,8 @@ public class Iec61850DeviceService implements DeviceService {
     private MeasurementDto getBehavior(final DeviceConnection connection) {
         final NodeContainer containingNode = connection.getFcModelNode(LogicalDevice.PV, LogicalNode.GENERATOR_ONE,
                 DataAttribute.BEHAVIOR, Fc.ST);
-
+        this.iec61850Client.readNodeDataValues(connection.getConnection().getClientAssociation(),
+                containingNode.getFcmodelNode());
         return new MeasurementDto(1, DataAttribute.BEHAVIOR.getDescription(), 0,
                 new DateTime(containingNode.getDate(SubDataAttribute.TIME), DateTimeZone.UTC),
                 containingNode.getByte(SubDataAttribute.STATE).getValue());
@@ -2051,6 +2058,8 @@ public class Iec61850DeviceService implements DeviceService {
     private MeasurementDto getHealth(final DeviceConnection connection) {
         final NodeContainer containingNode = connection.getFcModelNode(LogicalDevice.PV, LogicalNode.GENERATOR_ONE,
                 DataAttribute.HEALTH, Fc.ST);
+        this.iec61850Client.readNodeDataValues(connection.getConnection().getClientAssociation(),
+                containingNode.getFcmodelNode());
 
         return new MeasurementDto(1, DataAttribute.HEALTH.getDescription(), 0,
                 new DateTime(containingNode.getDate(SubDataAttribute.TIME), DateTimeZone.UTC),
@@ -2059,10 +2068,12 @@ public class Iec61850DeviceService implements DeviceService {
 
     private void setDemandedPower(final DeviceConnection connection,
             final SetPointSystemIdentifierDto setPointSystemIdentifier) {
-        final NodeContainer generator1Node = connection.getFcModelNode(LogicalDevice.PV, LogicalNode.GENERATOR_ONE,
+        final NodeContainer containingNode = connection.getFcModelNode(LogicalDevice.PV, LogicalNode.GENERATOR_ONE,
                 DataAttribute.DEMANDED_POWER, Fc.SP);
+        this.iec61850Client.readNodeDataValues(connection.getConnection().getClientAssociation(),
+                containingNode.getFcmodelNode());
 
-        final NodeContainer magnitudeSetPointNode = generator1Node.getChild(SubDataAttribute.MAGNITUDE_SETPOINT);
+        final NodeContainer magnitudeSetPointNode = containingNode.getChild(SubDataAttribute.MAGNITUDE_SETPOINT);
 
         // TODO fix potential risk of exception due to cast from double to float
         magnitudeSetPointNode.writeFloat(SubDataAttribute.FLOAT,

@@ -16,6 +16,7 @@ import javax.annotation.Resource;
 import org.openmuc.openiec61850.ClientAssociation;
 import org.openmuc.openiec61850.ClientSap;
 import org.openmuc.openiec61850.Fc;
+import org.openmuc.openiec61850.FcModelNode;
 import org.openmuc.openiec61850.SclParseException;
 import org.openmuc.openiec61850.ServerModel;
 import org.openmuc.openiec61850.ServiceError;
@@ -88,12 +89,12 @@ public class Iec61850Client {
         LOGGER.info("Attempting to connect to server: {} on port: {}", ipAddress.getHostAddress(),
                 this.iec61850PortServer);
         try {
-            // TODO temporarly disable reports, not required for ZOWN POC and
-            // relies (hard) on SSLD.
-            // final Iec61850ClientEventListener reportListener = new
-            // Iec61850ClientEventListener(deviceIdentification,
+
+            // TODO disabled reportlistener
+            // final Iec61850ClientSSLDEventListener reportListener = new
+            // Iec61850ClientSSLDEventListener(deviceIdentification,
             // this.deviceManagementService);
-            final Iec61850ClientEventListener reportListener = null;
+            final Iec61850ClientSSLDEventListener reportListener = null;
             final ClientAssociation association = clientSap.associate(ipAddress, this.iec61850PortServer, null,
                     reportListener);
             clientAssociation = new Iec61850ClientAssociation(association, reportListener);
@@ -228,6 +229,25 @@ public class Iec61850Client {
         // Get the values of all data attributes in the model.
         try {
             clientAssociation.getAllDataValues();
+            return true;
+        } catch (ServiceError | IOException e) {
+            LOGGER.error("Unexpected excpetion during readAllDataValues", e);
+            return false;
+        }
+    }
+
+    /**
+     * Read the values of all data attributes of all Logical Nodes.
+     *
+     * @param clientAssociation
+     *            An {@link ClientAssociation} instance.
+     *
+     * @return True if all values have been read successfully.
+     */
+    public boolean readNodeDataValues(final ClientAssociation clientAssociation, final FcModelNode modelNode) {
+        // Get the values of all data attributes in the model.
+        try {
+            clientAssociation.getDataValues(modelNode);
             return true;
         } catch (ServiceError | IOException e) {
             LOGGER.error("Unexpected excpetion during readAllDataValues", e);

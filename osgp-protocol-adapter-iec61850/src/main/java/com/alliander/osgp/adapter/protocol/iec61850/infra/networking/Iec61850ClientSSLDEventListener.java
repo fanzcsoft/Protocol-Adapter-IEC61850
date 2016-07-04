@@ -31,9 +31,9 @@ import com.alliander.osgp.core.db.api.iec61850.entities.DeviceOutputSetting;
 import com.alliander.osgp.dto.valueobjects.EventNotificationDto;
 import com.alliander.osgp.dto.valueobjects.EventTypeDto;
 
-public class Iec61850ClientEventListener implements ClientEventListener {
+public class Iec61850ClientSSLDEventListener implements ClientEventListener {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(Iec61850ClientEventListener.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Iec61850ClientSSLDEventListener.class);
 
     /**
      * The EntryTime from IEC61850 has timestamp values relative to 01-01-1984.
@@ -75,7 +75,7 @@ public class Iec61850ClientEventListener implements ClientEventListener {
     private final Map<Integer, Integer> externalIndexByInternalIndex = new TreeMap<>();
     private Integer firstNewSqNum = null;
 
-    public Iec61850ClientEventListener(final String deviceIdentification,
+    public Iec61850ClientSSLDEventListener(final String deviceIdentification,
             final DeviceManagementService deviceManagementService) throws ProtocolAdapterException {
         this.deviceIdentification = deviceIdentification;
         this.deviceManagementService = deviceManagementService;

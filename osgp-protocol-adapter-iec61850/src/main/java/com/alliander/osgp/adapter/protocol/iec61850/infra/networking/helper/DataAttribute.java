@@ -84,10 +84,22 @@ public enum DataAttribute {
      * Property of ZGEN Node, demanded power setpoint.
      */
     DEMANDED_POWER("DmdPwr"),
-
+    /**
+     * Generic health data attribute
+     */
     HEALTH("Health"),
+    /**
+     * Generic behaviour data attribute
+     */
     BEHAVIOR("Beh"),
-    OPERATIONAL_HOURS("OpTmh");
+    /**
+     * Generic operation time data attribute
+     */
+    OPERATIONAL_HOURS("OpTmh"),
+    /**
+     * Generic (mandatory) physical name data attribute
+     */
+    PHYSICAL_NAME("PhyNam");
 
     private String description;
 
