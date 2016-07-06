@@ -815,6 +815,7 @@ public class Iec61850DeviceService implements DeviceService {
     public void getData(final GetDataDeviceRequest deviceRequest, final DeviceResponseHandler deviceResponseHandler) {
         try {
             final ServerModel serverModel = this.connectAndRetrieveServerModel(deviceRequest);
+
             final ClientAssociation clientAssociation = this.iec61850DeviceConnectionService
                     .getClientAssociation(deviceRequest.getDeviceIdentification());
 
@@ -1695,7 +1696,7 @@ public class Iec61850DeviceService implements DeviceService {
         final NodeContainer reporting = deviceConnection.getFcModelNode(LogicalDevice.LIGHTING,
                 LogicalNode.LOGICAL_NODE_ZERO, DataAttribute.REPORTING, Fc.BR);
 
-        final Iec61850ClientSSLDEventListener reportListener = deviceConnection.getConnection()
+        final Iec61850ClientBaseEventListener reportListener = deviceConnection.getConnection()
                 .getIec61850ClientAssociation().getReportListener();
 
         final Integer sqNum = reporting.getUnsignedShort(SubDataAttribute.SEQUENCE_NUMBER).getValue();
@@ -1705,6 +1706,28 @@ public class Iec61850DeviceService implements DeviceService {
         } else {
             reportListener.setSqNum(sqNum);
         }
+
+        reporting.writeBoolean(SubDataAttribute.ENABLE_REPORTING, true);
+        LOGGER.info("Allowing device {} to send events", deviceIdentification);
+    }
+
+    private void enableReportingOnDevice(final DeviceConnection deviceConnection, final String deviceIdentification,
+            final DataAttribute reportName) throws ServiceError, IOException {
+        final NodeContainer reporting = deviceConnection.getFcModelNode(LogicalDevice.PV, LogicalNode.LOGICAL_NODE_ZERO,
+                reportName, Fc.BR);
+
+        final Iec61850ClientBaseEventListener reportListener = deviceConnection.getConnection()
+                .getIec61850ClientAssociation().getReportListener();
+
+        /*
+         * final Integer sqNum =
+         * reporting.getUnsignedShort(SubDataAttribute.SEQUENCE_NUMBER).getValue
+         * (); if (sqNum == null) { LOGGER.warn(
+         * "Child {} of {} is null. No SqNum available for filtering incoming event reports."
+         * , SubDataAttribute.SEQUENCE_NUMBER.getDescription(), reporting); }
+         * else { reportListener.setSqNum(sqNum); }
+         */
+        // reportListener.setSqNum(0);
 
         reporting.writeBoolean(SubDataAttribute.ENABLE_REPORTING, true);
         LOGGER.info("Allowing device {} to send events", deviceIdentification);
@@ -1982,6 +2005,9 @@ public class Iec61850DeviceService implements DeviceService {
 
             @Override
             public DataResponseDto apply() throws Exception {
+                Iec61850DeviceService.this.enableReportingOnDevice(connection, deviceRequest.getDeviceIdentification(),
+                        DataAttribute.REPORTING_ALL_DATA);
+
                 for (final SystemFilterDto systemFilter : requestedData.getSystemFilters()) {
                     // TODO for now, read all supported Zown POC values, but
                     // only for PV (with id 1).

@@ -25,7 +25,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.alliander.osgp.adapter.protocol.iec61850.application.services.DeviceManagementService;
 import com.alliander.osgp.adapter.protocol.iec61850.exceptions.ConnectionFailureException;
 import com.alliander.osgp.adapter.protocol.iec61850.exceptions.ProtocolAdapterException;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.DataAttribute;
@@ -41,9 +40,6 @@ import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.SubD
 public class Iec61850Client {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Iec61850Client.class);
-
-    @Autowired
-    private DeviceManagementService deviceManagementService;
 
     @Autowired
     private int iec61850PortClient;
@@ -78,8 +74,8 @@ public class Iec61850Client {
      *             In case the connection to the device could not be
      *             established.
      */
-    public Iec61850ClientAssociation connect(final String deviceIdentification, final InetAddress ipAddress)
-            throws ServiceError {
+    public Iec61850ClientAssociation connect(final String deviceIdentification, final InetAddress ipAddress,
+            final Iec61850ClientBaseEventListener reportListener) throws ServiceError {
         // Alternatively you could use ClientSap(SocketFactory factory) to e.g.
         // connect using SSL.
 
@@ -94,7 +90,6 @@ public class Iec61850Client {
             // final Iec61850ClientSSLDEventListener reportListener = new
             // Iec61850ClientSSLDEventListener(deviceIdentification,
             // this.deviceManagementService);
-            final Iec61850ClientSSLDEventListener reportListener = null;
             final ClientAssociation association = clientSap.associate(ipAddress, this.iec61850PortServer, null,
                     reportListener);
             clientAssociation = new Iec61850ClientAssociation(association, reportListener);
@@ -192,7 +187,7 @@ public class Iec61850Client {
             throws ProtocolAdapterException {
         final Iec61850ClientAssociation iec61850ClientAssociation;
         try {
-            iec61850ClientAssociation = this.connect(deviceIdentification, ipAddress);
+            iec61850ClientAssociation = this.connect(deviceIdentification, ipAddress, null);
         } catch (final ServiceError e) {
             throw new ProtocolAdapterException("Unexpected error connecting to device to disable registration.", e);
         }

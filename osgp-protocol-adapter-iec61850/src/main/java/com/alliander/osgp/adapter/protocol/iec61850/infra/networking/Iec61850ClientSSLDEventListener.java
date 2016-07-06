@@ -16,13 +16,10 @@ import org.openmuc.openiec61850.BdaOptFlds;
 import org.openmuc.openiec61850.BdaReasonForInclusion;
 import org.openmuc.openiec61850.BdaTimestamp;
 import org.openmuc.openiec61850.BdaVisibleString;
-import org.openmuc.openiec61850.ClientEventListener;
 import org.openmuc.openiec61850.DataSet;
 import org.openmuc.openiec61850.FcModelNode;
 import org.openmuc.openiec61850.HexConverter;
 import org.openmuc.openiec61850.Report;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.alliander.osgp.adapter.protocol.iec61850.application.services.DeviceManagementService;
 import com.alliander.osgp.adapter.protocol.iec61850.domain.valueobjects.EventType;
@@ -31,9 +28,7 @@ import com.alliander.osgp.core.db.api.iec61850.entities.DeviceOutputSetting;
 import com.alliander.osgp.dto.valueobjects.EventNotificationDto;
 import com.alliander.osgp.dto.valueobjects.EventTypeDto;
 
-public class Iec61850ClientSSLDEventListener implements ClientEventListener {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(Iec61850ClientSSLDEventListener.class);
+public class Iec61850ClientSSLDEventListener extends Iec61850ClientBaseEventListener {
 
     /**
      * The EntryTime from IEC61850 has timestamp values relative to 01-01-1984.
@@ -69,23 +64,20 @@ public class Iec61850ClientSSLDEventListener implements ClientEventListener {
         TRG_TYPE_DESCRIPTION_PER_CODE.put((short) 4, "autonomous trigger");
     }
 
-    private final String deviceIdentification;
     private final DeviceManagementService deviceManagementService;
     private final List<EventNotificationDto> eventNotifications = new ArrayList<>();
     private final Map<Integer, Integer> externalIndexByInternalIndex = new TreeMap<>();
-    private Integer firstNewSqNum = null;
 
     public Iec61850ClientSSLDEventListener(final String deviceIdentification,
             final DeviceManagementService deviceManagementService) throws ProtocolAdapterException {
-        this.deviceIdentification = deviceIdentification;
+        super(deviceIdentification, Iec61850ClientSSLDEventListener.class);
         this.deviceManagementService = deviceManagementService;
-        this.externalIndexByInternalIndex.putAll(this.buildExternalByInternalIndexMap(this.deviceManagementService,
-                this.deviceIdentification));
+        this.externalIndexByInternalIndex
+                .putAll(this.buildExternalByInternalIndexMap(this.deviceManagementService, this.deviceIdentification));
     }
 
-    private Map<Integer, Integer> buildExternalByInternalIndexMap(
-            final DeviceManagementService deviceManagementService, final String deviceIdentification)
-                    throws ProtocolAdapterException {
+    private Map<Integer, Integer> buildExternalByInternalIndexMap(final DeviceManagementService deviceManagementService,
+            final String deviceIdentification) throws ProtocolAdapterException {
 
         final Map<Integer, Integer> indexMap = new TreeMap<>();
         indexMap.put(0, 0);
@@ -96,29 +88,25 @@ public class Iec61850ClientSSLDEventListener implements ClientEventListener {
             indexMap.put(outputSetting.getInternalId(), outputSetting.getExternalId());
         }
 
-        LOGGER.info("Retrieved internal to external index map for device {}: {}", deviceIdentification, indexMap);
+        this.logger.info("Retrieved internal to external index map for device {}: {}", deviceIdentification, indexMap);
 
         return indexMap;
-    }
-
-    public String getDeviceIdentification() {
-        return this.deviceIdentification;
     }
 
     @Override
     public void newReport(final Report report) {
 
-        final DateTime timeOfEntry = report.getTimeOfEntry() == null ? null : new DateTime(report.getTimeOfEntry()
-                .getTimestampValue() + IEC61850_ENTRY_TIME_OFFSET);
+        final DateTime timeOfEntry = report.getTimeOfEntry() == null ? null
+                : new DateTime(report.getTimeOfEntry().getTimestampValue() + IEC61850_ENTRY_TIME_OFFSET);
 
         final String reportDescription = String.format("device: %s, reportId: %s, timeOfEntry: %s, sqNum: %s%s%s",
                 this.deviceIdentification, report.getRptId(), timeOfEntry == null ? "-" : timeOfEntry,
-                        report.getSqNum(), report.getSubSqNum() == null ? "" : " subSqNum: " + report.getSubSqNum(),
-                                report.isMoreSegmentsFollow() ? " (more segments follow for this sqNum)" : "");
-        LOGGER.info("newReport for {}", reportDescription);
+                report.getSqNum(), report.getSubSqNum() == null ? "" : " subSqNum: " + report.getSubSqNum(),
+                report.isMoreSegmentsFollow() ? " (more segments follow for this sqNum)" : "");
+        this.logger.info("newReport for {}", reportDescription);
         boolean skipRecordBecauseOfOldSqNum = false;
         if (report.isBufOvfl()) {
-            LOGGER.warn("Buffer Overflow reported for {} - entries within the buffer may have been lost.",
+            this.logger.warn("Buffer Overflow reported for {} - entries within the buffer may have been lost.",
                     reportDescription);
         } else if (this.firstNewSqNum != null && report.getSqNum() != null) {
             if (report.getSqNum() < this.firstNewSqNum) {
@@ -129,40 +117,39 @@ public class Iec61850ClientSSLDEventListener implements ClientEventListener {
 
         final DataSet dataSet = report.getDataSet();
         if (dataSet == null) {
-            LOGGER.warn("No DataSet available for {}", reportDescription);
+            this.logger.warn("No DataSet available for {}", reportDescription);
             return;
         }
         final List<FcModelNode> members = dataSet.getMembers();
         if (members == null || members.isEmpty()) {
-            LOGGER.warn("No members in DataSet available for {}", reportDescription);
+            this.logger.warn("No members in DataSet available for {}", reportDescription);
             return;
         } else {
-            LOGGER.debug("Handling {} DataSet members for {}", members.size(), reportDescription);
+            this.logger.debug("Handling {} DataSet members for {}", members.size(), reportDescription);
         }
         for (final FcModelNode member : members) {
             if (member == null) {
-                LOGGER.warn("Member == null in DataSet for {}", reportDescription);
+                this.logger.warn("Member == null in DataSet for {}", reportDescription);
                 continue;
             }
-            LOGGER.info("Handle member {} for {}", member.getReference(), reportDescription);
+            this.logger.info("Handle member {} for {}", member.getReference(), reportDescription);
             try {
                 if (skipRecordBecauseOfOldSqNum) {
-                    LOGGER.warn(
+                    this.logger.warn(
                             "Skipping report because SqNum: {} is less than what should be the first new value: {}",
                             report.getSqNum(), this.firstNewSqNum);
                 } else {
                     this.addEventNotificationForReportedData(member, timeOfEntry, reportDescription);
                 }
             } catch (final Exception e) {
-                LOGGER.error("Error adding event notification for member {} from {}", member.getReference(),
+                this.logger.error("Error adding event notification for member {} from {}", member.getReference(),
                         reportDescription, e);
             }
         }
     }
 
     private void addEventNotificationForReportedData(final FcModelNode evnRpn, final DateTime timeOfEntry,
-            final String reportDescription)
-                    throws ProtocolAdapterException {
+            final String reportDescription) throws ProtocolAdapterException {
 
         final EventTypeDto eventType = this.determineEventType(evnRpn, reportDescription);
         final Integer index = this.determineRelayIndex(evnRpn, reportDescription);
@@ -200,7 +187,7 @@ public class Iec61850ClientSSLDEventListener implements ClientEventListener {
         final Short swNum = swNumNode.getValue();
         final Integer externalIndex = this.externalIndexByInternalIndex.get(swNum.intValue());
         if (externalIndex == null) {
-            LOGGER.error("No external index configured for internal index: {} for device: {}, using '0' for event",
+            this.logger.error("No external index configured for internal index: {} for device: {}, using '0' for event",
                     swNum, this.deviceIdentification);
             return 0;
         }
@@ -276,8 +263,7 @@ public class Iec61850ClientSSLDEventListener implements ClientEventListener {
     }
 
     private IllegalArgumentException childNodeNotAvailableException(final FcModelNode evnRpn,
-            final String childNodeName,
-            final String reportDescription) {
+            final String childNodeName, final String reportDescription) {
         return new IllegalArgumentException("No '" + childNodeName + "' child in DataSet member "
                 + evnRpn.getReference() + " from " + reportDescription);
     }
@@ -291,28 +277,29 @@ public class Iec61850ClientSSLDEventListener implements ClientEventListener {
         sb.append("\t           BufOvfl:\t").append(report.isBufOvfl()).append(System.lineSeparator());
         sb.append("\t           EntryId:\t").append(report.getEntryId()).append(System.lineSeparator());
         sb.append("\tInclusionBitString:\t").append(Arrays.toString(report.getInclusionBitString()))
-        .append(System.lineSeparator());
+                .append(System.lineSeparator());
         sb.append("\tMoreSegmentsFollow:\t").append(report.isMoreSegmentsFollow()).append(System.lineSeparator());
         sb.append("\t             SqNum:\t").append(report.getSqNum()).append(System.lineSeparator());
         sb.append("\t          SubSqNum:\t").append(report.getSubSqNum()).append(System.lineSeparator());
         sb.append("\t       TimeOfEntry:\t").append(report.getTimeOfEntry()).append(System.lineSeparator());
         if (report.getTimeOfEntry() != null) {
             sb.append("\t                   \t(")
-            .append(new DateTime(report.getTimeOfEntry().getTimestampValue() + IEC61850_ENTRY_TIME_OFFSET))
-            .append(')').append(System.lineSeparator());
+                    .append(new DateTime(report.getTimeOfEntry().getTimestampValue() + IEC61850_ENTRY_TIME_OFFSET))
+                    .append(')').append(System.lineSeparator());
         }
         final List<BdaReasonForInclusion> reasonCodes = report.getReasonCodes();
         if (reasonCodes != null && !reasonCodes.isEmpty()) {
             sb.append("\t       ReasonCodes:").append(System.lineSeparator());
             for (final BdaReasonForInclusion reasonCode : reasonCodes) {
                 sb.append("\t                   \t")
-                .append(reasonCode.getReference() == null ? HexConverter.toHexString(reasonCode.getValue())
-                        : reasonCode).append("\t(")
-                        .append(this.reasonCodeInfo(reasonCode)).append(')').append(System.lineSeparator());
+                        .append(reasonCode.getReference() == null ? HexConverter.toHexString(reasonCode.getValue())
+                                : reasonCode)
+                        .append("\t(").append(this.reasonCodeInfo(reasonCode)).append(')')
+                        .append(System.lineSeparator());
             }
         }
         sb.append("\t           optFlds:").append(report.getOptFlds()).append("\t(")
-        .append(this.optFldsInfo(report.getOptFlds())).append(')').append(System.lineSeparator());
+                .append(this.optFldsInfo(report.getOptFlds())).append(')').append(System.lineSeparator());
         final DataSet dataSet = report.getDataSet();
         if (dataSet == null) {
             sb.append("\t           DataSet:\tnull").append(System.lineSeparator());
@@ -329,7 +316,7 @@ public class Iec61850ClientSSLDEventListener implements ClientEventListener {
                 }
             }
         }
-        LOGGER.info(sb.append(System.lineSeparator()).toString());
+        this.logger.info(sb.append(System.lineSeparator()).toString());
     }
 
     private String reasonCodeInfo(final BdaReasonForInclusion reason) {
@@ -526,33 +513,20 @@ public class Iec61850ClientSSLDEventListener implements ClientEventListener {
 
     @Override
     public void associationClosed(final IOException e) {
-        LOGGER.info("associationClosed for device: {}, {}", this.deviceIdentification, e == null ? "no IOException"
-                : "IOException: " + e.getMessage());
+        this.logger.info("associationClosed for device: {}, {}", this.deviceIdentification,
+                e == null ? "no IOException" : "IOException: " + e.getMessage());
 
         synchronized (this.eventNotifications) {
             if (this.eventNotifications.isEmpty()) {
-                LOGGER.info("No event notifications received from device: {}", this.deviceIdentification);
+                this.logger.info("No event notifications received from device: {}", this.deviceIdentification);
                 return;
             }
             Collections.sort(this.eventNotifications, NOTIFICATIONS_BY_TIME);
             try {
                 this.deviceManagementService.addEventNotifications(this.deviceIdentification, this.eventNotifications);
             } catch (final ProtocolAdapterException pae) {
-                LOGGER.error("Error adding device notifications for device: " + this.deviceIdentification, pae);
+                this.logger.error("Error adding device notifications for device: " + this.deviceIdentification, pae);
             }
         }
-    }
-
-    /**
-     * Before enabling reporting on the device, set the SqNum of the buffered
-     * report data to be able to check if incoming reports have been received
-     * already.
-     *
-     * @param value
-     *            the value of SqNum of a BR node on the device.
-     */
-    public void setSqNum(final int value) {
-        LOGGER.info("First new SqNum for report listener for device: {} is: {}", this.deviceIdentification, value);
-        this.firstNewSqNum = value;
     }
 }

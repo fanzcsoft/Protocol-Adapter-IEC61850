@@ -55,20 +55,22 @@ public class Iec61850DeviceConnectionService {
             if (iec61850Connection != null) {
                 // Already connected, check if connection is still usable.
                 LOGGER.info("Connection found for deviceIdentification: {}", deviceIdentification);
-                final boolean isConnectionAlive = false;
+                boolean isConnectionAlive = false;
 
                 // Read physical name node (only), which is much faster, but
                 // requires manual reads of remote data
                 if (ied != null && logicalDevice != null) {
-                    this.iec61850Client.readNodeDataValues(iec61850Connection.getClientAssociation(),
+                    isConnectionAlive = this.iec61850Client.readNodeDataValues(
+                            iec61850Connection.getClientAssociation(),
                             (FcModelNode) iec61850Connection.getServerModel()
                                     .findModelNode(ied.getDescription() + logicalDevice.getDescription() + "/"
                                             + LogicalNode.PHISICAL_DEVICE_ONE.getDescription() + "."
-                                            + DataAttribute.PHYSICAL_NAME, Fc.DC));
+                                            + DataAttribute.PHYSICAL_NAME.getDescription(), Fc.DC));
                 } else {
                     // Read all data values, which is much slower, but requires
                     // no manual reads of remote data
-                    this.iec61850Client.readAllDataValues(iec61850Connection.getClientAssociation());
+                    isConnectionAlive = this.iec61850Client
+                            .readAllDataValues(iec61850Connection.getClientAssociation());
                 }
 
                 if (isConnectionAlive) {
@@ -98,8 +100,11 @@ public class Iec61850DeviceConnectionService {
             // Try to connect.
             LOGGER.info("Trying to connect to deviceIdentification: {} at IP address {}", deviceIdentification,
                     ipAddress);
-            final Iec61850ClientAssociation iec61850clientAssociation = this.iec61850Client
-                    .connect(deviceIdentification, inetAddress);
+
+            // TODO select correct report listener, use the RTU version (for
+            // now)
+            final Iec61850ClientAssociation iec61850clientAssociation = this.iec61850Client.connect(
+                    deviceIdentification, inetAddress, new Iec61850ClientRTUEventListener(deviceIdentification));
             final ClientAssociation clientAssociation = iec61850clientAssociation.getClientAssociation();
 
             // Set response time-out
@@ -115,6 +120,9 @@ public class Iec61850DeviceConnectionService {
             this.cacheIec61850Connection(deviceIdentification,
                     new Iec61850Connection(iec61850clientAssociation, serverModel));
         } catch (final ServiceError e) {
+            LOGGER.error("Unexpected exception when connecting to an IEC61850 device", e);
+            return;
+        } catch (final ProtocolAdapterException e) {
             LOGGER.error("Unexpected exception when connecting to an IEC61850 device", e);
             return;
         }

@@ -21,10 +21,10 @@ import org.openmuc.openiec61850.ClientAssociation;
 public class Iec61850ClientAssociation {
 
     private final ClientAssociation clientAssociation;
-    private final Iec61850ClientSSLDEventListener reportListener;
+    private final Iec61850ClientBaseEventListener reportListener;
 
     public Iec61850ClientAssociation(final ClientAssociation clientAssociation,
-            final Iec61850ClientSSLDEventListener reportListener) {
+            final Iec61850ClientBaseEventListener reportListener) {
         this.clientAssociation = clientAssociation;
         this.reportListener = reportListener;
     }
@@ -33,7 +33,7 @@ public class Iec61850ClientAssociation {
         return this.clientAssociation;
     }
 
-    public Iec61850ClientSSLDEventListener getReportListener() {
+    public Iec61850ClientBaseEventListener getReportListener() {
         return this.reportListener;
     }
 }

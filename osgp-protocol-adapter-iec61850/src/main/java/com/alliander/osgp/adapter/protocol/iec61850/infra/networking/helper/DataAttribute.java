@@ -99,7 +99,11 @@ public enum DataAttribute {
     /**
      * Generic (mandatory) physical name data attribute
      */
-    PHYSICAL_NAME("PhyNam");
+    PHYSICAL_NAME("PhyNam"),
+    /**
+     * Property of LLN0 Node, ALLData_P01, contains the reporting information.
+     */
+    REPORTING_ALL_DATA("AllData_P01");
 
     private String description;
 
