@@ -4,6 +4,7 @@ import org.openmuc.openiec61850.ClientEventListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.alliander.osgp.adapter.protocol.iec61850.application.services.DeviceManagementService;
 import com.alliander.osgp.adapter.protocol.iec61850.exceptions.ProtocolAdapterException;
 
 public abstract class Iec61850ClientBaseEventListener implements ClientEventListener {
@@ -13,15 +14,14 @@ public abstract class Iec61850ClientBaseEventListener implements ClientEventList
     /*
      * Node names of EvnRpn nodes that occur as members of the report dataset.
      */
-
     protected final String deviceIdentification;
-    // private final DeviceManagementService deviceManagementService;
-    // private final List<EventNotificationDto> eventNotifications = new
-    // ArrayList<>();
+    protected final DeviceManagementService deviceManagementService;
     protected Integer firstNewSqNum = null;
 
-    public Iec61850ClientBaseEventListener(final String deviceIdentification, final Class<?> loggerClass)
+    public Iec61850ClientBaseEventListener(final String deviceIdentification,
+            final DeviceManagementService deviceManagementService, final Class<?> loggerClass)
             throws ProtocolAdapterException {
+        this.deviceManagementService = deviceManagementService;
         this.deviceIdentification = deviceIdentification;
         this.logger = LoggerFactory.getLogger(loggerClass);
     }

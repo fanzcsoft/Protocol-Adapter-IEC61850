@@ -64,14 +64,12 @@ public class Iec61850ClientSSLDEventListener extends Iec61850ClientBaseEventList
         TRG_TYPE_DESCRIPTION_PER_CODE.put((short) 4, "autonomous trigger");
     }
 
-    private final DeviceManagementService deviceManagementService;
     private final List<EventNotificationDto> eventNotifications = new ArrayList<>();
     private final Map<Integer, Integer> externalIndexByInternalIndex = new TreeMap<>();
 
     public Iec61850ClientSSLDEventListener(final String deviceIdentification,
             final DeviceManagementService deviceManagementService) throws ProtocolAdapterException {
-        super(deviceIdentification, Iec61850ClientSSLDEventListener.class);
-        this.deviceManagementService = deviceManagementService;
+        super(deviceIdentification, deviceManagementService, Iec61850ClientSSLDEventListener.class);
         this.externalIndexByInternalIndex
                 .putAll(this.buildExternalByInternalIndexMap(this.deviceManagementService, this.deviceIdentification));
     }

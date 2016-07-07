@@ -9,6 +9,7 @@ package com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.Objects;
 
 import org.openmuc.openiec61850.BdaBoolean;
 import org.openmuc.openiec61850.BdaFloat32;
@@ -24,15 +25,26 @@ import org.openmuc.openiec61850.ServiceError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+// TODO make base class or something, this is not nice... :(
 public class NodeContainer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NodeContainer.class);
 
-    private final DeviceConnection connection;
-    private final FcModelNode parent;
+    protected final String deviceIdentification;
+    protected final DeviceConnection connection;
+    protected final FcModelNode parent;
 
     public NodeContainer(final DeviceConnection connection, final FcModelNode fcmodelNode) {
+        Objects.requireNonNull(connection, "connection must not be null");
+        Objects.requireNonNull(fcmodelNode, "fcmodelNode must not be null");
+        this.deviceIdentification = connection.getDeviceIdentification();
         this.connection = connection;
+        this.parent = fcmodelNode;
+    }
+
+    public NodeContainer(final String deviceIdentification, final FcModelNode fcmodelNode) {
+        this.deviceIdentification = deviceIdentification;
+        this.connection = null;
         this.parent = fcmodelNode;
     }
 
@@ -59,7 +71,7 @@ public class NodeContainer {
             LOGGER.error("BdaVisibleString is null, most likely attribute: {} does not exist");
         }
 
-        LOGGER.info("device: {}, {} has value {}", this.connection.getDeviceIdentification(), child.getDescription(),
+        LOGGER.info("device: {}, {} has value {}", this.deviceIdentification, child.getDescription(),
                 bdaString.getStringValue());
         return bdaString.getStringValue();
     }
@@ -70,8 +82,7 @@ public class NodeContainer {
     public void writeString(final SubDataAttribute child, final String value) {
         final BdaVisibleString stringNode = (BdaVisibleString) this.parent.getChild(child.getDescription());
 
-        LOGGER.info("device: {}, writing {} to {}", this.connection.getDeviceIdentification(), value,
-                child.getDescription());
+        LOGGER.info("device: {}, writing {} to {}", this.deviceIdentification, value, child.getDescription());
 
         stringNode.setValue(value);
         this.writeNode(stringNode);
@@ -87,7 +98,7 @@ public class NodeContainer {
             LOGGER.error("BdaTimeStamp is null, most likely attribute: {} does not exist");
         }
 
-        LOGGER.info("device: {}, {} has value {}", this.connection.getDeviceIdentification(), child.getDescription(),
+        LOGGER.info("device: {}, {} has value {}", this.deviceIdentification, child.getDescription(),
                 dBdaTimestamp.getDate());
         return dBdaTimestamp.getDate();
     }
@@ -98,8 +109,7 @@ public class NodeContainer {
     public void writeDate(final SubDataAttribute child, final Date value) {
         final BdaTimestamp dBdaTimestamp = (BdaTimestamp) this.parent.getChild(child.getDescription());
 
-        LOGGER.info("device: {}, writing {} to {}", this.connection.getDeviceIdentification(), value,
-                child.getDescription());
+        LOGGER.info("device: {}, writing {} to {}", this.deviceIdentification, value, child.getDescription());
         dBdaTimestamp.setDate(value);
         this.writeNode(dBdaTimestamp);
     }

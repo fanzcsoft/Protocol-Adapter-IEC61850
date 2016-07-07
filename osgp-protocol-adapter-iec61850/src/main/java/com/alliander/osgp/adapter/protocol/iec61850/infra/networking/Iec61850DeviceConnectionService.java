@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.alliander.osgp.adapter.protocol.iec61850.application.services.DeviceManagementService;
 import com.alliander.osgp.adapter.protocol.iec61850.exceptions.ProtocolAdapterException;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.DataAttribute;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.IED;
@@ -35,6 +36,9 @@ public class Iec61850DeviceConnectionService {
     private static final Logger LOGGER = LoggerFactory.getLogger(Iec61850DeviceConnectionService.class);
 
     private static ConcurrentHashMap<String, Iec61850Connection> cache = new ConcurrentHashMap<>();
+
+    @Autowired
+    private DeviceManagementService deviceManagementService;
 
     @Autowired
     private Iec61850Client iec61850Client;
@@ -104,7 +108,8 @@ public class Iec61850DeviceConnectionService {
             // TODO select correct report listener, use the RTU version (for
             // now)
             final Iec61850ClientAssociation iec61850clientAssociation = this.iec61850Client.connect(
-                    deviceIdentification, inetAddress, new Iec61850ClientRTUEventListener(deviceIdentification));
+                    deviceIdentification, inetAddress,
+                    new Iec61850ClientRTUEventListener(deviceIdentification, this.deviceManagementService));
             final ClientAssociation clientAssociation = iec61850clientAssociation.getClientAssociation();
 
             // Set response time-out

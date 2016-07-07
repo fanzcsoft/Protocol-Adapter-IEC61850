@@ -17,18 +17,15 @@ public class RtuSimulatorConfig {
 
     @Bean
     public RtuSimulator rtuSimulator(@Value("${rtu.icd}") final String icdFilename,
-            @Value("${rtu.port}") final Integer port) {
+            @Value("${rtu.port}") final Integer port) throws IOException {
         final InputStream icdFile = ClassLoader.getSystemResourceAsStream(icdFilename);
 
         try {
-            final RtuSimulator simulator = new RtuSimulator(port, icdFile);
-            simulator.start();
-
-            return simulator;
+            final RtuSimulator rtuSimulator = new RtuSimulator(port, icdFile);
+            rtuSimulator.start();
+            return rtuSimulator;
         } catch (final SclParseException e) {
             LOGGER.warn("Error parsing SCL/ICD file {}", e.getMessage());
-        } catch (final IOException e) {
-            LOGGER.warn("Failed to start RTU simulator {}", e.getMessage());
         }
 
         return null;
