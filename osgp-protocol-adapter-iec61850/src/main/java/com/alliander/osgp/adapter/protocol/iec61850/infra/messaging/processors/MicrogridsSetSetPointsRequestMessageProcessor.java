@@ -36,7 +36,7 @@ public class MicrogridsSetSetPointsRequestMessageProcessor extends DeviceRequest
     private static final Logger LOGGER = LoggerFactory.getLogger(MicrogridsSetSetPointsRequestMessageProcessor.class);
 
     public MicrogridsSetSetPointsRequestMessageProcessor() {
-        super(DeviceRequestMessageType.SET_SETPOINTS);
+        super(DeviceRequestMessageType.SET_SETPOINT);
     }
 
     @Override
