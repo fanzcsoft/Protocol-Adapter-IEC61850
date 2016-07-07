@@ -105,6 +105,7 @@ public class RtuSimulator implements ServerEventListener {
         values.add(this.setRandomFloat("ZOWN_POCBATTERY1/MMTR1.TotVAh.pulsQty", Fc.CF, 80, 90));
 
         this.server.setValues(values);
+        LOGGER.info("Generated values");
     }
 
     private BasicDataAttribute incrementInt(final String node, final Fc fc) {

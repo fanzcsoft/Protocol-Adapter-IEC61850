@@ -1,10 +1,12 @@
 package com.alliander.osgp.adapter.protocol.iec61850.infra.networking;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.openmuc.openiec61850.BdaOptFlds;
 import org.openmuc.openiec61850.BdaReasonForInclusion;
 import org.openmuc.openiec61850.DataSet;
@@ -12,7 +14,16 @@ import org.openmuc.openiec61850.FcModelNode;
 import org.openmuc.openiec61850.HexConverter;
 import org.openmuc.openiec61850.Report;
 
+import com.alliander.osgp.adapter.protocol.iec61850.application.services.DeviceManagementService;
 import com.alliander.osgp.adapter.protocol.iec61850.exceptions.ProtocolAdapterException;
+import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.DataAttribute;
+import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.LogicalNode;
+import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.NodeContainer;
+import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.ReadOnlyNodeContainer;
+import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.SubDataAttribute;
+import com.alliander.osgp.dto.valueobjects.microgrids.DataResponseDto;
+import com.alliander.osgp.dto.valueobjects.microgrids.MeasurementDto;
+import com.alliander.osgp.dto.valueobjects.microgrids.MeasurementResultSystemIdentifierDto;
 
 public class Iec61850ClientRTUEventListener extends Iec61850ClientBaseEventListener {
 
@@ -24,12 +35,9 @@ public class Iec61850ClientRTUEventListener extends Iec61850ClientBaseEventListe
      */
     private static final long IEC61850_ENTRY_TIME_OFFSET = 441763200000L;
 
-    /*
-     * Node names of EvnRpn nodes that occur as members of the report dataset.
-     */
-
-    public Iec61850ClientRTUEventListener(final String deviceIdentification) throws ProtocolAdapterException {
-        super(deviceIdentification, Iec61850ClientRTUEventListener.class);
+    public Iec61850ClientRTUEventListener(final String deviceIdentification,
+            final DeviceManagementService deviceManagementService) throws ProtocolAdapterException {
+        super(deviceIdentification, deviceManagementService, Iec61850ClientRTUEventListener.class);
     }
 
     @Override
@@ -41,8 +49,10 @@ public class Iec61850ClientRTUEventListener extends Iec61850ClientBaseEventListe
                 this.deviceIdentification, report.getRptId(), timeOfEntry == null ? "-" : timeOfEntry,
                 report.getSqNum(), report.getSubSqNum() == null ? "" : " subSqNum: " + report.getSubSqNum(),
                 report.isMoreSegmentsFollow() ? " (more segments follow for this sqNum)" : "");
+
         this.logger.info("newReport for {}", reportDescription);
         boolean skipRecordBecauseOfOldSqNum = false;
+
         if (report.isBufOvfl()) {
             this.logger.warn("Buffer Overflow reported for {} - entries within the buffer may have been lost.",
                     reportDescription);
@@ -51,41 +61,110 @@ public class Iec61850ClientRTUEventListener extends Iec61850ClientBaseEventListe
                 skipRecordBecauseOfOldSqNum = true;
             }
         }
-        this.logReportDetails(report);
 
-        final DataSet dataSet = report.getDataSet();
+        if (skipRecordBecauseOfOldSqNum) {
+            this.logger.warn("Skipping report because SqNum: {} is less than what should be the first new value: {}",
+                    report.getSqNum(), this.firstNewSqNum);
+            return;
+        }
+
+        this.logReportDetails(report);
+        try {
+            this.processDataSet(report.getDataSet(), reportDescription);
+        } catch (final ProtocolAdapterException e) {
+            this.logger.warn("Unable to process report, discarding report", e);
+        }
+    }
+
+    private void processDataSet(final DataSet dataSet, final String reportDescription) throws ProtocolAdapterException {
         if (dataSet == null) {
             this.logger.warn("No DataSet available for {}", reportDescription);
             return;
         }
+
         final List<FcModelNode> members = dataSet.getMembers();
         if (members == null || members.isEmpty()) {
             this.logger.warn("No members in DataSet available for {}", reportDescription);
             return;
-        } else {
-            this.logger.debug("Handling {} DataSet members for {}", members.size(), reportDescription);
         }
+
+        final List<MeasurementDto> measurements = new ArrayList<>();
         for (final FcModelNode member : members) {
             if (member == null) {
                 this.logger.warn("Member == null in DataSet for {}", reportDescription);
                 continue;
             }
+
             this.logger.info("Handle member {} for {}", member.getReference(), reportDescription);
             try {
-                if (skipRecordBecauseOfOldSqNum) {
-                    this.logger.warn(
-                            "Skipping report because SqNum: {} is less than what should be the first new value: {}",
-                            report.getSqNum(), this.firstNewSqNum);
+                final MeasurementDto dto = this
+                        .translatePvMeasurement(new ReadOnlyNodeContainer(this.deviceIdentification, member));
+                if (dto != null) {
+                    measurements.add(dto);
                 } else {
-                    // TODO handle dataset member
-                    // this.addEventNotificationForReportedData(member,
-                    // timeOfEntry, reportDescription);
+                    this.logger.warn("Unsupprted member {}, skipping", member.getName());
                 }
             } catch (final Exception e) {
                 this.logger.error("Error adding event notification for member {} from {}", member.getReference(),
                         reportDescription, e);
             }
         }
+
+        final MeasurementResultSystemIdentifierDto systemMeasurements = new MeasurementResultSystemIdentifierDto(1,
+                LogicalNode.GENERATOR_ONE.getDescription(), measurements);
+        final List<MeasurementResultSystemIdentifierDto> systems = new ArrayList<>();
+        systems.add(systemMeasurements);
+        this.deviceManagementService.sendMeasurements(this.deviceIdentification, new DataResponseDto(systems));
+    }
+
+    private MeasurementDto translatePvMeasurement(final ReadOnlyNodeContainer node) {
+        if (node.getFcmodelNode().getName().equals(DataAttribute.BEHAVIOR.getDescription())) {
+            return this.translatePvBehavior(node);
+        }
+
+        if (node.getFcmodelNode().getName().equals(DataAttribute.GENERATOR_SPEED.getDescription())) {
+            return this.translatePvGenerationSpeed(node);
+        }
+
+        if (node.getFcmodelNode().getName().equals(DataAttribute.DEMANDED_POWER.getDescription())) {
+            // TODO add suupport for demand power
+            return null;
+        }
+
+        if (node.getFcmodelNode().getName().equals(DataAttribute.HEALTH.getDescription())) {
+            return this.translatePvHealth(node);
+        }
+
+        if (node.getFcmodelNode().getName().equals(DataAttribute.OPERATIONAL_HOURS.getDescription())) {
+            return this.translatePvOperationalHours(node);
+        }
+
+        return null;
+    }
+
+    private MeasurementDto translatePvBehavior(final ReadOnlyNodeContainer node) {
+        return new MeasurementDto(1, DataAttribute.BEHAVIOR.getDescription(), 0,
+                new DateTime(node.getDate(SubDataAttribute.TIME), DateTimeZone.UTC),
+                node.getByte(SubDataAttribute.STATE).getValue());
+    }
+
+    private MeasurementDto translatePvGenerationSpeed(final ReadOnlyNodeContainer node) {
+        final NodeContainer generationMagnitude = node.getChild(SubDataAttribute.MAGNITUDE);
+        return new MeasurementDto(1, DataAttribute.GENERATOR_SPEED.getDescription(), 0,
+                new DateTime(node.getDate(SubDataAttribute.TIME), DateTimeZone.UTC),
+                generationMagnitude.getFloat(SubDataAttribute.FLOAT).getFloat());
+    }
+
+    private MeasurementDto translatePvOperationalHours(final ReadOnlyNodeContainer node) {
+        return new MeasurementDto(1, DataAttribute.OPERATIONAL_HOURS.getDescription(), 0,
+                new DateTime(node.getDate(SubDataAttribute.TIME), DateTimeZone.UTC),
+                node.getInteger(SubDataAttribute.STATE).getValue());
+    }
+
+    private MeasurementDto translatePvHealth(final ReadOnlyNodeContainer node) {
+        return new MeasurementDto(1, DataAttribute.HEALTH.getDescription(), 0,
+                new DateTime(node.getDate(SubDataAttribute.TIME), DateTimeZone.UTC),
+                node.getByte(SubDataAttribute.STATE).getValue());
     }
 
     private void logReportDetails(final Report report) {
@@ -263,99 +342,9 @@ public class Iec61850ClientRTUEventListener extends Iec61850ClientBaseEventListe
         return sb.toString();
     }
 
-    // private String evnRpnInfo(final String linePrefix, final FcModelNode
-    // evnRpn) {
-    // final StringBuilder sb = new StringBuilder();
-    //
-    // final BdaInt8U evnTypeNode = (BdaInt8U)
-    // evnRpn.getChild(EVENT_NODE_EVENT_TYPE);
-    // sb.append(linePrefix).append(EVENT_NODE_EVENT_TYPE).append(": ");
-    // if (evnTypeNode == null) {
-    // sb.append("null");
-    // } else {
-    // final short evnType = evnTypeNode.getValue();
-    // sb.append(evnType).append(" =
-    // ").append(EventType.forCode(evnType).getDescription());
-    // }
-    // sb.append(System.lineSeparator());
-    //
-    // final BdaInt8U swNumNode = (BdaInt8U)
-    // evnRpn.getChild(EVENT_NODE_SWITCH_NUMBER);
-    // sb.append(linePrefix).append(EVENT_NODE_SWITCH_NUMBER).append(": ");
-    // if (swNumNode == null) {
-    // sb.append("null");
-    // } else {
-    // final short swNum = swNumNode.getValue();
-    // sb.append(swNum).append(" = ").append("get external index for switch " +
-    // swNum);
-    // }
-    // sb.append(System.lineSeparator());
-    //
-    // final BdaInt8U trgTypeNode = (BdaInt8U)
-    // evnRpn.getChild(EVENT_NODE_TRIGGER_TYPE);
-    // sb.append(linePrefix).append(EVENT_NODE_TRIGGER_TYPE).append(": ");
-    // if (trgTypeNode == null) {
-    // sb.append("null");
-    // } else {
-    // final short trgType = trgTypeNode.getValue();
-    // sb.append(trgType).append(" =
-    // ").append(TRG_TYPE_DESCRIPTION_PER_CODE.get(trgType));
-    // }
-    // sb.append(System.lineSeparator());
-    //
-    // final BdaBoolean swValNode = (BdaBoolean)
-    // evnRpn.getChild(EVENT_NODE_SWITCH_VALUE);
-    // sb.append(linePrefix).append(EVENT_NODE_SWITCH_VALUE).append(": ");
-    // if (swValNode == null) {
-    // sb.append("null");
-    // } else {
-    // final boolean swVal = swValNode.getValue();
-    // sb.append(swVal).append(" = ").append(swVal ? "ON" : "OFF");
-    // }
-    // sb.append(System.lineSeparator());
-    //
-    // final BdaTimestamp trgTimeNode = (BdaTimestamp)
-    // evnRpn.getChild(EVENT_NODE_TRIGGER_TIME);
-    // sb.append(linePrefix).append(EVENT_NODE_TRIGGER_TIME).append(": ");
-    // if (trgTimeNode == null || trgTimeNode.getDate() == null) {
-    // sb.append("null");
-    // } else {
-    // final DateTime trgTime = new DateTime(trgTimeNode.getDate());
-    // sb.append(trgTime);
-    // }
-    // sb.append(System.lineSeparator());
-    //
-    // final BdaVisibleString remarkNode = (BdaVisibleString)
-    // evnRpn.getChild(EVENT_NODE_REMARK);
-    // sb.append(linePrefix).append(EVENT_NODE_REMARK).append(": ");
-    // if (remarkNode == null) {
-    // sb.append("null");
-    // } else {
-    // final String remark = remarkNode.getStringValue();
-    // sb.append(remark);
-    // }
-    // sb.append(System.lineSeparator());
-    //
-    // return sb.toString();
-    // }
-
     @Override
     public void associationClosed(final IOException e) {
         this.logger.info("associationClosed for device: {}, {}", this.deviceIdentification,
                 e == null ? "no IOException" : "IOException: " + e.getMessage());
-
-        // TODO store data in response queue for notifications
-        /**
-         * synchronized (this.eventNotifications) { if
-         * (this.eventNotifications.isEmpty()) { logger.info(
-         * "No event notifications received from device: {}",
-         * this.deviceIdentification); return; }
-         * Collections.sort(this.eventNotifications, NOTIFICATIONS_BY_TIME); try
-         * { this.deviceManagementService.addEventNotifications(this.
-         * deviceIdentification, this.eventNotifications); } catch (final
-         * ProtocolAdapterException pae) { logger.error(
-         * "Error adding device notifications for device: " +
-         * this.deviceIdentification, pae); } }
-         */
     }
 }
