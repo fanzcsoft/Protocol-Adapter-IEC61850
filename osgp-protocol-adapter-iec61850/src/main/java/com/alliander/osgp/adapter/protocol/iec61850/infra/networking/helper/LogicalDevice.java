@@ -15,7 +15,18 @@ public enum LogicalDevice {
      * The name of the Logical Device.
      */
     LIGHTING("IO"),
-    PV("PV1");
+    /**
+     * Logical Device Photovoltaic
+     */
+    PV("PV1"),
+    /**
+     * Logical Device Local Micro Grid Controller
+     */
+    LOCAL_MICROGRID_CONTROLLER("LMGC1"),
+    /**
+     * Logical Device Battery
+     */
+    BATTERY("BATTERY1");
 
     private String description;
 

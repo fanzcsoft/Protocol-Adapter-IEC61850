@@ -18,7 +18,7 @@ public enum LogicalNode {
     /**
      * LPHD1, configuration Physical Device Node one.
      */
-    PHISICAL_DEVICE_ONE("LPHD1"),
+    PHYSICAL_DEVICE_ONE("LPHD1"),
     /**
      * CSLC, configuration Logical Node.
      */
@@ -42,7 +42,27 @@ public enum LogicalNode {
     /**
      * ZGEN1, information exchange with generators Logical Node.
      */
-    GENERATOR_ONE("ZGEN1");
+    GENERATOR_ONE("ZGEN1"),
+    /**
+     * ZBAT1, Logical Node containing Battery System characteristics
+     */
+    BATTERY_ONE("ZBAT1"),
+    /**
+     * MMXN1, Logical Node for Actual Power In Measurements
+     */
+    MEASUREMENT_ONE("MXN1"),
+    /**
+     * MMXN2, Logical Node for Actual Power Out Measurements
+     */
+    MEASUREMENT_TWO("MXN2"),
+    /**
+     * GGIO1, Logical Node Generic Input / Output
+     */
+    GENERIC_INPUT_OUTPUT_ONE("GGIO1"),
+    /**
+     * MMTR1, Logical Node Meter Reading
+     */
+    METER_READING_ONE("MMTR1");
 
     private final String description;
 

@@ -221,7 +221,11 @@ public enum SubDataAttribute {
     /**
      * Float
      */
-    FLOAT("f");
+    FLOAT("f"),
+    /**
+     * Actual value
+     */
+    ACTUAL_VALUE("actVal");
 
     private String description;
 

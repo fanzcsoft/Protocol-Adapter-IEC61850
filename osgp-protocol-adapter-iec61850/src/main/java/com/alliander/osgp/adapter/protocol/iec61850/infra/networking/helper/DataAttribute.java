@@ -103,7 +103,26 @@ public enum DataAttribute {
     /**
      * Property of LLN0 Node, ALLData_P01, contains the reporting information.
      */
-    REPORTING_ALL_DATA("AllData_P01");
+    REPORTING_ALL_DATA("AllData_P01"),
+    /**
+     * Actual Power Warning: This is used for both input (MMXN1 Logical Node)
+     * and output (MMXN2 Logical Node)
+     */
+    ACTUAL_POWER("Watt"),
+    /**
+     * Integer status controllable Status Input
+     */
+    INTEGER_STATUS_CONTROLLABLE_STATUS_OUTPUT("ISCSO"),
+    /**
+     * Net Apparent Energy
+     */
+    NET_APPARENT_ENERGY("TotVAh"),
+    /**
+     *
+     */
+    NET_REAL_ENERGY("TotWh")
+
+    ;
 
     private String description;
 
