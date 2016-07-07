@@ -64,7 +64,7 @@ public class Iec61850DeviceConnectionService {
                             iec61850Connection.getClientAssociation(),
                             (FcModelNode) iec61850Connection.getServerModel()
                                     .findModelNode(ied.getDescription() + logicalDevice.getDescription() + "/"
-                                            + LogicalNode.PHISICAL_DEVICE_ONE.getDescription() + "."
+                                            + LogicalNode.PHYSICAL_DEVICE_ONE.getDescription() + "."
                                             + DataAttribute.PHYSICAL_NAME.getDescription(), Fc.DC));
                 } else {
                     // Read all data values, which is much slower, but requires
