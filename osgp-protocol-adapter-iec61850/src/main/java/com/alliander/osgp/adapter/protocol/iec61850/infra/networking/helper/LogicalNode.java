@@ -50,11 +50,11 @@ public enum LogicalNode {
     /**
      * MMXN1, Logical Node for Actual Power In Measurements
      */
-    MEASUREMENT_ONE("MXN1"),
+    MEASUREMENT_ONE("MMXN1"),
     /**
      * MMXN2, Logical Node for Actual Power Out Measurements
      */
-    MEASUREMENT_TWO("MXN2"),
+    MEASUREMENT_TWO("MMXN2"),
     /**
      * GGIO1, Logical Node Generic Input / Output
      */
