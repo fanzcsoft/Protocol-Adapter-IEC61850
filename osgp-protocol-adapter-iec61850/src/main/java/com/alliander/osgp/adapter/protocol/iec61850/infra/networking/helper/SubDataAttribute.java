@@ -225,7 +225,15 @@ public enum SubDataAttribute {
     /**
      * Actual value
      */
-    ACTUAL_VALUE("actVal");
+    ACTUAL_VALUE("actVal"),
+    /**
+     * Enables substitution
+     */
+    SUBSTITUDE_ENABLE("subEna"),
+    /**
+     * Substitution value
+     */
+    SUBSTITUDE_VALUE("subVal");
 
     private String description;
 

@@ -875,7 +875,6 @@ public class Iec61850DeviceService implements DeviceService {
                     deviceRequest.getCorrelationUid(), DeviceMessageStatus.FAILURE);
 
             deviceResponseHandler.handleException(se, deviceResponse, true);
-            this.iec61850DeviceConnectionService.disconnect(deviceRequest.getDeviceIdentification());
             return;
         } catch (final Exception e) {
             LOGGER.error("Unexpected exception during writeDataValue", e);
@@ -885,7 +884,6 @@ public class Iec61850DeviceService implements DeviceService {
                     deviceRequest.getCorrelationUid(), DeviceMessageStatus.FAILURE);
 
             deviceResponseHandler.handleException(e, deviceResponse, false);
-            this.iec61850DeviceConnectionService.disconnect(deviceRequest.getDeviceIdentification());
             return;
         }
 
@@ -894,7 +892,6 @@ public class Iec61850DeviceService implements DeviceService {
                 deviceRequest.getCorrelationUid(), DeviceMessageStatus.OK);
 
         deviceResponseHandler.handleResponse(deviceResponse);
-        this.iec61850DeviceConnectionService.disconnect(deviceRequest.getDeviceIdentification());
     }
 
     private void setSetPoints(final DeviceConnection connection, final ServerModel serverModel,
@@ -908,16 +905,14 @@ public class Iec61850DeviceService implements DeviceService {
             @Override
             public Void apply() throws Exception {
                 for (final SetPointSystemIdentifierDto spsi : setPointsRequest.getSetPointSystemIdentifiers()) {
-                    // TODO for now, read all supported Zown POC values, but
-                    // only for PV (with id 1).
-                    if (spsi.getId() != 1 || !spsi.getSystemType().equals("PV")) {
+                    // For POC the controller 'substitute' is supported
+                    final String systemName = spsi.getSystemType() + spsi.getId();
+                    if (systemName.equals(LogicalDevice.LOCAL_MICROGRID_CONTROLLER.getDescription())) {
+                        Iec61850DeviceService.this.setSubstitution(connection, spsi);
+                    } else {
                         LOGGER.info("Skipping Set SetPoint for unsupported system {} with id {}", spsi.getSystemType(),
                                 spsi.getId());
-                        continue;
                     }
-
-                    Iec61850DeviceService.this.setDemandedPower(connection, spsi);
-
                 }
 
                 return null;
@@ -2014,7 +2009,7 @@ public class Iec61850DeviceService implements DeviceService {
 
                 for (final SystemFilterDto systemFilter : requestedData.getSystemFilters()) {
 
-                    final List<MeasurementDto> measurements = new ArrayList<MeasurementDto>();
+                    final List<MeasurementDto> measurements = new ArrayList<>();
 
                     final SystemService systemService = Iec61850DeviceService.this.systemServiceFactory
                             .getSystemService(systemFilter);
@@ -2034,18 +2029,16 @@ public class Iec61850DeviceService implements DeviceService {
         return this.iec61850Client.sendCommandWithRetry(function);
     }
 
-    private void setDemandedPower(final DeviceConnection connection,
+    private void setSubstitution(final DeviceConnection connection,
             final SetPointSystemIdentifierDto setPointSystemIdentifier) {
-        final NodeContainer containingNode = connection.getFcModelNode(LogicalDevice.PV, LogicalNode.GENERATOR_ONE,
-                DataAttribute.DEMANDED_POWER, Fc.SP);
+        final NodeContainer containingNode = connection.getFcModelNode(LogicalDevice.LOCAL_MICROGRID_CONTROLLER,
+                LogicalNode.GENERIC_INPUT_OUTPUT_ONE, DataAttribute.INTEGER_STATUS_CONTROLLABLE_STATUS_OUTPUT, Fc.SV);
         this.iec61850Client.readNodeDataValues(connection.getConnection().getClientAssociation(),
                 containingNode.getFcmodelNode());
 
-        final NodeContainer magnitudeSetPointNode = containingNode.getChild(SubDataAttribute.MAGNITUDE_SETPOINT);
-
-        // TODO fix potential risk of exception due to cast from double to float
-        magnitudeSetPointNode.writeFloat(SubDataAttribute.FLOAT,
-                (float) setPointSystemIdentifier.getSetPoint().getValue());
+        containingNode.writeBoolean(SubDataAttribute.SUBSTITUDE_ENABLE, true);
+        containingNode.writeInteger(SubDataAttribute.SUBSTITUDE_VALUE,
+                (int) setPointSystemIdentifier.getSetPoint().getValue());
     }
 
     private boolean timePeriodContainsDateTime(final TimePeriodDto timePeriod, final DateTime date,
