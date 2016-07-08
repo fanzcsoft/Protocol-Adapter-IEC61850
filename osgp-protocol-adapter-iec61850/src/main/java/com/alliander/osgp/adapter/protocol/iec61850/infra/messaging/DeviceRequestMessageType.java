@@ -30,5 +30,5 @@ public enum DeviceRequestMessageType {
     REVOKE_KEY,
     UPDATE_DEVICE_SSL_CERTIFICATION,
     GET_DATA,
-    SET_SETPOINTS
+    SET_SETPOINT
 }
