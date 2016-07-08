@@ -25,6 +25,7 @@ public class Iec61850SystemServiceFactory {
             this.systemServices = new HashMap<>();
             this.systemServices.put("PV", new Iec61850PhotovoltaicSystemService());
             this.systemServices.put("BATTERY", new Iec61850BatterySystemService());
+            this.systemServices.put("LCMG", new Iec61850LmgcSystemService());
         }
         return this.systemServices;
     }
