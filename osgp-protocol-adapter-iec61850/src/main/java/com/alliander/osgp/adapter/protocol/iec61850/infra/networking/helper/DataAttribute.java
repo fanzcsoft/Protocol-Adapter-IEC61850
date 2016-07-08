@@ -83,7 +83,11 @@ public enum DataAttribute {
     /**
      * Property of ZGEN Node, demanded power setpoint.
      */
-    DEMANDED_POWER("DmdPwr"),
+    DEMAND_POWER("DmdPwr"),
+    /**
+     * Property of ZGEN Node, power rating setpoint.
+     */
+    POWER_RATING("PwrRtg"),
     /**
      * Generic health data attribute
      */
@@ -103,7 +107,7 @@ public enum DataAttribute {
     /**
      * Property of LLN0 Node, ALLData_P01, contains the reporting information.
      */
-    REPORTING_ALL_DATA("AllData_P01"),
+    REPORTING_ALL_DATA("AllData_P02"),
     /**
      * Actual Power Warning: This is used for both input (MMXN1 Logical Node)
      * and output (MMXN2 Logical Node)

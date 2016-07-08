@@ -1,4 +1,4 @@
-package com.alliander.osgp.adapter.protocol.iec61850.infra.networking;
+package com.alliander.osgp.adapter.protocol.iec61850.infra.networking.reporting;
 
 import java.io.IOException;
 import java.util.ArrayList;

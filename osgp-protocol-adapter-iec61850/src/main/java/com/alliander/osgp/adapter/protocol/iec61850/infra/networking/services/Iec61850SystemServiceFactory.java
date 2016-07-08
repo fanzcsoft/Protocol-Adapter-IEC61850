@@ -1,10 +1,11 @@
-package com.alliander.osgp.adapter.protocol.iec61850.infra.networking;
+package com.alliander.osgp.adapter.protocol.iec61850.infra.networking.services;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.stereotype.Component;
 
+import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.SystemService;
 import com.alliander.osgp.dto.valueobjects.microgrids.SystemFilterDto;
 
 @Component

@@ -1,4 +1,4 @@
-package com.alliander.osgp.adapter.protocol.iec61850.infra.networking;
+package com.alliander.osgp.adapter.protocol.iec61850.infra.networking.reporting;
 
 import org.openmuc.openiec61850.ClientEventListener;
 import org.slf4j.Logger;

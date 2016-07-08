@@ -5,7 +5,7 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
-package com.alliander.osgp.adapter.protocol.iec61850.infra.networking;
+package com.alliander.osgp.adapter.protocol.iec61850.infra.networking.services;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -25,10 +25,14 @@ import org.springframework.stereotype.Component;
 
 import com.alliander.osgp.adapter.protocol.iec61850.application.services.DeviceManagementService;
 import com.alliander.osgp.adapter.protocol.iec61850.exceptions.ProtocolAdapterException;
+import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.Iec61850Client;
+import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.Iec61850ClientAssociation;
+import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.Iec61850Connection;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.DataAttribute;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.IED;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.LogicalDevice;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.LogicalNode;
+import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.reporting.Iec61850ClientRTUEventListener;
 
 @Component
 public class Iec61850DeviceConnectionService {

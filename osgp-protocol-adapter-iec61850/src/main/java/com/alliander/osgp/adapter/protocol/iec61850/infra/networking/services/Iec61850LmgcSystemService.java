@@ -1,20 +1,20 @@
-package com.alliander.osgp.adapter.protocol.iec61850.infra.networking;
+package com.alliander.osgp.adapter.protocol.iec61850.infra.networking.services;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 import org.openmuc.openiec61850.Fc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.Iec61850Client;
+import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.SystemService;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.DataAttribute;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.DeviceConnection;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.LogicalDevice;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.LogicalNode;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.NodeContainer;
-import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.SubDataAttribute;
+import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.translation.Iec61850LmgcTranslator;
 import com.alliander.osgp.dto.valueobjects.microgrids.MeasurementDto;
 import com.alliander.osgp.dto.valueobjects.microgrids.MeasurementFilterDto;
 import com.alliander.osgp.dto.valueobjects.microgrids.SystemFilterDto;
@@ -27,7 +27,7 @@ public class Iec61850LmgcSystemService implements SystemService {
     public List<MeasurementDto> GetData(final SystemFilterDto systemFilter, final Iec61850Client client,
             final DeviceConnection connection) {
 
-        final List<MeasurementDto> measurements = new ArrayList<MeasurementDto>();
+        final List<MeasurementDto> measurements = new ArrayList<>();
 
         for (final MeasurementFilterDto filter : systemFilter.getMeasurementFilters()) {
 
@@ -51,28 +51,20 @@ public class Iec61850LmgcSystemService implements SystemService {
         final NodeContainer containingNode = connection.getFcModelNode(LogicalDevice.LOCAL_MICROGRID_CONTROLLER,
                 LogicalNode.LOGICAL_NODE_ZERO, DataAttribute.BEHAVIOR, Fc.ST);
         client.readNodeDataValues(connection.getConnection().getClientAssociation(), containingNode.getFcmodelNode());
-        return new MeasurementDto(1, DataAttribute.BEHAVIOR.getDescription(), 0,
-                new DateTime(containingNode.getDate(SubDataAttribute.TIME), DateTimeZone.UTC),
-                containingNode.getByte(SubDataAttribute.STATE).getValue());
+        return Iec61850LmgcTranslator.translateBehavior(containingNode);
     }
 
     private MeasurementDto getHealth(final Iec61850Client client, final DeviceConnection connection) {
         final NodeContainer containingNode = connection.getFcModelNode(LogicalDevice.LOCAL_MICROGRID_CONTROLLER,
                 LogicalNode.LOGICAL_NODE_ZERO, DataAttribute.HEALTH, Fc.ST);
         client.readNodeDataValues(connection.getConnection().getClientAssociation(), containingNode.getFcmodelNode());
-
-        return new MeasurementDto(1, DataAttribute.HEALTH.getDescription(), 0,
-                new DateTime(containingNode.getDate(SubDataAttribute.TIME), DateTimeZone.UTC),
-                containingNode.getByte(SubDataAttribute.STATE).getValue());
+        return Iec61850LmgcTranslator.translateHealth(containingNode);
     }
 
     private MeasurementDto getIscso(final Iec61850Client client, final DeviceConnection connection) {
         final NodeContainer containingNode = connection.getFcModelNode(LogicalDevice.LOCAL_MICROGRID_CONTROLLER,
                 LogicalNode.GENERIC_INPUT_OUTPUT_ONE, DataAttribute.INTEGER_STATUS_CONTROLLABLE_STATUS_OUTPUT, Fc.ST);
         client.readNodeDataValues(connection.getConnection().getClientAssociation(), containingNode.getFcmodelNode());
-        return new MeasurementDto(1, DataAttribute.INTEGER_STATUS_CONTROLLABLE_STATUS_OUTPUT.getDescription(), 0,
-                new DateTime(containingNode.getDate(SubDataAttribute.TIME), DateTimeZone.UTC),
-                containingNode.getInteger(SubDataAttribute.STATE).getValue());
+        return Iec61850LmgcTranslator.translateIscso(containingNode);
     }
-
 }

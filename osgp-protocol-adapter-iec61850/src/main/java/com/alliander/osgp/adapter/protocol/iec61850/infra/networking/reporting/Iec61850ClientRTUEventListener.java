@@ -1,12 +1,14 @@
-package com.alliander.osgp.adapter.protocol.iec61850.infra.networking;
+package com.alliander.osgp.adapter.protocol.iec61850.infra.networking.reporting;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 import org.openmuc.openiec61850.BdaOptFlds;
 import org.openmuc.openiec61850.BdaReasonForInclusion;
 import org.openmuc.openiec61850.DataSet;
@@ -16,11 +18,7 @@ import org.openmuc.openiec61850.Report;
 
 import com.alliander.osgp.adapter.protocol.iec61850.application.services.DeviceManagementService;
 import com.alliander.osgp.adapter.protocol.iec61850.exceptions.ProtocolAdapterException;
-import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.DataAttribute;
-import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.LogicalNode;
-import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.NodeContainer;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.ReadOnlyNodeContainer;
-import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.SubDataAttribute;
 import com.alliander.osgp.dto.valueobjects.microgrids.DataResponseDto;
 import com.alliander.osgp.dto.valueobjects.microgrids.MeasurementDto;
 import com.alliander.osgp.dto.valueobjects.microgrids.MeasurementResultSystemIdentifierDto;
@@ -34,6 +32,15 @@ public class Iec61850ClientRTUEventListener extends Iec61850ClientBaseEventListe
      * following offset.
      */
     private static final long IEC61850_ENTRY_TIME_OFFSET = 441763200000L;
+
+    private static final Map<String, Iec61850RtuReportHandler> REPORT_HANDLERS;
+    static {
+        final Map<String, Iec61850RtuReportHandler> handlers = new HashMap<>();
+        handlers.put("ZOWN_POCPV1/LLN0$AllData", new Iec61850PhotovoltaicReportHandler());
+        handlers.put("ZOWN_POCBATTERY1/LLN0$AllData", new Iec61850BatteryReportHandler());
+        handlers.put("ZOWN_POCLMGC1/LLN0$AllData", new Iec61850LmgcReportHandler());
+        REPORT_HANDLERS = Collections.unmodifiableMap(handlers);
+    }
 
     public Iec61850ClientRTUEventListener(final String deviceIdentification,
             final DeviceManagementService deviceManagementService) throws ProtocolAdapterException {
@@ -68,15 +75,22 @@ public class Iec61850ClientRTUEventListener extends Iec61850ClientBaseEventListe
             return;
         }
 
+        final Iec61850RtuReportHandler reportHandler = REPORT_HANDLERS.get(report.getDataSetRef());
+        if (reportHandler == null) {
+            this.logger.warn("Skipping report because dataset is not supported {}", report.getDataSetRef());
+            return;
+        }
+
         this.logReportDetails(report);
         try {
-            this.processDataSet(report.getDataSet(), reportDescription);
+            this.processDataSet(report.getDataSet(), reportDescription, reportHandler);
         } catch (final ProtocolAdapterException e) {
             this.logger.warn("Unable to process report, discarding report", e);
         }
     }
 
-    private void processDataSet(final DataSet dataSet, final String reportDescription) throws ProtocolAdapterException {
+    private void processDataSet(final DataSet dataSet, final String reportDescription,
+            final Iec61850RtuReportHandler reportHandler) throws ProtocolAdapterException {
         if (dataSet == null) {
             this.logger.warn("No DataSet available for {}", reportDescription);
             return;
@@ -97,8 +111,8 @@ public class Iec61850ClientRTUEventListener extends Iec61850ClientBaseEventListe
 
             this.logger.info("Handle member {} for {}", member.getReference(), reportDescription);
             try {
-                final MeasurementDto dto = this
-                        .translatePvMeasurement(new ReadOnlyNodeContainer(this.deviceIdentification, member));
+                final MeasurementDto dto = reportHandler
+                        .handleMember(new ReadOnlyNodeContainer(this.deviceIdentification, member));
                 if (dto != null) {
                     measurements.add(dto);
                 } else {
@@ -110,61 +124,10 @@ public class Iec61850ClientRTUEventListener extends Iec61850ClientBaseEventListe
             }
         }
 
-        final MeasurementResultSystemIdentifierDto systemMeasurements = new MeasurementResultSystemIdentifierDto(1,
-                LogicalNode.GENERATOR_ONE.getDescription(), measurements);
+        final MeasurementResultSystemIdentifierDto systemResult = reportHandler.createResult(measurements);
         final List<MeasurementResultSystemIdentifierDto> systems = new ArrayList<>();
-        systems.add(systemMeasurements);
+        systems.add(systemResult);
         this.deviceManagementService.sendMeasurements(this.deviceIdentification, new DataResponseDto(systems));
-    }
-
-    private MeasurementDto translatePvMeasurement(final ReadOnlyNodeContainer node) {
-        if (node.getFcmodelNode().getName().equals(DataAttribute.BEHAVIOR.getDescription())) {
-            return this.translatePvBehavior(node);
-        }
-
-        if (node.getFcmodelNode().getName().equals(DataAttribute.GENERATOR_SPEED.getDescription())) {
-            return this.translatePvGenerationSpeed(node);
-        }
-
-        if (node.getFcmodelNode().getName().equals(DataAttribute.DEMANDED_POWER.getDescription())) {
-            // TODO add suupport for demand power
-            return null;
-        }
-
-        if (node.getFcmodelNode().getName().equals(DataAttribute.HEALTH.getDescription())) {
-            return this.translatePvHealth(node);
-        }
-
-        if (node.getFcmodelNode().getName().equals(DataAttribute.OPERATIONAL_HOURS.getDescription())) {
-            return this.translatePvOperationalHours(node);
-        }
-
-        return null;
-    }
-
-    private MeasurementDto translatePvBehavior(final ReadOnlyNodeContainer node) {
-        return new MeasurementDto(1, DataAttribute.BEHAVIOR.getDescription(), 0,
-                new DateTime(node.getDate(SubDataAttribute.TIME), DateTimeZone.UTC),
-                node.getByte(SubDataAttribute.STATE).getValue());
-    }
-
-    private MeasurementDto translatePvGenerationSpeed(final ReadOnlyNodeContainer node) {
-        final NodeContainer generationMagnitude = node.getChild(SubDataAttribute.MAGNITUDE);
-        return new MeasurementDto(1, DataAttribute.GENERATOR_SPEED.getDescription(), 0,
-                new DateTime(node.getDate(SubDataAttribute.TIME), DateTimeZone.UTC),
-                generationMagnitude.getFloat(SubDataAttribute.FLOAT).getFloat());
-    }
-
-    private MeasurementDto translatePvOperationalHours(final ReadOnlyNodeContainer node) {
-        return new MeasurementDto(1, DataAttribute.OPERATIONAL_HOURS.getDescription(), 0,
-                new DateTime(node.getDate(SubDataAttribute.TIME), DateTimeZone.UTC),
-                node.getInteger(SubDataAttribute.STATE).getValue());
-    }
-
-    private MeasurementDto translatePvHealth(final ReadOnlyNodeContainer node) {
-        return new MeasurementDto(1, DataAttribute.HEALTH.getDescription(), 0,
-                new DateTime(node.getDate(SubDataAttribute.TIME), DateTimeZone.UTC),
-                node.getByte(SubDataAttribute.STATE).getValue());
     }
 
     private void logReportDetails(final Report report) {

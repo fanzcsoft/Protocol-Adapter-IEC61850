@@ -5,7 +5,7 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
-package com.alliander.osgp.adapter.protocol.iec61850.infra.networking;
+package com.alliander.osgp.adapter.protocol.iec61850.infra.networking.services;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -57,6 +57,11 @@ import com.alliander.osgp.adapter.protocol.iec61850.domain.valueobjects.Schedule
 import com.alliander.osgp.adapter.protocol.iec61850.domain.valueobjects.TriggerType;
 import com.alliander.osgp.adapter.protocol.iec61850.exceptions.ConnectionFailureException;
 import com.alliander.osgp.adapter.protocol.iec61850.exceptions.ProtocolAdapterException;
+import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.DeviceService;
+import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.Iec61850Client;
+import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.Iec61850ClientAssociation;
+import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.Iec61850Connection;
+import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.SystemService;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.DataAttribute;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.DeviceConnection;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.Function;
@@ -65,6 +70,7 @@ import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.Logi
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.LogicalNode;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.NodeContainer;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.SubDataAttribute;
+import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.reporting.Iec61850ClientBaseEventListener;
 import com.alliander.osgp.core.db.api.iec61850.application.services.SsldDataService;
 import com.alliander.osgp.core.db.api.iec61850.entities.DeviceOutputSetting;
 import com.alliander.osgp.core.db.api.iec61850.entities.Ssld;
@@ -1710,23 +1716,15 @@ public class Iec61850DeviceService implements DeviceService {
 
     private void enableReportingOnDevice(final DeviceConnection deviceConnection, final String deviceIdentification,
             final DataAttribute reportName) throws ServiceError, IOException {
-        final NodeContainer reporting = deviceConnection.getFcModelNode(LogicalDevice.PV, LogicalNode.LOGICAL_NODE_ZERO,
-                reportName, Fc.BR);
-
-        final Iec61850ClientBaseEventListener reportListener = deviceConnection.getConnection()
-                .getIec61850ClientAssociation().getReportListener();
-
-        /*
-         * final Integer sqNum =
-         * reporting.getUnsignedShort(SubDataAttribute.SEQUENCE_NUMBER).getValue
-         * (); if (sqNum == null) { LOGGER.warn(
-         * "Child {} of {} is null. No SqNum available for filtering incoming event reports."
-         * , SubDataAttribute.SEQUENCE_NUMBER.getDescription(), reporting); }
-         * else { reportListener.setSqNum(sqNum); }
-         */
-        // reportListener.setSqNum(0);
-
-        reporting.writeBoolean(SubDataAttribute.ENABLE_REPORTING, true);
+        final NodeContainer reportingPv = deviceConnection.getFcModelNode(LogicalDevice.PV,
+                LogicalNode.LOGICAL_NODE_ZERO, reportName, Fc.BR);
+        reportingPv.writeBoolean(SubDataAttribute.ENABLE_REPORTING, true);
+        final NodeContainer reportingBat = deviceConnection.getFcModelNode(LogicalDevice.BATTERY,
+                LogicalNode.LOGICAL_NODE_ZERO, reportName, Fc.BR);
+        reportingBat.writeBoolean(SubDataAttribute.ENABLE_REPORTING, true);
+        final NodeContainer reportingLmgc = deviceConnection.getFcModelNode(LogicalDevice.LOCAL_MICROGRID_CONTROLLER,
+                LogicalNode.LOGICAL_NODE_ZERO, reportName, Fc.BR);
+        reportingLmgc.writeBoolean(SubDataAttribute.ENABLE_REPORTING, true);
         LOGGER.info("Allowing device {} to send events", deviceIdentification);
     }
 
@@ -2005,7 +2003,7 @@ public class Iec61850DeviceService implements DeviceService {
                 Iec61850DeviceService.this.enableReportingOnDevice(connection, deviceRequest.getDeviceIdentification(),
                         DataAttribute.REPORTING_ALL_DATA);
 
-                final List<MeasurementResultSystemIdentifierDto> identifiers = new ArrayList<MeasurementResultSystemIdentifierDto>();
+                final List<MeasurementResultSystemIdentifierDto> identifiers = new ArrayList<>();
 
                 for (final SystemFilterDto systemFilter : requestedData.getSystemFilters()) {
 

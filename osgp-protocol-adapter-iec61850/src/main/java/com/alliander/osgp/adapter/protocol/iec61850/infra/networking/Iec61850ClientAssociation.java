@@ -9,6 +9,8 @@ package com.alliander.osgp.adapter.protocol.iec61850.infra.networking;
 
 import org.openmuc.openiec61850.ClientAssociation;
 
+import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.reporting.Iec61850ClientBaseEventListener;
+
 /**
  * Helper class, intended to make the ClientEventListener with a
  * ClientAssociation available for access after the association has been set up.
