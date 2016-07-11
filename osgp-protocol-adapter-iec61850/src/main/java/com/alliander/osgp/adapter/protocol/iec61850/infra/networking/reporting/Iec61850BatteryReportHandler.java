@@ -3,6 +3,8 @@ package com.alliander.osgp.adapter.protocol.iec61850.infra.networking.reporting;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.openmuc.openiec61850.Fc;
+
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.DataAttribute;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.LogicalNode;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.ReadOnlyNodeContainer;
@@ -45,17 +47,15 @@ public class Iec61850BatteryReportHandler implements Iec61850RtuReportHandler {
             return Iec61850BatteryTranslator.translateActualPowerOutput(member);
         }
 
-        // TODO Dataset in device is incorrect
+        if (member.getFcmodelNode().getName().equals(DataAttribute.NET_APPARENT_ENERGY.getDescription())
+                && member.getFcmodelNode().getFc() == Fc.ST) {
+            return Iec61850BatteryTranslator.translateNetApparentEnergy(member);
+        }
 
-        /*
-         * if (member.getFcmodelNode().getName().equals(DataAttribute.
-         * NET_APPARENT_ENERGY.getDescription())) { return
-         * Iec61850BatteryTranslator.translateNetApparentEnergy(member); }
-         *
-         * if (member.getFcmodelNode().getName().equals(DataAttribute.
-         * NET_REAL_ENERGY.getDescription())) { return
-         * Iec61850BatteryTranslator.translateNetRealEnergy(member); }
-         */
+        if (member.getFcmodelNode().getName().equals(DataAttribute.NET_REAL_ENERGY.getDescription())
+                && member.getFcmodelNode().getFc() == Fc.ST) {
+            return Iec61850BatteryTranslator.translateNetRealEnergy(member);
+        }
 
         return null;
     }

@@ -18,7 +18,8 @@ public class Iec61850SystemServiceFactory {
         if (this.getSystemServices().containsKey(key)) {
             return this.getSystemServices().get(key);
         }
-        throw new Exception("Invalid System Type in System Filter");
+
+        throw new Exception("Invalid System Type in System Filter: [" + key + "]");
     }
 
     private Map<String, SystemService> getSystemServices() {
