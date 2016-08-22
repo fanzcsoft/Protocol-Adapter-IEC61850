@@ -78,31 +78,14 @@ public class RtuSimulator implements ServerEventListener {
         final Date timestamp = new Date();
 
         final List<BasicDataAttribute> values = new ArrayList<BasicDataAttribute>(3);
-        values.add(this.incrementInt("ZOWN_POCPV1/ZGEN1.OpTmh.stVal", Fc.ST));
-        values.add(this.setTime("ZOWN_POCPV1/ZGEN1.OpTmh.t", Fc.ST, timestamp));
+        values.add(this.incrementInt("WAGO61850ServerPV1/DGEN1.OpTmh.stVal", Fc.ST));
+        values.add(this.setTime("WAGO61850ServerPV1/DGEN1.OpTmh.t", Fc.ST, timestamp));
 
-        values.add(this.setRandomFloat("ZOWN_POCPV1/ZGEN1.GnSpd.mag.f", Fc.MX, 0, 5000));
-        values.add(this.setTime("ZOWN_POCPV1/ZGEN1.GnSpd.t", Fc.MX, timestamp));
+        values.add(this.incrementInt("WAGO61850ServerBATTERY1/DGEN1.OpTmh.stVal", Fc.ST));
+        values.add(this.setTime("WAGO61850ServerBATTERY1/DGEN1.OpTmh.t", Fc.ST, timestamp));
 
-        values.add(this.incrementInt("ZOWN_POCBATTERY1/ZBAT1.OpTmh.stVal", Fc.ST));
-        values.add(this.setTime("ZOWN_POCBATTERY1/ZBAT1.OpTmh.t", Fc.ST, timestamp));
-
-        values.add(this.setRandomFloat("ZOWN_POCBATTERY1/MMXN1.Watt.mag.f", Fc.MX, 0, 1000));
-        values.add(this.setTime("ZOWN_POCBATTERY1/MMXN1.Watt.t", Fc.MX, timestamp));
-
-        values.add(this.setRandomFloat("ZOWN_POCBATTERY1/MMXN2.Watt.mag.f", Fc.MX, 0, 550));
-        values.add(this.setTime("ZOWN_POCBATTERY1/MMXN2.Watt.t", Fc.MX, timestamp));
-
-        values.add(this.setRandomInt("ZOWN_POCBATTERY1/GGIO1.ISCSO.stVal", Fc.ST, 0, 100));
-        values.add(this.setTime("ZOWN_POCBATTERY1/GGIO1.ISCSO.t", Fc.ST, timestamp));
-
-        values.add(this.setRandomInt("ZOWN_POCBATTERY1/MMTR1.TotWh.actVal", Fc.ST, 0, 1000));
-        values.add(this.setTime("ZOWN_POCBATTERY1/MMTR1.TotWh.t", Fc.ST, timestamp));
-        values.add(this.setRandomFloat("ZOWN_POCBATTERY1/MMTR1.TotWh.pulsQty", Fc.CF, 85, 95));
-
-        values.add(this.setRandomInt("ZOWN_POCBATTERY1/MMTR1.TotVAh.actVal", Fc.ST, 0, 600));
-        values.add(this.setTime("ZOWN_POCBATTERY1/MMTR1.TotVAh.t", Fc.ST, timestamp));
-        values.add(this.setRandomFloat("ZOWN_POCBATTERY1/MMTR1.TotVAh.pulsQty", Fc.CF, 80, 90));
+        values.add(this.setRandomFloat("WAGO61850ServerBATTERY1/MMXU1.TotW.mag.f", Fc.MX, 0, 1000));
+        values.add(this.setTime("WAGO61850ServerBATTERY1/MMXU1.TotW.t", Fc.MX, timestamp));
 
         this.server.setValues(values);
         LOGGER.info("Generated values");
