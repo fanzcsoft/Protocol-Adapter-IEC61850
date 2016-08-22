@@ -25,8 +25,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.alliander.osgp.adapter.protocol.iec61850.application.services.DeviceManagementService;
 import com.alliander.osgp.adapter.protocol.iec61850.exceptions.ConnectionFailureException;
 import com.alliander.osgp.adapter.protocol.iec61850.exceptions.ProtocolAdapterException;
+import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.Iec61850ClientAssociation;
+import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.Iec61850Connection;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.DataAttribute;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.DeviceConnection;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.Function;
@@ -36,11 +39,23 @@ import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.Logi
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.NodeContainer;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.SubDataAttribute;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.reporting.Iec61850ClientBaseEventListener;
+import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.services.Iec61850DeviceService;
+import com.alliander.osgp.core.db.api.iec61850.entities.Ssld;
+import com.alliander.osgp.core.db.api.iec61850.repositories.SsldDataRepository;
 
 @Component
 public class Iec61850Client {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Iec61850Client.class);
+
+    @Autowired
+    private DeviceManagementService deviceManagementService;
+
+    @Autowired
+    private Iec61850DeviceService iec61850DeviceService;
+
+    @Autowired
+    private SsldDataRepository ssldDataRepository;
 
     @Autowired
     private int iec61850PortClient;
@@ -123,7 +138,7 @@ public class Iec61850Client {
     public void disconnect(final ClientAssociation clientAssociation, final String deviceIdentification) {
         LOGGER.info("disconnecting from device: {}...", deviceIdentification);
         clientAssociation.disconnect();
-        LOGGER.info("disconnected from device: {} !!!", deviceIdentification);
+        LOGGER.info("disconnected from device: {}", deviceIdentification);
     }
 
     /**
@@ -187,6 +202,7 @@ public class Iec61850Client {
     public void disableRegistration(final String deviceIdentification, final InetAddress ipAddress)
             throws ProtocolAdapterException {
         final Iec61850ClientAssociation iec61850ClientAssociation;
+        final ServerModel serverModel;
         try {
             iec61850ClientAssociation = this.connect(deviceIdentification, ipAddress, null);
         } catch (final ServiceError e) {
@@ -195,17 +211,38 @@ public class Iec61850Client {
         if (iec61850ClientAssociation == null || iec61850ClientAssociation.getClientAssociation() == null) {
             throw new ProtocolAdapterException("Unable to connect to device to disable registration.");
         }
+        serverModel = this.readServerModelFromDevice(iec61850ClientAssociation.getClientAssociation());
 
         final Function<Void> function = new Function<Void>() {
 
             @Override
             public Void apply() throws Exception {
-                final DeviceConnection deviceConnection = new DeviceConnection(
-                        new Iec61850Connection(iec61850ClientAssociation, null), deviceIdentification, IED.FLEX_OVL);
+                final DeviceConnection deviceConnection = new DeviceConnection(new Iec61850Connection(
+                        iec61850ClientAssociation, serverModel), deviceIdentification, IED.FLEX_OVL);
+
+                // Set the location information for this device.
+                final Ssld ssld = Iec61850Client.this.ssldDataRepository
+                        .findByDeviceIdentification(deviceIdentification);
+                if (ssld != null) {
+                    final Float longitude = ssld.getGpsLongitude();
+                    final Float latitude = ssld.getGpsLatitude();
+                    if (longitude != null && latitude != null) {
+                        final NodeContainer astronomical = deviceConnection.getFcModelNode(LogicalDevice.LIGHTING,
+                                LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.ASTRONOMICAL, Fc.CF);
+                        astronomical.writeFloat(SubDataAttribute.GPS_LONGITUDE, ssld.getGpsLongitude());
+                        astronomical.writeFloat(SubDataAttribute.GPS_LATITUDE, ssld.getGpsLatitude());
+                    }
+                }
+
+                // Disable the registration by the device by setting attribute
+                // of property Reg to false.
                 final NodeContainer deviceRegistration = deviceConnection.getFcModelNode(LogicalDevice.LIGHTING,
                         LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.REGISTRATION, Fc.CF);
                 deviceRegistration.writeBoolean(SubDataAttribute.DEVICE_REGISTRATION_ENABLED, false);
 
+                // Make sure the device can send a report.
+                Iec61850Client.this.iec61850DeviceService.enableReportingOnDevice(deviceConnection,
+                        deviceIdentification);
                 return null;
             }
         };
