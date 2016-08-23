@@ -83,7 +83,6 @@
     <module>parent-pa-iec61850</module>
     <module>Shared/shared</module>
     <module>Shared/osgp-dto</module>
-    <module>Platform/osgp-domain-microgrids</module>
 
     <!-- Protocol Adapter IEC61850 -->
     <module>osgp-iec61850</module>
