@@ -42,23 +42,15 @@ public enum LogicalNode {
     /**
      * ZGEN1, information exchange with generators Logical Node.
      */
-    GENERATOR_ONE("ZGEN1"),
+    GENERATOR_ONE("DGEN1"),
     /**
      * ZBAT1, Logical Node containing Battery System characteristics
      */
     BATTERY_ONE("ZBAT1"),
     /**
-     * MMXN1, Logical Node for Actual Power In Measurements
+     * MMXU1, Logical Node for Actual Power In Measurements
      */
-    MEASUREMENT_ONE("MMXN1"),
-    /**
-     * MMXN2, Logical Node for Actual Power Out Measurements
-     */
-    MEASUREMENT_TWO("MMXN2"),
-    /**
-     * GGIO1, Logical Node Generic Input / Output
-     */
-    GENERIC_INPUT_OUTPUT_ONE("GGIO1"),
+    MEASUREMENT_ONE("MMXU1"),
     /**
      * MMTR1, Logical Node Meter Reading
      */

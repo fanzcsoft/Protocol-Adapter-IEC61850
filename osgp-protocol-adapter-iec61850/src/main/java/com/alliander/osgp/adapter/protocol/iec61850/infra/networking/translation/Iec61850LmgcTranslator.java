@@ -22,9 +22,13 @@ public class Iec61850LmgcTranslator {
                 containingNode.getByte(SubDataAttribute.STATE).getValue());
     }
 
-    public static MeasurementDto translateIscso(final NodeContainer containingNode) {
-        return new MeasurementDto(1, DataAttribute.INTEGER_STATUS_CONTROLLABLE_STATUS_OUTPUT.getDescription(), 0,
-                new DateTime(containingNode.getDate(SubDataAttribute.TIME), DateTimeZone.UTC),
-                containingNode.getInteger(SubDataAttribute.STATE).getValue());
-    }
+    // public static MeasurementDto translateIscso(final NodeContainer
+    // containingNode) {
+    // return new MeasurementDto(1,
+    // DataAttribute.INTEGER_STATUS_CONTROLLABLE_STATUS_OUTPUT.getDescription(),
+    // 0,
+    // new DateTime(containingNode.getDate(SubDataAttribute.TIME),
+    // DateTimeZone.UTC),
+    // containingNode.getInteger(SubDataAttribute.STATE).getValue());
+    // }
 }

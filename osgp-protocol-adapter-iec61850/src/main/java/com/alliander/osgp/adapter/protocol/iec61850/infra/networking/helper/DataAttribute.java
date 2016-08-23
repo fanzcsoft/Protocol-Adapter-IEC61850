@@ -99,7 +99,7 @@ public enum DataAttribute {
     /**
      * Generic operation time data attribute
      */
-    OPERATIONAL_HOURS("OpTmh"),
+    OPERATIONAL_HOURS("OpTmsRs"),
     /**
      * Generic (mandatory) physical name data attribute
      */
@@ -109,22 +109,13 @@ public enum DataAttribute {
      */
     REPORTING_ALL_DATA("AllData_P02"),
     /**
-     * Actual Power Warning: This is used for both input (MMXN1 Logical Node)
-     * and output (MMXN2 Logical Node)
+     * Actual Power
      */
-    ACTUAL_POWER("Watt"),
+    ACTUAL_POWER("TotW"),
     /**
-     * Integer status controllable Status Input
+     * Total Energy
      */
-    INTEGER_STATUS_CONTROLLABLE_STATUS_OUTPUT("ISCSO"),
-    /**
-     * Net Apparent Energy
-     */
-    NET_APPARENT_ENERGY("TotVAh"),
-    /**
-     *
-     */
-    NET_REAL_ENERGY("TotWh")
+    TOTAL_ENERGY("TotWh")
 
     ;
 

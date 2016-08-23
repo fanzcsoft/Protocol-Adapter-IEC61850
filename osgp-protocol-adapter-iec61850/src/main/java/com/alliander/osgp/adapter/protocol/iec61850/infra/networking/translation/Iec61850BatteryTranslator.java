@@ -40,20 +40,8 @@ public class Iec61850BatteryTranslator {
                 containingNode.getChild(SubDataAttribute.MAGNITUDE).getFloat(SubDataAttribute.FLOAT).getFloat());
     }
 
-    public static MeasurementDto translateIscso(final NodeContainer containingNode) {
-        return new MeasurementDto(1, DataAttribute.INTEGER_STATUS_CONTROLLABLE_STATUS_OUTPUT.getDescription(), 0,
-                new DateTime(containingNode.getDate(SubDataAttribute.TIME), DateTimeZone.UTC),
-                containingNode.getInteger(SubDataAttribute.STATE).getValue());
-    }
-
-    public static MeasurementDto translateNetApparentEnergy(final NodeContainer containingNode) {
-        return new MeasurementDto(1, DataAttribute.NET_APPARENT_ENERGY.getDescription(), 0,
-                new DateTime(containingNode.getDate(SubDataAttribute.TIME), DateTimeZone.UTC),
-                containingNode.getInteger(SubDataAttribute.ACTUAL_VALUE).getValue());
-    }
-
     public static MeasurementDto translateNetRealEnergy(final NodeContainer containingNode) {
-        return new MeasurementDto(1, DataAttribute.NET_REAL_ENERGY.getDescription(), 0,
+        return new MeasurementDto(1, DataAttribute.TOTAL_ENERGY.getDescription(), 0,
                 new DateTime(containingNode.getDate(SubDataAttribute.TIME), DateTimeZone.UTC),
                 containingNode.getInteger(SubDataAttribute.ACTUAL_VALUE).getValue());
     }

@@ -42,26 +42,11 @@ public class Iec61850BatteryReportHandler implements Iec61850RtuReportHandler {
             return Iec61850BatteryTranslator.translateActualPowerInput(member);
         }
 
-        if (member.getFcmodelNode().getReference().toString().contains(LogicalNode.MEASUREMENT_TWO.getDescription())
-                && member.getFcmodelNode().getName().equals(DataAttribute.ACTUAL_POWER.getDescription())) {
-            return Iec61850BatteryTranslator.translateActualPowerOutput(member);
-        }
-
-        if (member.getFcmodelNode().getName().equals(DataAttribute.NET_APPARENT_ENERGY.getDescription())
-                && member.getFcmodelNode().getFc() == Fc.ST) {
-            return Iec61850BatteryTranslator.translateNetApparentEnergy(member);
-        }
-
-        if (member.getFcmodelNode().getName().equals(DataAttribute.NET_REAL_ENERGY.getDescription())
+        if (member.getFcmodelNode().getName().equals(DataAttribute.TOTAL_ENERGY.getDescription())
                 && member.getFcmodelNode().getFc() == Fc.ST) {
             return Iec61850BatteryTranslator.translateNetRealEnergy(member);
         }
 
-        if (member.getFcmodelNode().getName()
-                .equals(DataAttribute.INTEGER_STATUS_CONTROLLABLE_STATUS_OUTPUT.getDescription())
-                && member.getFcmodelNode().getFc() == Fc.ST) {
-            return Iec61850BatteryTranslator.translateIscso(member);
-        }
         return null;
     }
 }

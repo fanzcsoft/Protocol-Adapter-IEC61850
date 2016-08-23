@@ -911,12 +911,15 @@ public class Iec61850DeviceService implements DeviceService {
                 for (final SetPointSystemIdentifierDto spsi : setPointsRequest.getSetPointSystemIdentifiers()) {
                     // For POC the controller 'substitute' is supported
                     final String systemName = spsi.getSystemType() + spsi.getId();
-                    if (systemName.equals(LogicalDevice.LOCAL_MICROGRID_CONTROLLER.getDescription())) {
-                        Iec61850DeviceService.this.setSubstitution(connection, spsi);
-                    } else {
-                        LOGGER.info("Skipping Set SetPoint for unsupported system {} with id {}", spsi.getSystemType(),
-                                spsi.getId());
-                    }
+                    // if
+                    // (systemName.equals(LogicalDevice.LOCAL_MICROGRID_CONTROLLER.getDescription()))
+                    // {
+                    // Iec61850DeviceService.this.setSubstitution(connection,
+                    // spsi);
+                    // } else {
+                    LOGGER.info("Skipping Set SetPoint for unsupported system {} with id {}", spsi.getSystemType(),
+                            spsi.getId());
+                    // }
                 }
 
                 return null;
@@ -2055,17 +2058,19 @@ public class Iec61850DeviceService implements DeviceService {
         return this.iec61850Client.sendCommandWithRetry(function);
     }
 
-    private void setSubstitution(final DeviceConnection connection,
-            final SetPointSystemIdentifierDto setPointSystemIdentifier) {
-        final NodeContainer containingNode = connection.getFcModelNode(LogicalDevice.LOCAL_MICROGRID_CONTROLLER,
-                LogicalNode.GENERIC_INPUT_OUTPUT_ONE, DataAttribute.INTEGER_STATUS_CONTROLLABLE_STATUS_OUTPUT, Fc.SV);
-        this.iec61850Client.readNodeDataValues(connection.getConnection().getClientAssociation(),
-                containingNode.getFcmodelNode());
-
-        containingNode.writeBoolean(SubDataAttribute.SUBSTITUDE_ENABLE, true);
-        containingNode.writeInteger(SubDataAttribute.SUBSTITUDE_VALUE,
-                (int) setPointSystemIdentifier.getSetPoint().getValue());
-    }
+    // private void setSubstitution(final DeviceConnection connection,
+    // final SetPointSystemIdentifierDto setPointSystemIdentifier) {
+    // final NodeContainer containingNode =
+    // connection.getFcModelNode(LogicalDevice.LOCAL_MICROGRID_CONTROLLER,
+    // LogicalNode.GENERIC_INPUT_OUTPUT_ONE,
+    // DataAttribute.INTEGER_STATUS_CONTROLLABLE_STATUS_OUTPUT, Fc.SV);
+    // this.iec61850Client.readNodeDataValues(connection.getConnection().getClientAssociation(),
+    // containingNode.getFcmodelNode());
+    //
+    // containingNode.writeBoolean(SubDataAttribute.SUBSTITUDE_ENABLE, true);
+    // containingNode.writeInteger(SubDataAttribute.SUBSTITUDE_VALUE,
+    // (int) setPointSystemIdentifier.getSetPoint().getValue());
+    // }
 
     private boolean timePeriodContainsDateTime(final TimePeriodDto timePeriod, final DateTime date,
             final String deviceIdentification, final int relayIndex, final int bufferIndex) {

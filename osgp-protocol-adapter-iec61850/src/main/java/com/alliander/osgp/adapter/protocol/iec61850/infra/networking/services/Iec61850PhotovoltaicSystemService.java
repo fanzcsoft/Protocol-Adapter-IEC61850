@@ -34,8 +34,6 @@ public class Iec61850PhotovoltaicSystemService implements SystemService {
                 measurements.add(this.getBehavior(client, connection));
             } else if (filter.getNode().equalsIgnoreCase(DataAttribute.HEALTH.getDescription())) {
                 measurements.add(this.getHealth(client, connection));
-            } else if (filter.getNode().equalsIgnoreCase(DataAttribute.GENERATOR_SPEED.getDescription())) {
-                measurements.add(this.getGenerationSpeed(client, connection));
             } else if (filter.getNode().equalsIgnoreCase(DataAttribute.OPERATIONAL_HOURS.getDescription())) {
                 measurements.add(this.getOperationalHours(client, connection));
             } else {
@@ -47,24 +45,17 @@ public class Iec61850PhotovoltaicSystemService implements SystemService {
     }
 
     private MeasurementDto getBehavior(final Iec61850Client client, final DeviceConnection connection) {
-        final NodeContainer containingNode = connection.getFcModelNode(LogicalDevice.PV, LogicalNode.GENERATOR_ONE,
+        final NodeContainer containingNode = connection.getFcModelNode(LogicalDevice.PV, LogicalNode.LOGICAL_NODE_ZERO,
                 DataAttribute.BEHAVIOR, Fc.ST);
         client.readNodeDataValues(connection.getConnection().getClientAssociation(), containingNode.getFcmodelNode());
         return Iec61850PhotovoltaicTranslator.translateBehavior(containingNode);
     }
 
     private MeasurementDto getHealth(final Iec61850Client client, final DeviceConnection connection) {
-        final NodeContainer containingNode = connection.getFcModelNode(LogicalDevice.PV, LogicalNode.GENERATOR_ONE,
+        final NodeContainer containingNode = connection.getFcModelNode(LogicalDevice.PV, LogicalNode.LOGICAL_NODE_ZERO,
                 DataAttribute.HEALTH, Fc.ST);
         client.readNodeDataValues(connection.getConnection().getClientAssociation(), containingNode.getFcmodelNode());
         return Iec61850PhotovoltaicTranslator.translateHealth(containingNode);
-    }
-
-    private MeasurementDto getGenerationSpeed(final Iec61850Client client, final DeviceConnection connection) {
-        final NodeContainer containingNode = connection.getFcModelNode(LogicalDevice.PV, LogicalNode.GENERATOR_ONE,
-                DataAttribute.GENERATOR_SPEED, Fc.MX);
-        client.readNodeDataValues(connection.getConnection().getClientAssociation(), containingNode.getFcmodelNode());
-        return Iec61850PhotovoltaicTranslator.translateGenerationSpeed(containingNode);
     }
 
     private MeasurementDto getOperationalHours(final Iec61850Client client, final DeviceConnection connection) {

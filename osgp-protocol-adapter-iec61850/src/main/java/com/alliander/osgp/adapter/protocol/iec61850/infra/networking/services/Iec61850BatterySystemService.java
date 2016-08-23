@@ -39,14 +39,9 @@ public class Iec61850BatterySystemService implements SystemService {
             } else if (filter.getNode().equalsIgnoreCase(DataAttribute.OPERATIONAL_HOURS.getDescription())) {
                 measurements.add(this.getOperationTimeInHours(client, connection));
             } else if (filter.getNode().equalsIgnoreCase(DataAttribute.ACTUAL_POWER.getDescription())) {
-                measurements.add(this.getActualPower(client, connection, filter.getId()));
-            } else if (filter.getNode()
-                    .equalsIgnoreCase(DataAttribute.INTEGER_STATUS_CONTROLLABLE_STATUS_OUTPUT.getDescription())) {
-                measurements.add(this.getIscso(client, connection));
-            } else if (filter.getNode().equalsIgnoreCase(DataAttribute.NET_APPARENT_ENERGY.getDescription())) {
-                measurements.add(this.getNetApparentEnergy(client, connection));
-            } else if (filter.getNode().equalsIgnoreCase(DataAttribute.NET_REAL_ENERGY.getDescription())) {
-                measurements.add(this.getNetRealEnergy(client, connection));
+                measurements.add(this.getActualPower(client, connection));
+            } else if (filter.getNode().equalsIgnoreCase(DataAttribute.TOTAL_ENERGY.getDescription())) {
+                measurements.add(this.getTotalEnergy(client, connection));
             } else {
                 LOGGER.warn("Unsupported data attribute [{}], skip get data for it", filter.getNode());
             }
@@ -70,57 +65,22 @@ public class Iec61850BatterySystemService implements SystemService {
     }
 
     private MeasurementDto getOperationTimeInHours(final Iec61850Client client, final DeviceConnection connection) {
-        final NodeContainer containingNode = connection.getFcModelNode(LogicalDevice.BATTERY, LogicalNode.BATTERY_ONE,
+        final NodeContainer containingNode = connection.getFcModelNode(LogicalDevice.BATTERY, LogicalNode.GENERATOR_ONE,
                 DataAttribute.OPERATIONAL_HOURS, Fc.ST);
         client.readNodeDataValues(connection.getConnection().getClientAssociation(), containingNode.getFcmodelNode());
         return Iec61850BatteryTranslator.translateOperationTimeInHours(containingNode);
     }
 
-    private MeasurementDto getActualPower(final Iec61850Client client, final DeviceConnection connection,
-            final int id) {
-        // TODO Refactor
-        switch (id) {
-        case 1:
-            return this.getActualPowerInput(client, connection);
-        case 2:
-            return this.getActualPowerOutput(client, connection);
-        default:
-            LOGGER.error("Actual power request for measurement filter id {} is not supported");
-        }
-        return null;
-    }
-
-    private MeasurementDto getActualPowerInput(final Iec61850Client client, final DeviceConnection connection) {
+    private MeasurementDto getActualPower(final Iec61850Client client, final DeviceConnection connection) {
         final NodeContainer containingNode = connection.getFcModelNode(LogicalDevice.BATTERY,
                 LogicalNode.MEASUREMENT_ONE, DataAttribute.ACTUAL_POWER, Fc.MX);
         client.readNodeDataValues(connection.getConnection().getClientAssociation(), containingNode.getFcmodelNode());
         return Iec61850BatteryTranslator.translateActualPowerInput(containingNode);
     }
 
-    private MeasurementDto getActualPowerOutput(final Iec61850Client client, final DeviceConnection connection) {
+    private MeasurementDto getTotalEnergy(final Iec61850Client client, final DeviceConnection connection) {
         final NodeContainer containingNode = connection.getFcModelNode(LogicalDevice.BATTERY,
-                LogicalNode.MEASUREMENT_TWO, DataAttribute.ACTUAL_POWER, Fc.MX);
-        client.readNodeDataValues(connection.getConnection().getClientAssociation(), containingNode.getFcmodelNode());
-        return Iec61850BatteryTranslator.translateActualPowerOutput(containingNode);
-    }
-
-    private MeasurementDto getIscso(final Iec61850Client client, final DeviceConnection connection) {
-        final NodeContainer containingNode = connection.getFcModelNode(LogicalDevice.BATTERY,
-                LogicalNode.GENERIC_INPUT_OUTPUT_ONE, DataAttribute.INTEGER_STATUS_CONTROLLABLE_STATUS_OUTPUT, Fc.ST);
-        client.readNodeDataValues(connection.getConnection().getClientAssociation(), containingNode.getFcmodelNode());
-        return Iec61850BatteryTranslator.translateIscso(containingNode);
-    }
-
-    private MeasurementDto getNetApparentEnergy(final Iec61850Client client, final DeviceConnection connection) {
-        final NodeContainer containingNode = connection.getFcModelNode(LogicalDevice.BATTERY,
-                LogicalNode.METER_READING_ONE, DataAttribute.NET_APPARENT_ENERGY, Fc.ST);
-        client.readNodeDataValues(connection.getConnection().getClientAssociation(), containingNode.getFcmodelNode());
-        return Iec61850BatteryTranslator.translateNetApparentEnergy(containingNode);
-    }
-
-    private MeasurementDto getNetRealEnergy(final Iec61850Client client, final DeviceConnection connection) {
-        final NodeContainer containingNode = connection.getFcModelNode(LogicalDevice.BATTERY,
-                LogicalNode.METER_READING_ONE, DataAttribute.NET_REAL_ENERGY, Fc.ST);
+                LogicalNode.METER_READING_ONE, DataAttribute.TOTAL_ENERGY, Fc.ST);
         client.readNodeDataValues(connection.getConnection().getClientAssociation(), containingNode.getFcmodelNode());
         return Iec61850BatteryTranslator.translateNetRealEnergy(containingNode);
     }

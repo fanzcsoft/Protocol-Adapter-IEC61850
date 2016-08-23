@@ -3,8 +3,6 @@ package com.alliander.osgp.adapter.protocol.iec61850.infra.networking.reporting;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.openmuc.openiec61850.Fc;
-
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.DataAttribute;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.ReadOnlyNodeContainer;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.translation.Iec61850LmgcTranslator;
@@ -32,11 +30,11 @@ public class Iec61850LmgcReportHandler implements Iec61850RtuReportHandler {
             return Iec61850LmgcTranslator.translateHealth(member);
         }
 
-        if (member.getFcmodelNode().getName()
-                .equals(DataAttribute.INTEGER_STATUS_CONTROLLABLE_STATUS_OUTPUT.getDescription())
-                && member.getFcmodelNode().getFc() == Fc.ST) {
-            return Iec61850LmgcTranslator.translateIscso(member);
-        }
+        // if (member.getFcmodelNode().getName()
+        // .equals(DataAttribute.INTEGER_STATUS_CONTROLLABLE_STATUS_OUTPUT.getDescription())
+        // && member.getFcmodelNode().getFc() == Fc.ST) {
+        // return Iec61850LmgcTranslator.translateIscso(member);
+        // }
 
         return null;
     }
