@@ -26,10 +26,6 @@ public class Iec61850PhotovoltaicReportHandler implements Iec61850RtuReportHandl
             return Iec61850PhotovoltaicTranslator.translateBehavior(member);
         }
 
-        if (member.getFcmodelNode().getName().equals(DataAttribute.GENERATOR_SPEED.getDescription())) {
-            return Iec61850PhotovoltaicTranslator.translateGenerationSpeed(member);
-        }
-
         if (member.getFcmodelNode().getName().equals(DataAttribute.HEALTH.getDescription())) {
             return Iec61850PhotovoltaicTranslator.translateHealth(member);
         }

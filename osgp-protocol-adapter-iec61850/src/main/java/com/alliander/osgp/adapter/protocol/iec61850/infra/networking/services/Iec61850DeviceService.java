@@ -942,7 +942,7 @@ public class Iec61850DeviceService implements DeviceService {
          * (serverModel == null) { // reconnect }
          */
         this.iec61850DeviceConnectionService.connect(deviceRequest.getIpAddress(),
-                deviceRequest.getDeviceIdentification(), IED.ZOWN_RTU, LogicalDevice.PV_ONE);
+                deviceRequest.getDeviceIdentification(), IED.ZOWN_RTU, LogicalDevice.RTU_ONE);
         return this.iec61850DeviceConnectionService.getServerModel(deviceRequest.getDeviceIdentification());
     }
 
@@ -1703,12 +1703,13 @@ public class Iec61850DeviceService implements DeviceService {
                 .getIec61850ClientAssociation().getReportListener();
 
         final Integer sqNum = reporting.getUnsignedShort(SubDataAttribute.SEQUENCE_NUMBER).getValue();
-        if (sqNum == null) {
-            LOGGER.warn("Child {} of {} is null. No SqNum available for filtering incoming event reports.",
-                    SubDataAttribute.SEQUENCE_NUMBER.getDescription(), reporting);
-        } else {
-            reportListener.setSqNum(sqNum);
-        }
+        // if (sqNum == null) {
+        // LOGGER.warn("Child {} of {} is null. No SqNum available for filtering
+        // incoming event reports.",
+        // SubDataAttribute.SEQUENCE_NUMBER.getDescription(), reporting);
+        // } else {
+        reportListener.setSqNum(sqNum);
+        // }
 
         reporting.writeBoolean(SubDataAttribute.ENABLE_REPORTING, true);
         LOGGER.info("Allowing device {} to send events", deviceIdentification);
@@ -2028,8 +2029,9 @@ public class Iec61850DeviceService implements DeviceService {
 
             @Override
             public DataResponseDto apply() throws Exception {
-                Iec61850DeviceService.this.enableReportingOnDevice(connection, deviceRequest.getDeviceIdentification(),
-                        DataAttribute.REPORTING_ALL_DATA);
+                // Iec61850DeviceService.this.enableReportingOnDevice(connection,
+                // deviceRequest.getDeviceIdentification(),
+                // DataAttribute.REPORTING_ALL_DATA);
 
                 final List<MeasurementResultSystemIdentifierDto> identifiers = new ArrayList<>();
 

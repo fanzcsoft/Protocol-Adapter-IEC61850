@@ -38,7 +38,6 @@ public class Iec61850ClientRTUEventListener extends Iec61850ClientBaseEventListe
         final Map<String, Iec61850RtuReportHandler> handlers = new HashMap<>();
         handlers.put("ZOWN_POCPV1/LLN0$AllData", new Iec61850PhotovoltaicReportHandler());
         handlers.put("ZOWN_POCBATTERY1/LLN0$AllData", new Iec61850BatteryReportHandler());
-        handlers.put("ZOWN_POCLMGC1/LLN0$AllData", new Iec61850LmgcReportHandler());
         REPORT_HANDLERS = Collections.unmodifiableMap(handlers);
     }
 
