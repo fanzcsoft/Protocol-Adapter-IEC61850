@@ -942,7 +942,7 @@ public class Iec61850DeviceService implements DeviceService {
          * (serverModel == null) { // reconnect }
          */
         this.iec61850DeviceConnectionService.connect(deviceRequest.getIpAddress(),
-                deviceRequest.getDeviceIdentification(), IED.ZOWN_RTU, LogicalDevice.PV);
+                deviceRequest.getDeviceIdentification(), IED.ZOWN_RTU, LogicalDevice.PV_ONE);
         return this.iec61850DeviceConnectionService.getServerModel(deviceRequest.getDeviceIdentification());
     }
 
@@ -1716,15 +1716,12 @@ public class Iec61850DeviceService implements DeviceService {
 
     private void enableReportingOnDevice(final DeviceConnection deviceConnection, final String deviceIdentification,
             final DataAttribute reportName) throws ServiceError, IOException {
-        final NodeContainer reportingPv = deviceConnection.getFcModelNode(LogicalDevice.PV,
+        final NodeContainer reportingPv = deviceConnection.getFcModelNode(LogicalDevice.PV_ONE,
                 LogicalNode.LOGICAL_NODE_ZERO, reportName, Fc.BR);
         reportingPv.writeBoolean(SubDataAttribute.ENABLE_REPORTING, true);
-        final NodeContainer reportingBat = deviceConnection.getFcModelNode(LogicalDevice.BATTERY,
+        final NodeContainer reportingBat = deviceConnection.getFcModelNode(LogicalDevice.BATTERY_ONE,
                 LogicalNode.LOGICAL_NODE_ZERO, reportName, Fc.BR);
         reportingBat.writeBoolean(SubDataAttribute.ENABLE_REPORTING, true);
-        final NodeContainer reportingLmgc = deviceConnection.getFcModelNode(LogicalDevice.LOCAL_MICROGRID_CONTROLLER,
-                LogicalNode.LOGICAL_NODE_ZERO, reportName, Fc.BR);
-        reportingLmgc.writeBoolean(SubDataAttribute.ENABLE_REPORTING, true);
         LOGGER.info("Allowing device {} to send events", deviceIdentification);
     }
 

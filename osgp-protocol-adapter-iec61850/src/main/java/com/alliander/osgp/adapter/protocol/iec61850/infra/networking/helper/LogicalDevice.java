@@ -16,17 +16,37 @@ public enum LogicalDevice {
      */
     LIGHTING("IO"),
     /**
-     * Logical Device Photovoltaic
+     * Logical Device Photovoltaic 1
      */
-    PV("PV1"),
+    PV_ONE("PV1"),
     /**
-     * Logical Device Local Micro Grid Controller
+     * Logical Device Photovoltaic 2
      */
-    LOCAL_MICROGRID_CONTROLLER("LMGC1"),
+    PV_TWO("PV2"),
     /**
-     * Logical Device Battery
+     * Logical Device Photovoltaic 3
      */
-    BATTERY("BATTERY1");
+    PV_THREE("PV3"),
+    /**
+     * Logical Device Battery 1
+     */
+    BATTERY_ONE("BATTERY1"),
+    /**
+     * Logical Device Battery 2
+     */
+    BATTERY_TWO("BATTERY2"),
+    /**
+     * Logical Device Engine 1
+     */
+    ENGINE_ONE("ENGINE1"),
+    /**
+     * Logical Device Engine 1
+     */
+    ENGINE_TWO("ENGINE2"),
+    /**
+     * Logical Device Engine 1
+     */
+    ENGINE_THREE("ENGINE3");
 
     private String description;
 
@@ -36,5 +56,18 @@ public enum LogicalDevice {
 
     public String getDescription() {
         return this.description;
+    }
+
+    public static LogicalDevice fromString(final String description) {
+
+        if (description != null) {
+            for (final LogicalDevice ld : LogicalDevice.values()) {
+                if (description.equalsIgnoreCase(ld.description)) {
+                    return ld;
+                }
+            }
+        }
+        throw new IllegalArgumentException("No LogicalDevice constant with description " + description + " found.");
+
     }
 }

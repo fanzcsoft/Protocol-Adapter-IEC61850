@@ -15,7 +15,7 @@ public enum IED {
      * The name of the IED.
      */
     FLEX_OVL("SWDeviceGeneric"),
-    ZOWN_RTU("ZOWN_POC");
+    ZOWN_RTU("WAGO61850Server");
 
     private String description;
 

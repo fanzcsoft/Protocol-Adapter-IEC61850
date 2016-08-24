@@ -28,19 +28,13 @@ public class Iec61850BatteryTranslator {
                 containingNode.getInteger(SubDataAttribute.STATE).getValue());
     }
 
-    public static MeasurementDto translateActualPowerInput(final NodeContainer containingNode) {
+    public static MeasurementDto translateActualPower(final NodeContainer containingNode) {
         return new MeasurementDto(1, DataAttribute.ACTUAL_POWER.getDescription(), 0,
                 new DateTime(containingNode.getDate(SubDataAttribute.TIME), DateTimeZone.UTC),
                 containingNode.getChild(SubDataAttribute.MAGNITUDE).getFloat(SubDataAttribute.FLOAT).getFloat());
     }
 
-    public static MeasurementDto translateActualPowerOutput(final NodeContainer containingNode) {
-        return new MeasurementDto(2, DataAttribute.ACTUAL_POWER.getDescription(), 0,
-                new DateTime(containingNode.getDate(SubDataAttribute.TIME), DateTimeZone.UTC),
-                containingNode.getChild(SubDataAttribute.MAGNITUDE).getFloat(SubDataAttribute.FLOAT).getFloat());
-    }
-
-    public static MeasurementDto translateNetRealEnergy(final NodeContainer containingNode) {
+    public static MeasurementDto translateTotalEnergy(final NodeContainer containingNode) {
         return new MeasurementDto(1, DataAttribute.TOTAL_ENERGY.getDescription(), 0,
                 new DateTime(containingNode.getDate(SubDataAttribute.TIME), DateTimeZone.UTC),
                 containingNode.getInteger(SubDataAttribute.ACTUAL_VALUE).getValue());
