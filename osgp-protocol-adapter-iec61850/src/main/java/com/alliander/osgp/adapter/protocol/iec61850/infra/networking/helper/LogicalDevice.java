@@ -16,6 +16,10 @@ public enum LogicalDevice {
      */
     LIGHTING("IO"),
     /**
+     * Logical Device RTU 1
+     */
+    RTU_ONE("RTU1"),
+    /**
      * Logical Device Photovoltaic 1
      */
     PV_ONE("PV1"),
