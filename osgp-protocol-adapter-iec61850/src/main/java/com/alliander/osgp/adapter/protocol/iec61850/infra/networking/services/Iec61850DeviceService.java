@@ -1717,12 +1717,25 @@ public class Iec61850DeviceService implements DeviceService {
 
     private void enableReportingOnDevice(final DeviceConnection deviceConnection, final String deviceIdentification,
             final DataAttribute reportName) throws ServiceError, IOException {
-        final NodeContainer reportingPv = deviceConnection.getFcModelNode(LogicalDevice.PV_ONE,
-                LogicalNode.LOGICAL_NODE_ZERO, reportName, Fc.BR);
-        reportingPv.writeBoolean(SubDataAttribute.ENABLE_REPORTING, true);
-        final NodeContainer reportingBat = deviceConnection.getFcModelNode(LogicalDevice.BATTERY_ONE,
-                LogicalNode.LOGICAL_NODE_ZERO, reportName, Fc.BR);
-        reportingBat.writeBoolean(SubDataAttribute.ENABLE_REPORTING, true);
+
+        try {
+            final NodeContainer reportingPv = deviceConnection.getFcModelNode(LogicalDevice.PV_ONE,
+                    LogicalNode.LOGICAL_NODE_ZERO, reportName, Fc.BR);
+            reportingPv.writeBoolean(SubDataAttribute.ENABLE_REPORTING, true);
+        } catch (final NullPointerException e) {
+            LOGGER.warn("Skip enable reporting for device {}, report {}.", LogicalDevice.PV_ONE,
+                    reportName.getDescription());
+        }
+
+        try {
+            final NodeContainer reportingBat = deviceConnection.getFcModelNode(LogicalDevice.BATTERY_ONE,
+                    LogicalNode.LOGICAL_NODE_ZERO, reportName, Fc.BR);
+            reportingBat.writeBoolean(SubDataAttribute.ENABLE_REPORTING, true);
+        } catch (final NullPointerException e) {
+            LOGGER.warn("Skip enable reporting for device {}, report {}.", LogicalDevice.BATTERY_ONE,
+                    reportName.getDescription());
+        }
+
         LOGGER.info("Allowing device {} to send events", deviceIdentification);
     }
 
@@ -2029,9 +2042,11 @@ public class Iec61850DeviceService implements DeviceService {
 
             @Override
             public DataResponseDto apply() throws Exception {
-                // Iec61850DeviceService.this.enableReportingOnDevice(connection,
-                // deviceRequest.getDeviceIdentification(),
-                // DataAttribute.REPORTING_ALL_DATA);
+                Iec61850DeviceService.this.enableReportingOnDevice(connection, deviceRequest.getDeviceIdentification(),
+                        DataAttribute.REPORT_STATUS_ONE);
+
+                Iec61850DeviceService.this.enableReportingOnDevice(connection, deviceRequest.getDeviceIdentification(),
+                        DataAttribute.REPORT_MEASUREMENTS_ONE);
 
                 final List<MeasurementResultSystemIdentifierDto> identifiers = new ArrayList<>();
 
@@ -2056,20 +2071,6 @@ public class Iec61850DeviceService implements DeviceService {
 
         return this.iec61850Client.sendCommandWithRetry(function);
     }
-
-    // private void setSubstitution(final DeviceConnection connection,
-    // final SetPointSystemIdentifierDto setPointSystemIdentifier) {
-    // final NodeContainer containingNode =
-    // connection.getFcModelNode(LogicalDevice.LOCAL_MICROGRID_CONTROLLER,
-    // LogicalNode.GENERIC_INPUT_OUTPUT_ONE,
-    // DataAttribute.INTEGER_STATUS_CONTROLLABLE_STATUS_OUTPUT, Fc.SV);
-    // this.iec61850Client.readNodeDataValues(connection.getConnection().getClientAssociation(),
-    // containingNode.getFcmodelNode());
-    //
-    // containingNode.writeBoolean(SubDataAttribute.SUBSTITUDE_ENABLE, true);
-    // containingNode.writeInteger(SubDataAttribute.SUBSTITUDE_VALUE,
-    // (int) setPointSystemIdentifier.getSetPoint().getValue());
-    // }
 
     private boolean timePeriodContainsDateTime(final TimePeriodDto timePeriod, final DateTime date,
             final String deviceIdentification, final int relayIndex, final int bufferIndex) {
