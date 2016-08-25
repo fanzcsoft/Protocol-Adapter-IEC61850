@@ -105,19 +105,21 @@ public enum DataAttribute {
      */
     PHYSICAL_NAME("PhyNam"),
     /**
-     * Property of LLN0 Node, ALLData_P01, contains the reporting information.
-     */
-    REPORTING_ALL_DATA("AllData_P02"),
-    /**
      * Actual Power
      */
     ACTUAL_POWER("TotW"),
     /**
      * Total Energy
      */
-    TOTAL_ENERGY("TotWh")
-
-    ;
+    TOTAL_ENERGY("TotWh"),
+    /**
+     * Property of LLN0 Node, ALLData_P01, contains the reporting information.
+     */
+    REPORT_STATUS_ONE("ReportStatus01"),
+    /**
+     * Property of LLN0 Node, ALLData_P01, contains the reporting information.
+     */
+    REPORT_MEASUREMENTS_ONE("ReportMeasurements02"),;
 
     private String description;
 
