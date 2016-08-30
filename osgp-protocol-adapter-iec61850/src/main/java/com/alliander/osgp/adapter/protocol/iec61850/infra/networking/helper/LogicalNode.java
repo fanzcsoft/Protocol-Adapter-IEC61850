@@ -40,7 +40,7 @@ public enum LogicalNode {
      */
     SWITCH_COMPONENT_FOUR("XSWC4"),
     /**
-     * ZGEN1, information exchange with generators Logical Node.
+     * DGEN1, DER Generator Logical Node.
      */
     GENERATOR_ONE("DGEN1"),
     /**
@@ -48,13 +48,21 @@ public enum LogicalNode {
      */
     BATTERY_ONE("ZBAT1"),
     /**
-     * MMXU1, Logical Node for Actual Power In Measurements
+     * MMXU1, Measurements Logical Node.
      */
     MEASUREMENT_ONE("MMXU1"),
     /**
      * MMTR1, Logical Node Meter Reading
      */
-    METER_READING_ONE("MMTR1");
+    METER_READING_ONE("MMTR1"),
+    /**
+     * DRCT, DER Controller characteristics;
+     */
+    DER_CONTROLLER_CHARACTERISTICS_ONE("DRCT1"),
+    /**
+     * DRCC, DER Supervisory Control
+     */
+    DER_SUPERVISORY_CONTROL_ONE("DRCC1");
 
     private final String description;
 

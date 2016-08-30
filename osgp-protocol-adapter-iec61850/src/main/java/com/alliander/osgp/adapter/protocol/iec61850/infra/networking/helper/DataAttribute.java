@@ -93,13 +93,29 @@ public enum DataAttribute {
      */
     HEALTH("Health"),
     /**
-     * Generic behaviour data attribute
+     * Generic behavior data attribute
      */
     BEHAVIOR("Beh"),
+    /**
+     * Generic mode data attribute
+     */
+    MODE("Mod"),
+    /**
+     * Generic state data attribute
+     */
+    STATE("GnOpSt"),
     /**
      * Generic operation time data attribute
      */
     OPERATIONAL_HOURS("OpTmsRs"),
+    /**
+     * Generic maximum power limit data attribute
+     */
+    MAXIMUM_POWER_LIMIT("MaxWLim"),
+    /**
+     * Generic actual power limit
+     */
+    ACTUAL_POWER_LIMIT("OutWSet"),
     /**
      * Generic (mandatory) physical name data attribute
      */
@@ -119,7 +135,9 @@ public enum DataAttribute {
     /**
      * Property of LLN0 Node, ALLData_P01, contains the reporting information.
      */
-    REPORT_MEASUREMENTS_ONE("ReportMeasurements02"),;
+    REPORT_MEASUREMENTS_ONE("ReportMeasurements02"),
+
+    ;
 
     private String description;
 
@@ -129,5 +147,17 @@ public enum DataAttribute {
 
     public String getDescription() {
         return this.description;
+    }
+
+    public static DataAttribute fromString(final String description) {
+
+        if (description != null) {
+            for (final DataAttribute da : DataAttribute.values()) {
+                if (description.equalsIgnoreCase(da.description)) {
+                    return da;
+                }
+            }
+        }
+        throw new IllegalArgumentException("No LogicalDevice constant with description " + description + " found.");
     }
 }

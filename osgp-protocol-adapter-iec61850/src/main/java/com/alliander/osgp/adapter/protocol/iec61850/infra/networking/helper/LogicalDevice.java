@@ -72,6 +72,5 @@ public enum LogicalDevice {
             }
         }
         throw new IllegalArgumentException("No LogicalDevice constant with description " + description + " found.");
-
     }
 }

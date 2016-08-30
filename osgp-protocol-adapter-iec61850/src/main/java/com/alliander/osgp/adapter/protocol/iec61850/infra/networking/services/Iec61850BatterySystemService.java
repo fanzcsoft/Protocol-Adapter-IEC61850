@@ -6,6 +6,7 @@ import java.util.List;
 import org.openmuc.openiec61850.Fc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.Iec61850Client;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.SystemService;
@@ -19,6 +20,7 @@ import com.alliander.osgp.dto.valueobjects.microgrids.MeasurementDto;
 import com.alliander.osgp.dto.valueobjects.microgrids.MeasurementFilterDto;
 import com.alliander.osgp.dto.valueobjects.microgrids.SystemFilterDto;
 
+@Component
 public class Iec61850BatterySystemService implements SystemService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Iec61850BatterySystemService.class);
@@ -32,7 +34,7 @@ public class Iec61850BatterySystemService implements SystemService {
 
         for (final MeasurementFilterDto filter : systemFilter.getMeasurementFilters()) {
 
-            // TODO refactor
+            // TODO refactor - retrieve command via factory and execute command
             if (filter.getNode().equalsIgnoreCase(DataAttribute.BEHAVIOR.getDescription())) {
                 measurements.add(this.getBehavior(client, connection, systemFilter.getId()));
             } else if (filter.getNode().equalsIgnoreCase(DataAttribute.HEALTH.getDescription())) {

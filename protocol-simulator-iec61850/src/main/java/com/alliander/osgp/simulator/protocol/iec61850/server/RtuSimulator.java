@@ -12,6 +12,7 @@ import javax.annotation.PreDestroy;
 import org.openmuc.openiec61850.BasicDataAttribute;
 import org.openmuc.openiec61850.BdaFloat32;
 import org.openmuc.openiec61850.BdaInt32;
+import org.openmuc.openiec61850.BdaInt8;
 import org.openmuc.openiec61850.BdaTimestamp;
 import org.openmuc.openiec61850.Fc;
 import org.openmuc.openiec61850.SclParseException;
@@ -77,15 +78,29 @@ public class RtuSimulator implements ServerEventListener {
     public void generateData() {
         final Date timestamp = new Date();
 
-        final List<BasicDataAttribute> values = new ArrayList<BasicDataAttribute>(3);
-        values.add(this.incrementInt("WAGO61850ServerPV1/DGEN1.OpTmh.stVal", Fc.ST));
-        values.add(this.setTime("WAGO61850ServerPV1/DGEN1.OpTmh.t", Fc.ST, timestamp));
+        final List<BasicDataAttribute> values = new ArrayList<BasicDataAttribute>();
+        values.add(this.setRandomByte("WAGO61850ServerPV1/LLN0.Health.stVal", Fc.ST, 1, 2));
+        values.add(this.setTime("WAGO61850ServerPV1/LLN0.Health.t", Fc.ST, timestamp));
 
-        values.add(this.incrementInt("WAGO61850ServerBATTERY1/DGEN1.OpTmh.stVal", Fc.ST));
-        values.add(this.setTime("WAGO61850ServerBATTERY1/DGEN1.OpTmh.t", Fc.ST, timestamp));
+        values.add(this.setRandomByte("WAGO61850ServerPV2/LLN0.Beh.stVal", Fc.ST, 1, 2));
+        values.add(this.setTime("WAGO61850ServerPV2/LLN0.Beh.t", Fc.ST, timestamp));
 
-        values.add(this.setRandomFloat("WAGO61850ServerBATTERY1/MMXU1.TotW.mag.f", Fc.MX, 0, 1000));
-        values.add(this.setTime("WAGO61850ServerBATTERY1/MMXU1.TotW.t", Fc.MX, timestamp));
+        values.add(this.setRandomByte("WAGO61850ServerPV3/LLN0.Mod.stVal", Fc.ST, 1, 2));
+        values.add(this.setTime("WAGO61850ServerPV3/LLN0.Mod.t", Fc.ST, timestamp));
+
+        values.add(this.setRandomFloat("WAGO61850ServerPV1/MMXU1.TotW.mag.f", Fc.MX, 0, 1000));
+        values.add(this.setTime("WAGO61850ServerPV1/MMXU1.TotW.t", Fc.MX, timestamp));
+
+        values.add(this.setRandomFloat("WAGO61850ServerPV2/DRCC1.OutWSet.subVal.f", Fc.SV, 0, 1000));
+
+        values.add(this.setRandomFloat("WAGO61850ServerPV3/DGEN1.TotWh.mag.f", Fc.MX, 0, 1000));
+        values.add(this.setTime("WAGO61850ServerPV3/DGEN1.TotWh.t", Fc.MX, timestamp));
+
+        values.add(this.setRandomByte("WAGO61850ServerPV1/DGEN1.GnOpSt.stVal", Fc.ST, 1, 2));
+        values.add(this.setTime("WAGO61850ServerPV1/DGEN1.GnOpSt.t", Fc.ST, timestamp));
+
+        values.add(this.incrementInt("WAGO61850ServerPV2/DGEN1.OpTmsRs.stVal", Fc.ST));
+        values.add(this.setTime("WAGO61850ServerPV2/DGEN1.OpTmsRs.t", Fc.ST, timestamp));
 
         this.server.setValues(values);
         LOGGER.info("Generated values");
@@ -106,6 +121,12 @@ public class RtuSimulator implements ServerEventListener {
     private BasicDataAttribute setRandomFloat(final String node, final Fc fc, final int min, final int max) {
         final BdaFloat32 value = (BdaFloat32) this.serverModel.findModelNode(node, fc);
         value.setFloat((float) ThreadLocalRandom.current().nextInt(min, max));
+        return value;
+    }
+
+    private BasicDataAttribute setRandomByte(final String node, final Fc fc, final int min, final int max) {
+        final BdaInt8 value = (BdaInt8) this.serverModel.findModelNode(node, fc);
+        value.setValue((byte) ThreadLocalRandom.current().nextInt(min, max));
         return value;
     }
 
