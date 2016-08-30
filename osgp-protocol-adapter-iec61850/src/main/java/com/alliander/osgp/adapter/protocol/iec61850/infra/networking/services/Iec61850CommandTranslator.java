@@ -1,4 +1,4 @@
-package com.alliander.osgp.adapter.protocol.iec61850.infra.networking.translation;
+package com.alliander.osgp.adapter.protocol.iec61850.infra.networking.services;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -8,7 +8,7 @@ import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.Node
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.SubDataAttribute;
 import com.alliander.osgp.dto.valueobjects.microgrids.MeasurementDto;
 
-public class Iec61850PvTranslator {
+public class Iec61850CommandTranslator {
 
     public static MeasurementDto translateBehavior(final NodeContainer containingNode) {
         return new MeasurementDto(1, DataAttribute.BEHAVIOR.getDescription(), 0,
@@ -61,6 +61,12 @@ public class Iec61850PvTranslator {
         return new MeasurementDto(1, DataAttribute.STATE.getDescription(), 0,
                 new DateTime(containingNode.getDate(SubDataAttribute.TIME), DateTimeZone.UTC),
                 containingNode.getByte(SubDataAttribute.STATE).getValue());
+    }
+
+    public static MeasurementDto translateStateOfCharge(final NodeContainer containingNode) {
+        return new MeasurementDto(1, DataAttribute.STATE_OF_CHARGE.getDescription(), 0,
+                new DateTime(containingNode.getDate(SubDataAttribute.TIME), DateTimeZone.UTC),
+                containingNode.getChild(SubDataAttribute.MAGNITUDE).getFloat(SubDataAttribute.FLOAT).getFloat());
     }
 
     public static MeasurementDto translateOperationalHours(final NodeContainer containingNode) {

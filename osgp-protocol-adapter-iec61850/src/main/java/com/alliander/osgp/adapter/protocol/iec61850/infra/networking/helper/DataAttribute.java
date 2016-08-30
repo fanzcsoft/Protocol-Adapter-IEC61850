@@ -129,6 +129,10 @@ public enum DataAttribute {
      */
     TOTAL_ENERGY("TotWh"),
     /**
+     * State of Charge
+     */
+    STATE_OF_CHARGE("TotPF"),
+    /**
      * Property of LLN0 Node, ALLData_P01, contains the reporting information.
      */
     REPORT_STATUS_ONE("ReportStatus01"),

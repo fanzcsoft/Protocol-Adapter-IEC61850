@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.DataAttribute;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.ReadOnlyNodeContainer;
-import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.translation.Iec61850PvTranslator;
+import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.services.Iec61850CommandTranslator;
 import com.alliander.osgp.dto.valueobjects.microgrids.MeasurementDto;
 import com.alliander.osgp.dto.valueobjects.microgrids.MeasurementResultSystemIdentifierDto;
 
@@ -23,15 +23,15 @@ public class Iec61850PhotovoltaicReportHandler implements Iec61850RtuReportHandl
     @Override
     public MeasurementDto handleMember(final ReadOnlyNodeContainer member) {
         if (member.getFcmodelNode().getName().equals(DataAttribute.BEHAVIOR.getDescription())) {
-            return Iec61850PvTranslator.translateBehavior(member);
+            return Iec61850CommandTranslator.translateBehavior(member);
         }
 
         if (member.getFcmodelNode().getName().equals(DataAttribute.HEALTH.getDescription())) {
-            return Iec61850PvTranslator.translateHealth(member);
+            return Iec61850CommandTranslator.translateHealth(member);
         }
 
         if (member.getFcmodelNode().getName().equals(DataAttribute.OPERATIONAL_HOURS.getDescription())) {
-            return Iec61850PvTranslator.translateOperationalHours(member);
+            return Iec61850CommandTranslator.translateOperationalHours(member);
         }
 
         return null;

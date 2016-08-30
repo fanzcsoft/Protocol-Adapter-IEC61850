@@ -9,18 +9,18 @@ import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.Devi
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.LogicalDevice;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.LogicalNode;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.NodeContainer;
-import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.translation.Iec61850PvTranslator;
+import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.services.Iec61850CommandTranslator;
 import com.alliander.osgp.dto.valueobjects.microgrids.MeasurementDto;
 
-public class Iec61850PvHealthCommand implements RtuCommand {
+public class Iec61850ActualPowerCommand implements RtuCommand {
 
     @Override
     public MeasurementDto execute(final Iec61850Client client, final DeviceConnection connection,
             final LogicalDevice logicalDevice) {
-        final NodeContainer containingNode = connection.getFcModelNode(logicalDevice, LogicalNode.LOGICAL_NODE_ZERO,
-                DataAttribute.HEALTH, Fc.ST);
+        final NodeContainer containingNode = connection.getFcModelNode(logicalDevice, LogicalNode.MEASUREMENT_ONE,
+                DataAttribute.ACTUAL_POWER, Fc.MX);
         client.readNodeDataValues(connection.getConnection().getClientAssociation(), containingNode.getFcmodelNode());
-        return Iec61850PvTranslator.translateHealth(containingNode);
+        return Iec61850CommandTranslator.translateActualPower(containingNode);
     }
 
 }

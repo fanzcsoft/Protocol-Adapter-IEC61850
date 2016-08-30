@@ -17,18 +17,19 @@ import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.services.co
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.services.commands.Iec61850ModeCommand;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.services.commands.Iec61850OperationalHoursCommand;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.services.commands.Iec61850StateCommand;
+import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.services.commands.Iec61850StateOfChargeCommand;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.services.commands.Iec61850TotalEnergyCommand;
 import com.alliander.osgp.dto.valueobjects.microgrids.MeasurementFilterDto;
 
-public class Iec61850PvCommandFactory implements RtuCommandFactory {
+public class Iec61850BatteryCommandFactory implements RtuCommandFactory {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(Iec61850PvCommandFactory.class);
+    private static Logger LOGGER = LoggerFactory.getLogger(Iec61850BatteryCommandFactory.class);
 
-    private static Iec61850PvCommandFactory instance;
+    private static Iec61850BatteryCommandFactory instance;
 
     private Map<DataAttribute, RtuCommand> rtuCommandMap = new HashMap<>();
 
-    private Iec61850PvCommandFactory() {
+    private Iec61850BatteryCommandFactory() {
         this.rtuCommandMap.put(DataAttribute.BEHAVIOR, new Iec61850BehaviourCommand());
         this.rtuCommandMap.put(DataAttribute.HEALTH, new Iec61850HealthCommand());
         this.rtuCommandMap.put(DataAttribute.OPERATIONAL_HOURS, new Iec61850OperationalHoursCommand());
@@ -37,12 +38,13 @@ public class Iec61850PvCommandFactory implements RtuCommandFactory {
         this.rtuCommandMap.put(DataAttribute.MAXIMUM_POWER_LIMIT, new Iec61850MaximumPowerLimitCommand());
         this.rtuCommandMap.put(DataAttribute.ACTUAL_POWER_LIMIT, new Iec61850ActualPowerLimitCommand());
         this.rtuCommandMap.put(DataAttribute.TOTAL_ENERGY, new Iec61850TotalEnergyCommand());
+        this.rtuCommandMap.put(DataAttribute.STATE_OF_CHARGE, new Iec61850StateOfChargeCommand());
         this.rtuCommandMap.put(DataAttribute.STATE, new Iec61850StateCommand());
     }
 
-    public static Iec61850PvCommandFactory getInstance() {
+    public static Iec61850BatteryCommandFactory getInstance() {
         if (instance == null) {
-            instance = new Iec61850PvCommandFactory();
+            instance = new Iec61850BatteryCommandFactory();
         }
         return instance;
     }
