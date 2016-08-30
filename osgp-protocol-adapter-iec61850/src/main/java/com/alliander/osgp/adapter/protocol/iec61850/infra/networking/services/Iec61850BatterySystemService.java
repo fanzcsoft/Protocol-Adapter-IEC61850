@@ -30,7 +30,7 @@ public class Iec61850BatterySystemService implements SystemService {
 
         for (final MeasurementFilterDto filter : systemFilter.getMeasurementFilters()) {
 
-            final RtuCommand command = Iec61850PvCommandFactory.getInstance().getCommand(filter);
+            final RtuCommand command = Iec61850BatteryCommandFactory.getInstance().getCommand(filter);
             if (command == null) {
                 LOGGER.warn("Unsupported data attribute [{}], skip get data for it", filter.getNode());
             } else {

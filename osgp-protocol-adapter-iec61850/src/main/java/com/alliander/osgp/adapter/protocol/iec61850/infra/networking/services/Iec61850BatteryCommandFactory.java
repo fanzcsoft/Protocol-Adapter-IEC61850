@@ -51,11 +51,20 @@ public class Iec61850BatteryCommandFactory implements RtuCommandFactory {
 
     @Override
     public RtuCommand getCommand(final MeasurementFilterDto filter) {
+        return this.getCommand(DataAttribute.fromString(filter.getNode()));
+    }
 
-        final RtuCommand command = this.rtuCommandMap.get(DataAttribute.fromString(filter.getNode()));
+    @Override
+    public RtuCommand getCommand(final String node) {
+        return this.getCommand(DataAttribute.fromString(node));
+    }
+
+    private RtuCommand getCommand(final DataAttribute dataAttribute) {
+
+        final RtuCommand command = this.rtuCommandMap.get(dataAttribute);
 
         if (command == null) {
-            LOGGER.warn("No command found for node {}", filter.getNode());
+            LOGGER.warn("No command found for data attribute {}", dataAttribute);
         }
         return command;
     }

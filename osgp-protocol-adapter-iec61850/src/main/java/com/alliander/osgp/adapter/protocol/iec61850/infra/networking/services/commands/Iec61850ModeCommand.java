@@ -1,5 +1,7 @@
 package com.alliander.osgp.adapter.protocol.iec61850.infra.networking.services.commands;
 
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.openmuc.openiec61850.Fc;
 
 import com.alliander.osgp.adapter.protocol.iec61850.device.rtu.RtuCommand;
@@ -9,7 +11,7 @@ import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.Devi
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.LogicalDevice;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.LogicalNode;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.NodeContainer;
-import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.services.Iec61850CommandTranslator;
+import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.SubDataAttribute;
 import com.alliander.osgp.dto.valueobjects.microgrids.MeasurementDto;
 
 public class Iec61850ModeCommand implements RtuCommand {
@@ -20,7 +22,13 @@ public class Iec61850ModeCommand implements RtuCommand {
         final NodeContainer containingNode = connection.getFcModelNode(logicalDevice, LogicalNode.LOGICAL_NODE_ZERO,
                 DataAttribute.MODE, Fc.ST);
         client.readNodeDataValues(connection.getConnection().getClientAssociation(), containingNode.getFcmodelNode());
-        return Iec61850CommandTranslator.translateMode(containingNode);
+        return this.translate(containingNode);
     }
 
+    @Override
+    public MeasurementDto translate(final NodeContainer containingNode) {
+        return new MeasurementDto(1, DataAttribute.MODE.getDescription(), 0,
+                new DateTime(containingNode.getDate(SubDataAttribute.TIME), DateTimeZone.UTC),
+                containingNode.getByte(SubDataAttribute.STATE).getValue());
+    }
 }
