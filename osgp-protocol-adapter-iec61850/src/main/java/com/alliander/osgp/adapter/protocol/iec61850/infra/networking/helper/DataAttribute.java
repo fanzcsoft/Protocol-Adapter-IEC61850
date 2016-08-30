@@ -109,6 +109,10 @@ public enum DataAttribute {
      */
     OPERATIONAL_HOURS("OpTmsRs"),
     /**
+     * Generic operation time data attribute
+     */
+    OPERATION_TIME("OpTmh"),
+    /**
      * Generic maximum power limit data attribute
      */
     MAXIMUM_POWER_LIMIT("MaxWLim"),
@@ -139,7 +143,7 @@ public enum DataAttribute {
     /**
      * Property of LLN0 Node, ALLData_P01, contains the reporting information.
      */
-    REPORT_MEASUREMENTS_ONE("ReportMeasurements02"),
+    REPORT_MEASUREMENTS_ONE("ReportMeasurements01"),
 
     ;
 
