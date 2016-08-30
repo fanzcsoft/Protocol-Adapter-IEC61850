@@ -1716,24 +1716,14 @@ public class Iec61850DeviceService implements DeviceService {
     }
 
     private void enableReportingOnDevice(final DeviceConnection deviceConnection, final String deviceIdentification,
-            final DataAttribute reportName) throws ServiceError, IOException {
+            final LogicalDevice logicalDevice, final DataAttribute reportName) throws ServiceError, IOException {
 
         try {
-            final NodeContainer reportingPv = deviceConnection.getFcModelNode(LogicalDevice.PV_ONE,
+            final NodeContainer reportingPv = deviceConnection.getFcModelNode(logicalDevice,
                     LogicalNode.LOGICAL_NODE_ZERO, reportName, Fc.BR);
             reportingPv.writeBoolean(SubDataAttribute.ENABLE_REPORTING, true);
         } catch (final NullPointerException e) {
-            LOGGER.warn("Skip enable reporting for device {}, report {}.", LogicalDevice.PV_ONE,
-                    reportName.getDescription());
-        }
-
-        try {
-            final NodeContainer reportingBat = deviceConnection.getFcModelNode(LogicalDevice.BATTERY_ONE,
-                    LogicalNode.LOGICAL_NODE_ZERO, reportName, Fc.BR);
-            reportingBat.writeBoolean(SubDataAttribute.ENABLE_REPORTING, true);
-        } catch (final NullPointerException e) {
-            LOGGER.warn("Skip enable reporting for device {}, report {}.", LogicalDevice.BATTERY_ONE,
-                    reportName.getDescription());
+            LOGGER.warn("Skip enable reporting for device {}, report {}.", logicalDevice, reportName.getDescription());
         }
 
         LOGGER.info("Allowing device {} to send events", deviceIdentification);
@@ -2043,10 +2033,26 @@ public class Iec61850DeviceService implements DeviceService {
             @Override
             public DataResponseDto apply() throws Exception {
                 Iec61850DeviceService.this.enableReportingOnDevice(connection, deviceRequest.getDeviceIdentification(),
-                        DataAttribute.REPORT_STATUS_ONE);
+                        LogicalDevice.PV_ONE, DataAttribute.REPORT_STATUS_ONE);
+                Iec61850DeviceService.this.enableReportingOnDevice(connection, deviceRequest.getDeviceIdentification(),
+                        LogicalDevice.PV_TWO, DataAttribute.REPORT_STATUS_ONE);
+                Iec61850DeviceService.this.enableReportingOnDevice(connection, deviceRequest.getDeviceIdentification(),
+                        LogicalDevice.PV_THREE, DataAttribute.REPORT_STATUS_ONE);
+                Iec61850DeviceService.this.enableReportingOnDevice(connection, deviceRequest.getDeviceIdentification(),
+                        LogicalDevice.BATTERY_ONE, DataAttribute.REPORT_STATUS_ONE);
+                Iec61850DeviceService.this.enableReportingOnDevice(connection, deviceRequest.getDeviceIdentification(),
+                        LogicalDevice.BATTERY_TWO, DataAttribute.REPORT_STATUS_ONE);
 
                 Iec61850DeviceService.this.enableReportingOnDevice(connection, deviceRequest.getDeviceIdentification(),
-                        DataAttribute.REPORT_MEASUREMENTS_ONE);
+                        LogicalDevice.PV_ONE, DataAttribute.REPORT_MEASUREMENTS_ONE);
+                Iec61850DeviceService.this.enableReportingOnDevice(connection, deviceRequest.getDeviceIdentification(),
+                        LogicalDevice.PV_TWO, DataAttribute.REPORT_MEASUREMENTS_ONE);
+                Iec61850DeviceService.this.enableReportingOnDevice(connection, deviceRequest.getDeviceIdentification(),
+                        LogicalDevice.PV_THREE, DataAttribute.REPORT_MEASUREMENTS_ONE);
+                Iec61850DeviceService.this.enableReportingOnDevice(connection, deviceRequest.getDeviceIdentification(),
+                        LogicalDevice.BATTERY_ONE, DataAttribute.REPORT_MEASUREMENTS_ONE);
+                Iec61850DeviceService.this.enableReportingOnDevice(connection, deviceRequest.getDeviceIdentification(),
+                        LogicalDevice.BATTERY_TWO, DataAttribute.REPORT_MEASUREMENTS_ONE);
 
                 final List<MeasurementResultSystemIdentifierDto> identifiers = new ArrayList<>();
 
