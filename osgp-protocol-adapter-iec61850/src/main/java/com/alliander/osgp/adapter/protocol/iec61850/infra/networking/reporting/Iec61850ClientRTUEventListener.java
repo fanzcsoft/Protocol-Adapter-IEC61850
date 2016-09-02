@@ -33,19 +33,21 @@ public class Iec61850ClientRTUEventListener extends Iec61850ClientBaseEventListe
      */
     private static final long IEC61850_ENTRY_TIME_OFFSET = 441763200000L;
 
-    private static final Map<String, Iec61850RtuReportHandler> REPORT_HANDLERS;
+    private static final Map<String, Iec61850ReportHandler> REPORT_HANDLERS;
     static {
-        final Map<String, Iec61850RtuReportHandler> handlers = new HashMap<>();
+        final Map<String, Iec61850ReportHandler> handlers = new HashMap<>();
         handlers.put("WAGO61850ServerPV1/LLN0$Status", new Iec61850PvReportHandler(1));
         handlers.put("WAGO61850ServerPV2/LLN0$Status", new Iec61850PvReportHandler(2));
         handlers.put("WAGO61850ServerPV3/LLN0$Status", new Iec61850PvReportHandler(3));
         handlers.put("WAGO61850ServerBATTERY1/LLN0$Status", new Iec61850BatteryReportHandler(1));
         handlers.put("WAGO61850ServerBATTERY2/LLN0$Status", new Iec61850BatteryReportHandler(2));
+        handlers.put("WAGO61850ServerRTU1/LLN0$Status", new Iec61850RtuReportHandler(1));
         handlers.put("WAGO61850ServerPV1/LLN0$Measurements", new Iec61850PvReportHandler(1));
         handlers.put("WAGO61850ServerPV2/LLN0$Measurements", new Iec61850PvReportHandler(2));
         handlers.put("WAGO61850ServerPV3/LLN0$Measurements", new Iec61850PvReportHandler(3));
         handlers.put("WAGO61850ServerBATTERY1/LLN0$Measurements", new Iec61850BatteryReportHandler(1));
         handlers.put("WAGO61850ServerBATTERY2/LLN0$Measurements", new Iec61850BatteryReportHandler(2));
+        handlers.put("WAGO61850ServerRTU1/LLN0$Measurements", new Iec61850RtuReportHandler(1));
         REPORT_HANDLERS = Collections.unmodifiableMap(handlers);
     }
 
@@ -82,7 +84,7 @@ public class Iec61850ClientRTUEventListener extends Iec61850ClientBaseEventListe
             return;
         }
 
-        final Iec61850RtuReportHandler reportHandler = REPORT_HANDLERS.get(report.getDataSetRef());
+        final Iec61850ReportHandler reportHandler = REPORT_HANDLERS.get(report.getDataSetRef());
         if (reportHandler == null) {
             this.logger.warn("Skipping report because dataset is not supported {}", report.getDataSetRef());
             return;
@@ -97,7 +99,7 @@ public class Iec61850ClientRTUEventListener extends Iec61850ClientBaseEventListe
     }
 
     private void processDataSet(final DataSet dataSet, final String reportDescription,
-            final Iec61850RtuReportHandler reportHandler) throws ProtocolAdapterException {
+            final Iec61850ReportHandler reportHandler) throws ProtocolAdapterException {
         if (dataSet == null) {
             this.logger.warn("No DataSet available for {}", reportDescription);
             return;

@@ -12,7 +12,7 @@ import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.services.Ie
 import com.alliander.osgp.dto.valueobjects.microgrids.MeasurementDto;
 import com.alliander.osgp.dto.valueobjects.microgrids.MeasurementResultSystemIdentifierDto;
 
-public class Iec61850BatteryReportHandler implements Iec61850RtuReportHandler {
+public class Iec61850BatteryReportHandler implements Iec61850ReportHandler {
 
     private static Logger LOGGER = LoggerFactory.getLogger(Iec61850BatteryReportHandler.class);
 

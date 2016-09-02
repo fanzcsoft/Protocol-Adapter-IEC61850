@@ -80,6 +80,16 @@ public class RtuSimulator implements ServerEventListener {
 
         final List<BasicDataAttribute> values = new ArrayList<BasicDataAttribute>();
 
+        // Logical Device RTU1
+        values.add(this.setRandomByte("WAGO61850ServerRTU1/LLN0.Health.stVal", Fc.ST, 1, 2));
+        values.add(this.setTime("WAGO61850ServerRTU1/LLN0.Health.t", Fc.ST, timestamp));
+
+        values.add(this.setRandomByte("WAGO61850ServerRTU1/LLN0.Beh.stVal", Fc.ST, 1, 2));
+        values.add(this.setTime("WAGO61850ServerRTU1/LLN0.Beh.t", Fc.ST, timestamp));
+
+        values.add(this.setRandomByte("WAGO61850ServerRTU1/LLN0.Mod.stVal", Fc.ST, 1, 2));
+        values.add(this.setTime("WAGO61850ServerRTU1/LLN0.Mod.t", Fc.ST, timestamp));
+
         // Logical Device PV1
         values.add(this.setRandomByte("WAGO61850ServerPV1/LLN0.Health.stVal", Fc.ST, 1, 2));
         values.add(this.setTime("WAGO61850ServerPV1/LLN0.Health.t", Fc.ST, timestamp));

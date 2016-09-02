@@ -246,7 +246,6 @@ public enum SubDataAttribute {
      * Substitution value
      */
     SUBSTITUDE_VALUE("subVal");
-
     private String description;
 
     private SubDataAttribute(final String description) {

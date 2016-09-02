@@ -15,10 +15,10 @@ import com.alliander.osgp.dto.valueobjects.microgrids.MeasurementDto;
 import com.alliander.osgp.dto.valueobjects.microgrids.MeasurementFilterDto;
 import com.alliander.osgp.dto.valueobjects.microgrids.SystemFilterDto;
 
-public class Iec61850PvSystemService implements SystemService {
+public class Iec61850RtuSystemService implements SystemService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(Iec61850PvSystemService.class);
-    private static final String PV = "PV";
+    private static final Logger LOGGER = LoggerFactory.getLogger(Iec61850RtuSystemService.class);
+    private static final String DEVICE = "RTU";
 
     @Override
     public List<MeasurementDto> GetData(final SystemFilterDto systemFilter, final Iec61850Client client,
@@ -28,7 +28,7 @@ public class Iec61850PvSystemService implements SystemService {
 
         for (final MeasurementFilterDto filter : systemFilter.getMeasurementFilters()) {
 
-            final RtuCommand command = Iec61850PvCommandFactory.getInstance().getCommand(filter);
+            final RtuCommand command = Iec61850RtuCommandFactory.getInstance().getCommand(filter);
             if (command == null) {
                 LOGGER.warn("Unsupported data attribute [{}], skip get data for it", filter.getNode());
             } else {
@@ -41,6 +41,6 @@ public class Iec61850PvSystemService implements SystemService {
     }
 
     private LogicalDevice getLogicalDevice(final int id) {
-        return LogicalDevice.fromString(PV + id);
+        return LogicalDevice.fromString(DEVICE + id);
     }
 }
