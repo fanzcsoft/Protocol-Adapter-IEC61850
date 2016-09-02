@@ -2049,17 +2049,32 @@ public class Iec61850DeviceService implements DeviceService {
             @Override
             public DataResponseDto apply() throws Exception {
                 Iec61850DeviceService.this.enableStatusReportingOnDevice(connection,
+                        deviceRequest.getDeviceIdentification(), LogicalDevice.RTU_ONE,
+                        DataAttribute.REPORT_RTU_STATUS);
+
+                Iec61850DeviceService.this.enableStatusReportingOnDevice(connection,
                         deviceRequest.getDeviceIdentification(), LogicalDevice.PV_ONE, DataAttribute.REPORT_STATUS_ONE);
                 Iec61850DeviceService.this.enableStatusReportingOnDevice(connection,
                         deviceRequest.getDeviceIdentification(), LogicalDevice.PV_TWO, DataAttribute.REPORT_STATUS_ONE);
                 Iec61850DeviceService.this.enableStatusReportingOnDevice(connection,
                         deviceRequest.getDeviceIdentification(), LogicalDevice.PV_THREE,
                         DataAttribute.REPORT_STATUS_ONE);
+
                 Iec61850DeviceService.this.enableStatusReportingOnDevice(connection,
                         deviceRequest.getDeviceIdentification(), LogicalDevice.BATTERY_ONE,
                         DataAttribute.REPORT_STATUS_ONE);
                 Iec61850DeviceService.this.enableStatusReportingOnDevice(connection,
                         deviceRequest.getDeviceIdentification(), LogicalDevice.BATTERY_TWO,
+                        DataAttribute.REPORT_STATUS_ONE);
+
+                Iec61850DeviceService.this.enableStatusReportingOnDevice(connection,
+                        deviceRequest.getDeviceIdentification(), LogicalDevice.ENGINE_ONE,
+                        DataAttribute.REPORT_STATUS_ONE);
+                Iec61850DeviceService.this.enableStatusReportingOnDevice(connection,
+                        deviceRequest.getDeviceIdentification(), LogicalDevice.ENGINE_TWO,
+                        DataAttribute.REPORT_STATUS_ONE);
+                Iec61850DeviceService.this.enableStatusReportingOnDevice(connection,
+                        deviceRequest.getDeviceIdentification(), LogicalDevice.ENGINE_THREE,
                         DataAttribute.REPORT_STATUS_ONE);
 
                 Iec61850DeviceService.this.enableMeasurementReportingOnDevice(connection,
@@ -2071,11 +2086,22 @@ public class Iec61850DeviceService implements DeviceService {
                 Iec61850DeviceService.this.enableMeasurementReportingOnDevice(connection,
                         deviceRequest.getDeviceIdentification(), LogicalDevice.PV_THREE,
                         DataAttribute.REPORT_MEASUREMENTS_ONE);
+
                 Iec61850DeviceService.this.enableMeasurementReportingOnDevice(connection,
                         deviceRequest.getDeviceIdentification(), LogicalDevice.BATTERY_ONE,
                         DataAttribute.REPORT_MEASUREMENTS_ONE);
                 Iec61850DeviceService.this.enableMeasurementReportingOnDevice(connection,
                         deviceRequest.getDeviceIdentification(), LogicalDevice.BATTERY_TWO,
+                        DataAttribute.REPORT_MEASUREMENTS_ONE);
+
+                Iec61850DeviceService.this.enableMeasurementReportingOnDevice(connection,
+                        deviceRequest.getDeviceIdentification(), LogicalDevice.ENGINE_ONE,
+                        DataAttribute.REPORT_MEASUREMENTS_ONE);
+                Iec61850DeviceService.this.enableMeasurementReportingOnDevice(connection,
+                        deviceRequest.getDeviceIdentification(), LogicalDevice.ENGINE_TWO,
+                        DataAttribute.REPORT_MEASUREMENTS_ONE);
+                Iec61850DeviceService.this.enableMeasurementReportingOnDevice(connection,
+                        deviceRequest.getDeviceIdentification(), LogicalDevice.ENGINE_THREE,
                         DataAttribute.REPORT_MEASUREMENTS_ONE);
 
                 final List<MeasurementResultSystemIdentifierDto> identifiers = new ArrayList<>();

@@ -137,15 +137,19 @@ public enum DataAttribute {
      */
     STATE_OF_CHARGE("TotPF"),
     /**
-     * Property of LLN0 Node, ALLData_P01, contains the reporting information.
+     * Property of LLN0 Node, ReportStatus01, contains the reporting
+     * information.
      */
     REPORT_STATUS_ONE("ReportStatus01"),
     /**
-     * Property of LLN0 Node, ALLData_P01, contains the reporting information.
+     * Property of LLN0 Node, ReportMeasurements01, contains the reporting
+     * information.
      */
     REPORT_MEASUREMENTS_ONE("ReportMeasurements01"),
-
-    ;
+    /**
+     * RTU status report
+     */
+    REPORT_RTU_STATUS("Status01");
 
     private String description;
 

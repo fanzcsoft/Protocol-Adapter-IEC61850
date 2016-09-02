@@ -28,6 +28,7 @@ public class Iec61850SystemServiceFactory {
             this.systemServices.put("PV", new Iec61850PvSystemService());
             this.systemServices.put("BATTERY", new Iec61850BatterySystemService());
             this.systemServices.put("RTU", new Iec61850RtuSystemService());
+            this.systemServices.put("ENGINE", new Iec61850EngineSystemService());
         }
         return this.systemServices;
     }
