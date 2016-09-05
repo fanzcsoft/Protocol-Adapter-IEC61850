@@ -2048,6 +2048,10 @@ public class Iec61850DeviceService implements DeviceService {
 
             @Override
             public DataResponseDto apply() throws Exception {
+
+                // TODO - Refactor
+                // TODO - Add enabling reporting for load
+
                 Iec61850DeviceService.this.enableStatusReportingOnDevice(connection,
                         deviceRequest.getDeviceIdentification(), LogicalDevice.RTU_ONE,
                         DataAttribute.REPORT_RTU_STATUS);
