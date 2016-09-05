@@ -2049,8 +2049,11 @@ public class Iec61850DeviceService implements DeviceService {
             @Override
             public DataResponseDto apply() throws Exception {
 
-                // TODO - Refactor
-                // TODO - Add enabling reporting for load
+                // TODO - Refactor - make it more flexible for any kind of
+                // devices (store number of devices in DB?)
+
+                // TODO - Uncomment reporting for load when load reporting is
+                // available on device
 
                 Iec61850DeviceService.this.enableStatusReportingOnDevice(connection,
                         deviceRequest.getDeviceIdentification(), LogicalDevice.RTU_ONE,
@@ -2081,6 +2084,27 @@ public class Iec61850DeviceService implements DeviceService {
                         deviceRequest.getDeviceIdentification(), LogicalDevice.ENGINE_THREE,
                         DataAttribute.REPORT_STATUS_ONE);
 
+                // Iec61850DeviceService.this.enableStatusReportingOnDevice(connection,
+                // deviceRequest.getDeviceIdentification(),
+                // LogicalDevice.LOAD_ONE,
+                // DataAttribute.REPORT_STATUS_ONE);
+                // Iec61850DeviceService.this.enableStatusReportingOnDevice(connection,
+                // deviceRequest.getDeviceIdentification(),
+                // LogicalDevice.LOAD_TWO,
+                // DataAttribute.REPORT_STATUS_ONE);
+                // Iec61850DeviceService.this.enableStatusReportingOnDevice(connection,
+                // deviceRequest.getDeviceIdentification(),
+                // LogicalDevice.LOAD_THREE,
+                // DataAttribute.REPORT_STATUS_ONE);
+                // Iec61850DeviceService.this.enableStatusReportingOnDevice(connection,
+                // deviceRequest.getDeviceIdentification(),
+                // LogicalDevice.LOAD_FOUR,
+                // DataAttribute.REPORT_STATUS_ONE);
+                // Iec61850DeviceService.this.enableStatusReportingOnDevice(connection,
+                // deviceRequest.getDeviceIdentification(),
+                // LogicalDevice.LOAD_FIVE,
+                // DataAttribute.REPORT_STATUS_ONE);
+
                 Iec61850DeviceService.this.enableMeasurementReportingOnDevice(connection,
                         deviceRequest.getDeviceIdentification(), LogicalDevice.PV_ONE,
                         DataAttribute.REPORT_MEASUREMENTS_ONE);
@@ -2107,6 +2131,27 @@ public class Iec61850DeviceService implements DeviceService {
                 Iec61850DeviceService.this.enableMeasurementReportingOnDevice(connection,
                         deviceRequest.getDeviceIdentification(), LogicalDevice.ENGINE_THREE,
                         DataAttribute.REPORT_MEASUREMENTS_ONE);
+
+                // Iec61850DeviceService.this.enableMeasurementReportingOnDevice(connection,
+                // deviceRequest.getDeviceIdentification(),
+                // LogicalDevice.LOAD_ONE,
+                // DataAttribute.REPORT_MEASUREMENTS_ONE);
+                // Iec61850DeviceService.this.enableMeasurementReportingOnDevice(connection,
+                // deviceRequest.getDeviceIdentification(),
+                // LogicalDevice.LOAD_TWO,
+                // DataAttribute.REPORT_MEASUREMENTS_ONE);
+                // Iec61850DeviceService.this.enableMeasurementReportingOnDevice(connection,
+                // deviceRequest.getDeviceIdentification(),
+                // LogicalDevice.LOAD_THREE,
+                // DataAttribute.REPORT_MEASUREMENTS_ONE);
+                // Iec61850DeviceService.this.enableMeasurementReportingOnDevice(connection,
+                // deviceRequest.getDeviceIdentification(),
+                // LogicalDevice.LOAD_FOUR,
+                // DataAttribute.REPORT_MEASUREMENTS_ONE);
+                // Iec61850DeviceService.this.enableMeasurementReportingOnDevice(connection,
+                // deviceRequest.getDeviceIdentification(),
+                // LogicalDevice.LOAD_FIVE,
+                // DataAttribute.REPORT_MEASUREMENTS_ONE);
 
                 final List<MeasurementResultSystemIdentifierDto> identifiers = new ArrayList<>();
 
