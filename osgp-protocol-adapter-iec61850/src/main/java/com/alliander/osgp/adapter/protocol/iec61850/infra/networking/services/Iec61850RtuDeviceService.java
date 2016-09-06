@@ -256,7 +256,8 @@ public class Iec61850RtuDeviceService implements RtuDeviceService {
 
         Iec61850RtuDeviceService.this.enableEngineReportingOnDevice(connection, deviceIdentification);
 
-        Iec61850RtuDeviceService.this.enableLoadReportingOnDevice(connection, deviceIdentification);
+        // Iec61850RtuDeviceService.this.enableLoadReportingOnDevice(connection,
+        // deviceIdentification);
     }
 
     private void enableRtuReportingOnDevice(final DeviceConnection connection, final String deviceIdentification)
