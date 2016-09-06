@@ -87,17 +87,9 @@ public class Iec61850Client {
                 this.iec61850PortServer);
         try {
 
-            // TODO disabled reportlistener
-            // final Iec61850ClientSSLDEventListener reportListener = new
-            // Iec61850ClientSSLDEventListener(deviceIdentification,
-            // this.deviceManagementService);
             final ClientAssociation association = clientSap.associate(ipAddress, this.iec61850PortServer, null,
                     reportListener);
             clientAssociation = new Iec61850ClientAssociation(association, reportListener);
-            // } catch (final ProtocolAdapterException e) {
-            // LOGGER.error("Error setting up ClientEventListener for server
-            // association", e);
-            // return null;
         } catch (final IOException e) {
             // an IOException will always indicate a fatal exception. It
             // indicates that the association was closed and

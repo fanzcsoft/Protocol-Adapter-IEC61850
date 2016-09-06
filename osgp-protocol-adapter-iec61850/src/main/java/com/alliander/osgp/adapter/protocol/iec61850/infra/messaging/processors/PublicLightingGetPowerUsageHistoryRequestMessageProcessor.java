@@ -16,9 +16,9 @@ import org.springframework.stereotype.Component;
 
 import com.alliander.osgp.adapter.protocol.iec61850.device.DeviceResponse;
 import com.alliander.osgp.adapter.protocol.iec61850.device.DeviceResponseHandler;
-import com.alliander.osgp.adapter.protocol.iec61850.device.requests.GetPowerUsageHistoryDeviceRequest;
-import com.alliander.osgp.adapter.protocol.iec61850.device.responses.GetPowerUsageHistoryDeviceResponse;
-import com.alliander.osgp.adapter.protocol.iec61850.infra.messaging.DeviceRequestMessageProcessor;
+import com.alliander.osgp.adapter.protocol.iec61850.device.ssld.requests.GetPowerUsageHistoryDeviceRequest;
+import com.alliander.osgp.adapter.protocol.iec61850.device.ssld.responses.GetPowerUsageHistoryDeviceResponse;
+import com.alliander.osgp.adapter.protocol.iec61850.infra.messaging.SsldDeviceRequestMessageProcessor;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.messaging.DeviceRequestMessageType;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.messaging.DeviceResponseMessageSender;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.RequestMessageData;
@@ -37,7 +37,7 @@ import com.alliander.osgp.shared.infra.jms.ResponseMessageResultType;
  * Class for processing public lighting get power usage history request messages
  */
 @Component("iec61850PublicLightingGetPowerUsageHistoryRequestMessageProcessor")
-public class PublicLightingGetPowerUsageHistoryRequestMessageProcessor extends DeviceRequestMessageProcessor {
+public class PublicLightingGetPowerUsageHistoryRequestMessageProcessor extends SsldDeviceRequestMessageProcessor {
     /**
      * Logger for this class
      */

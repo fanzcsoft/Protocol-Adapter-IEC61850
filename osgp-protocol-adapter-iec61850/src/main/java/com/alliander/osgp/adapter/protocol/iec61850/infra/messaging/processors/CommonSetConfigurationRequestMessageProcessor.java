@@ -16,8 +16,8 @@ import org.springframework.stereotype.Component;
 
 import com.alliander.osgp.adapter.protocol.iec61850.device.DeviceResponse;
 import com.alliander.osgp.adapter.protocol.iec61850.device.DeviceResponseHandler;
-import com.alliander.osgp.adapter.protocol.iec61850.device.requests.SetConfigurationDeviceRequest;
-import com.alliander.osgp.adapter.protocol.iec61850.infra.messaging.DeviceRequestMessageProcessor;
+import com.alliander.osgp.adapter.protocol.iec61850.device.ssld.requests.SetConfigurationDeviceRequest;
+import com.alliander.osgp.adapter.protocol.iec61850.infra.messaging.SsldDeviceRequestMessageProcessor;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.messaging.DeviceRequestMessageType;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.RequestMessageData;
 import com.alliander.osgp.dto.valueobjects.ConfigurationDto;
@@ -29,7 +29,7 @@ import com.alliander.osgp.shared.infra.jms.Constants;
  * Class for processing common set configuration request messages
  */
 @Component("iec61850CommonSetConfigurationRequestMessageProcessor")
-public class CommonSetConfigurationRequestMessageProcessor extends DeviceRequestMessageProcessor {
+public class CommonSetConfigurationRequestMessageProcessor extends SsldDeviceRequestMessageProcessor {
     /**
      * Logger for this class
      */

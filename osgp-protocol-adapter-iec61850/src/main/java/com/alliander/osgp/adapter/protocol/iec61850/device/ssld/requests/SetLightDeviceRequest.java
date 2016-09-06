@@ -5,7 +5,7 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
-package com.alliander.osgp.adapter.protocol.iec61850.device.requests;
+package com.alliander.osgp.adapter.protocol.iec61850.device.ssld.requests;
 
 import com.alliander.osgp.adapter.protocol.iec61850.device.DeviceRequest;
 import com.alliander.osgp.dto.valueobjects.LightValueMessageDataContainerDto;

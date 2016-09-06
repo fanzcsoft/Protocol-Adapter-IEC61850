@@ -5,23 +5,25 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
-package com.alliander.osgp.adapter.protocol.iec61850.device.responses;
+package com.alliander.osgp.adapter.protocol.iec61850.device.ssld.responses;
+
+import java.util.List;
 
 import com.alliander.osgp.adapter.protocol.iec61850.device.DeviceMessageStatus;
 import com.alliander.osgp.dto.valueobjects.PowerUsageDataDto;
 
-public class GetActualPowerUsageDeviceResponse extends EmptyDeviceResponse {
+public class GetPowerUsageHistoryDeviceResponse extends EmptyDeviceResponse {
 
-    private PowerUsageDataDto actualPowerUsageData;
+    private List<PowerUsageDataDto> powerUsageHistoryData;
 
-    public GetActualPowerUsageDeviceResponse(final String organisationIdentification,
+    public GetPowerUsageHistoryDeviceResponse(final String organisationIdentification,
             final String deviceIdentification, final String correlationUid, final DeviceMessageStatus status,
-            final PowerUsageDataDto actualPowerUsageData) {
+            final List<PowerUsageDataDto> powerUsageHistoryData) {
         super(organisationIdentification, deviceIdentification, correlationUid, status);
-        this.actualPowerUsageData = actualPowerUsageData;
+        this.powerUsageHistoryData = powerUsageHistoryData;
     }
 
-    public PowerUsageDataDto getActualPowerUsageData() {
-        return this.actualPowerUsageData;
+    public List<PowerUsageDataDto> getPowerUsageHistoryData() {
+        return this.powerUsageHistoryData;
     }
 }

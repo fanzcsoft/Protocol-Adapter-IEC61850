@@ -34,22 +34,20 @@ import com.alliander.osgp.adapter.protocol.iec61850.application.mapping.Iec61850
 import com.alliander.osgp.adapter.protocol.iec61850.device.DeviceMessageStatus;
 import com.alliander.osgp.adapter.protocol.iec61850.device.DeviceRequest;
 import com.alliander.osgp.adapter.protocol.iec61850.device.DeviceResponseHandler;
-import com.alliander.osgp.adapter.protocol.iec61850.device.requests.GetPowerUsageHistoryDeviceRequest;
-import com.alliander.osgp.adapter.protocol.iec61850.device.requests.SetConfigurationDeviceRequest;
-import com.alliander.osgp.adapter.protocol.iec61850.device.requests.SetEventNotificationsDeviceRequest;
-import com.alliander.osgp.adapter.protocol.iec61850.device.requests.SetLightDeviceRequest;
-import com.alliander.osgp.adapter.protocol.iec61850.device.requests.SetScheduleDeviceRequest;
-import com.alliander.osgp.adapter.protocol.iec61850.device.requests.SetTransitionDeviceRequest;
-import com.alliander.osgp.adapter.protocol.iec61850.device.requests.UpdateDeviceSslCertificationDeviceRequest;
-import com.alliander.osgp.adapter.protocol.iec61850.device.requests.UpdateFirmwareDeviceRequest;
-import com.alliander.osgp.adapter.protocol.iec61850.device.responses.EmptyDeviceResponse;
-import com.alliander.osgp.adapter.protocol.iec61850.device.responses.GetConfigurationDeviceResponse;
-import com.alliander.osgp.adapter.protocol.iec61850.device.responses.GetDataDeviceResponse;
-import com.alliander.osgp.adapter.protocol.iec61850.device.responses.GetFirmwareVersionDeviceResponse;
-import com.alliander.osgp.adapter.protocol.iec61850.device.responses.GetPowerUsageHistoryDeviceResponse;
-import com.alliander.osgp.adapter.protocol.iec61850.device.responses.GetStatusDeviceResponse;
-import com.alliander.osgp.adapter.protocol.iec61850.device.rtu.requests.GetDataDeviceRequest;
-import com.alliander.osgp.adapter.protocol.iec61850.device.rtu.requests.SetSetPointsDeviceRequest;
+import com.alliander.osgp.adapter.protocol.iec61850.device.ssld.SsldDeviceService;
+import com.alliander.osgp.adapter.protocol.iec61850.device.ssld.requests.GetPowerUsageHistoryDeviceRequest;
+import com.alliander.osgp.adapter.protocol.iec61850.device.ssld.requests.SetConfigurationDeviceRequest;
+import com.alliander.osgp.adapter.protocol.iec61850.device.ssld.requests.SetEventNotificationsDeviceRequest;
+import com.alliander.osgp.adapter.protocol.iec61850.device.ssld.requests.SetLightDeviceRequest;
+import com.alliander.osgp.adapter.protocol.iec61850.device.ssld.requests.SetScheduleDeviceRequest;
+import com.alliander.osgp.adapter.protocol.iec61850.device.ssld.requests.SetTransitionDeviceRequest;
+import com.alliander.osgp.adapter.protocol.iec61850.device.ssld.requests.UpdateDeviceSslCertificationDeviceRequest;
+import com.alliander.osgp.adapter.protocol.iec61850.device.ssld.requests.UpdateFirmwareDeviceRequest;
+import com.alliander.osgp.adapter.protocol.iec61850.device.ssld.responses.EmptyDeviceResponse;
+import com.alliander.osgp.adapter.protocol.iec61850.device.ssld.responses.GetConfigurationDeviceResponse;
+import com.alliander.osgp.adapter.protocol.iec61850.device.ssld.responses.GetFirmwareVersionDeviceResponse;
+import com.alliander.osgp.adapter.protocol.iec61850.device.ssld.responses.GetPowerUsageHistoryDeviceResponse;
+import com.alliander.osgp.adapter.protocol.iec61850.device.ssld.responses.GetStatusDeviceResponse;
 import com.alliander.osgp.adapter.protocol.iec61850.domain.valueobjects.DaylightSavingTimeTransition;
 import com.alliander.osgp.adapter.protocol.iec61850.domain.valueobjects.DaylightSavingTimeTransition.DstTransitionFormat;
 import com.alliander.osgp.adapter.protocol.iec61850.domain.valueobjects.EventType;
@@ -58,11 +56,9 @@ import com.alliander.osgp.adapter.protocol.iec61850.domain.valueobjects.Schedule
 import com.alliander.osgp.adapter.protocol.iec61850.domain.valueobjects.TriggerType;
 import com.alliander.osgp.adapter.protocol.iec61850.exceptions.ConnectionFailureException;
 import com.alliander.osgp.adapter.protocol.iec61850.exceptions.ProtocolAdapterException;
-import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.DeviceService;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.Iec61850Client;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.Iec61850ClientAssociation;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.Iec61850Connection;
-import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.SystemService;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.DataAttribute;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.DeviceConnection;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.Function;
@@ -104,33 +100,23 @@ import com.alliander.osgp.dto.valueobjects.TransitionMessageDataContainerDto;
 import com.alliander.osgp.dto.valueobjects.TransitionTypeDto;
 import com.alliander.osgp.dto.valueobjects.WeekDayTypeDto;
 import com.alliander.osgp.dto.valueobjects.WindowTypeDto;
-import com.alliander.osgp.dto.valueobjects.microgrids.DataRequestDto;
-import com.alliander.osgp.dto.valueobjects.microgrids.DataResponseDto;
-import com.alliander.osgp.dto.valueobjects.microgrids.MeasurementDto;
-import com.alliander.osgp.dto.valueobjects.microgrids.MeasurementResultSystemIdentifierDto;
-import com.alliander.osgp.dto.valueobjects.microgrids.SetPointSystemIdentifierDto;
-import com.alliander.osgp.dto.valueobjects.microgrids.SetPointsRequestDto;
-import com.alliander.osgp.dto.valueobjects.microgrids.SystemFilterDto;
 import com.alliander.osgp.shared.exceptionhandling.ComponentType;
 import com.alliander.osgp.shared.exceptionhandling.FunctionalException;
 import com.alliander.osgp.shared.exceptionhandling.FunctionalExceptionType;
 import com.alliander.osgp.shared.exceptionhandling.TechnicalException;
 
 @Component
-public class Iec61850DeviceService implements DeviceService {
+public class Iec61850SsldDeviceService implements SsldDeviceService {
 
     private static final DateTimeZone TIME_ZONE_AMSTERDAM = DateTimeZone.forID("Europe/Amsterdam");
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(Iec61850DeviceService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Iec61850SsldDeviceService.class);
 
     @Autowired
     private Iec61850DeviceConnectionService iec61850DeviceConnectionService;
 
     @Autowired
     private SsldDataService ssldDataService;
-
-    @Autowired
-    private Iec61850SystemServiceFactory systemServiceFactory;
 
     @Autowired
     private Iec61850Client iec61850Client;
@@ -817,118 +803,6 @@ public class Iec61850DeviceService implements DeviceService {
         }
     }
 
-    @Override
-    public void getData(final GetDataDeviceRequest deviceRequest, final DeviceResponseHandler deviceResponseHandler) {
-        try {
-            final ServerModel serverModel = this.connectAndRetrieveServerModel(deviceRequest);
-
-            final ClientAssociation clientAssociation = this.iec61850DeviceConnectionService
-                    .getClientAssociation(deviceRequest.getDeviceIdentification());
-
-            final DataResponseDto getDataResponse = this.getData(
-                    new DeviceConnection(
-                            new Iec61850Connection(new Iec61850ClientAssociation(clientAssociation, null), serverModel),
-                            deviceRequest.getDeviceIdentification(), IED.ZOWN_RTU),
-                    serverModel, clientAssociation, deviceRequest);
-
-            final GetDataDeviceResponse deviceResponse = new GetDataDeviceResponse(
-                    deviceRequest.getOrganisationIdentification(), deviceRequest.getDeviceIdentification(),
-                    deviceRequest.getCorrelationUid(), DeviceMessageStatus.OK, getDataResponse);
-
-            deviceResponseHandler.handleResponse(deviceResponse);
-        } catch (final ConnectionFailureException se) {
-            LOGGER.error("Could not connect to device after all retries", se);
-
-            final EmptyDeviceResponse deviceResponse = new EmptyDeviceResponse(
-                    deviceRequest.getOrganisationIdentification(), deviceRequest.getDeviceIdentification(),
-                    deviceRequest.getCorrelationUid(), DeviceMessageStatus.FAILURE);
-
-            deviceResponseHandler.handleException(se, deviceResponse, true);
-            return;
-        } catch (final Exception e) {
-            LOGGER.error("Unexpected exception during writeDataValue", e);
-
-            final EmptyDeviceResponse deviceResponse = new EmptyDeviceResponse(
-                    deviceRequest.getOrganisationIdentification(), deviceRequest.getDeviceIdentification(),
-                    deviceRequest.getCorrelationUid(), DeviceMessageStatus.FAILURE);
-
-            deviceResponseHandler.handleException(e, deviceResponse, false);
-            return;
-        }
-    }
-
-    @Override
-    public void setSetPoints(final SetSetPointsDeviceRequest deviceRequest,
-            final DeviceResponseHandler deviceResponseHandler) {
-        try {
-            final ServerModel serverModel = this.connectAndRetrieveServerModel(deviceRequest);
-            final ClientAssociation clientAssociation = this.iec61850DeviceConnectionService
-                    .getClientAssociation(deviceRequest.getDeviceIdentification());
-
-            this.setSetPoints(
-                    new DeviceConnection(
-                            new Iec61850Connection(new Iec61850ClientAssociation(clientAssociation, null), serverModel),
-                            deviceRequest.getDeviceIdentification(), IED.ZOWN_RTU),
-                    serverModel, clientAssociation, deviceRequest);
-
-        } catch (final ConnectionFailureException se) {
-            LOGGER.error("Could not connect to device after all retries", se);
-
-            final EmptyDeviceResponse deviceResponse = new EmptyDeviceResponse(
-                    deviceRequest.getOrganisationIdentification(), deviceRequest.getDeviceIdentification(),
-                    deviceRequest.getCorrelationUid(), DeviceMessageStatus.FAILURE);
-
-            deviceResponseHandler.handleException(se, deviceResponse, true);
-            return;
-        } catch (final Exception e) {
-            LOGGER.error("Unexpected exception during writeDataValue", e);
-
-            final EmptyDeviceResponse deviceResponse = new EmptyDeviceResponse(
-                    deviceRequest.getOrganisationIdentification(), deviceRequest.getDeviceIdentification(),
-                    deviceRequest.getCorrelationUid(), DeviceMessageStatus.FAILURE);
-
-            deviceResponseHandler.handleException(e, deviceResponse, false);
-            return;
-        }
-
-        final EmptyDeviceResponse deviceResponse = new EmptyDeviceResponse(
-                deviceRequest.getOrganisationIdentification(), deviceRequest.getDeviceIdentification(),
-                deviceRequest.getCorrelationUid(), DeviceMessageStatus.OK);
-
-        deviceResponseHandler.handleResponse(deviceResponse);
-    }
-
-    private void setSetPoints(final DeviceConnection connection, final ServerModel serverModel,
-            final ClientAssociation clientAssociation, final SetSetPointsDeviceRequest deviceRequest)
-            throws ProtocolAdapterException {
-
-        final SetPointsRequestDto setPointsRequest = deviceRequest.getSetPointsRequest();
-
-        final Function<Void> function = new Function<Void>() {
-
-            @Override
-            public Void apply() throws Exception {
-                for (final SetPointSystemIdentifierDto spsi : setPointsRequest.getSetPointSystemIdentifiers()) {
-                    // For POC the controller 'substitute' is supported
-                    final String systemName = spsi.getSystemType() + spsi.getId();
-                    // if
-                    // (systemName.equals(LogicalDevice.LOCAL_MICROGRID_CONTROLLER.getDescription()))
-                    // {
-                    // Iec61850DeviceService.this.setSubstitution(connection,
-                    // spsi);
-                    // } else {
-                    LOGGER.info("Skipping Set SetPoint for unsupported system {} with id {}", spsi.getSystemType(),
-                            spsi.getId());
-                    // }
-                }
-
-                return null;
-            }
-        };
-
-        this.iec61850Client.sendCommandWithRetry(function);
-    }
-
     // ======================================
     // PRIVATE DEVICE COMMUNICATION METHODS =
     // ======================================
@@ -1063,9 +937,9 @@ public class Iec61850DeviceService implements DeviceService {
 
         final List<PowerUsageDataDto> powerUsageHistoryData = new ArrayList<>();
         for (final DeviceOutputSetting deviceOutputSetting : deviceOutputSettingsLightRelays) {
-            final List<PowerUsageDataDto> powerUsageData = Iec61850DeviceService.this.getPowerUsageHistoryDataFromRelay(
-                    new DeviceConnection(new Iec61850Connection(null, serverModel), deviceIdentification, IED.FLEX_OVL),
-                    deviceIdentification, timePeriod, deviceOutputSetting);
+            final List<PowerUsageDataDto> powerUsageData = Iec61850SsldDeviceService.this
+                    .getPowerUsageHistoryDataFromRelay(new DeviceConnection(new Iec61850Connection(null, serverModel),
+                            deviceIdentification, IED.FLEX_OVL), deviceIdentification, timePeriod, deviceOutputSetting);
             powerUsageHistoryData.addAll(powerUsageData);
         }
         /*-
@@ -1102,7 +976,7 @@ public class Iec61850DeviceService implements DeviceService {
 
         for (final DeviceOutputSetting deviceOutputSetting : ssld.getOutputSettings()) {
             this.checkRelayType(deviceOutputSetting, deviceConnection);
-            relayMaps.add(Iec61850DeviceService.this.mapper.map(deviceOutputSetting, RelayMapDto.class));
+            relayMaps.add(Iec61850SsldDeviceService.this.mapper.map(deviceOutputSetting, RelayMapDto.class));
         }
 
         final RelayConfigurationDto relayConfiguration = new RelayConfigurationDto(relayMaps);
@@ -1626,7 +1500,7 @@ public class Iec61850DeviceService implements DeviceService {
                 functionalFirmwareNode.writeString(SubDataAttribute.URL, fullUrl);
 
                 // creating a Date one minute from now
-                final Date oneMinuteFromNow = Iec61850DeviceService.this.getLocalTimeForDevice(connection)
+                final Date oneMinuteFromNow = Iec61850SsldDeviceService.this.getLocalTimeForDevice(connection)
                         .plusMinutes(1).toDate();
 
                 LOGGER.info("Updating the firmware download start time");
@@ -1667,7 +1541,7 @@ public class Iec61850DeviceService implements DeviceService {
                 LOGGER.info("Updating the certificate download url to {}", fullUrl);
                 sslConfiguration.writeString(SubDataAttribute.URL, fullUrl);
 
-                final Date oneMinuteFromNow = Iec61850DeviceService.this.getLocalTimeForDevice(deviceConnection)
+                final Date oneMinuteFromNow = Iec61850SsldDeviceService.this.getLocalTimeForDevice(deviceConnection)
                         .plusMinutes(1).toDate();
 
                 LOGGER.info("Updating the certificate download start time to {}", oneMinuteFromNow);
@@ -1720,36 +1594,6 @@ public class Iec61850DeviceService implements DeviceService {
         // }
 
         reporting.writeBoolean(SubDataAttribute.ENABLE_REPORTING, true);
-        LOGGER.info("Allowing device {} to send events", deviceIdentification);
-    }
-
-    private void enableStatusReportingOnDevice(final DeviceConnection deviceConnection,
-            final String deviceIdentification, final LogicalDevice logicalDevice, final DataAttribute reportName)
-            throws ServiceError, IOException {
-
-        try {
-            final NodeContainer reportingPv = deviceConnection.getFcModelNode(logicalDevice,
-                    LogicalNode.LOGICAL_NODE_ZERO, reportName, Fc.BR);
-            reportingPv.writeBoolean(SubDataAttribute.ENABLE_REPORTING, true);
-        } catch (final NullPointerException e) {
-            LOGGER.warn("Skip enable reporting for device {}, report {}.", logicalDevice, reportName.getDescription());
-        }
-
-        LOGGER.info("Allowing device {} to send events", deviceIdentification);
-    }
-
-    private void enableMeasurementReportingOnDevice(final DeviceConnection deviceConnection,
-            final String deviceIdentification, final LogicalDevice logicalDevice, final DataAttribute reportName)
-            throws ServiceError, IOException {
-
-        try {
-            final NodeContainer reportingPv = deviceConnection.getFcModelNode(logicalDevice,
-                    LogicalNode.LOGICAL_NODE_ZERO, reportName, Fc.RP);
-            reportingPv.writeBoolean(SubDataAttribute.ENABLE_REPORTING, true);
-        } catch (final NullPointerException e) {
-            LOGGER.warn("Skip enable reporting for device {}, report {}.", logicalDevice, reportName.getDescription());
-        }
-
         LOGGER.info("Allowing device {} to send events", deviceIdentification);
     }
 
@@ -1887,7 +1731,7 @@ public class Iec61850DeviceService implements DeviceService {
 
                     // index == 0, getting all light relays and adding their
                     // internal indexes to the indexes list
-                    final List<DeviceOutputSetting> settings = Iec61850DeviceService.this.ssldDataService
+                    final List<DeviceOutputSetting> settings = Iec61850SsldDeviceService.this.ssldDataService
                             .findByRelayType(ssld, relayType);
 
                     for (final DeviceOutputSetting deviceOutputSetting : settings) {
@@ -1895,7 +1739,7 @@ public class Iec61850DeviceService implements DeviceService {
                     }
                 } else {
                     // index != 0, adding just the one index to the list
-                    indexes.add(Iec61850DeviceService.this.ssldDataService.convertToInternalIndex(ssld,
+                    indexes.add(Iec61850SsldDeviceService.this.ssldDataService.convertToInternalIndex(ssld,
                             lightValue.getIndex()));
                 }
 
@@ -1916,8 +1760,8 @@ public class Iec61850DeviceService implements DeviceService {
 
                         // First time we come across this relay, checking its
                         // type
-                        Iec61850DeviceService.this.checkRelayForSchedules(
-                                Iec61850DeviceService.this.ssldDataService
+                        Iec61850SsldDeviceService.this.checkRelayForSchedules(
+                                Iec61850SsldDeviceService.this.ssldDataService
                                         .getDeviceOutputSettingForInternalIndex(ssld, internalIndex).getRelayType(),
                                 relayType, internalIndex);
 
@@ -2044,145 +1888,6 @@ public class Iec61850DeviceService implements DeviceService {
         }
 
         return powerUsageHistoryDataFromRelay;
-    }
-
-    private DataResponseDto getData(final DeviceConnection connection, final ServerModel serverModel,
-            final ClientAssociation clientAssociation, final GetDataDeviceRequest deviceRequest)
-            throws ProtocolAdapterException {
-
-        final DataRequestDto requestedData = deviceRequest.getDataRequest();
-
-        final Function<DataResponseDto> function = new Function<DataResponseDto>() {
-
-            @Override
-            public DataResponseDto apply() throws Exception {
-
-                // TODO - Refactor - make it more flexible for any kind of
-                // devices (store number of devices in DB?)
-
-                // TODO - Uncomment reporting for load when load reporting is
-                // available on device
-
-                Iec61850DeviceService.this.enableStatusReportingOnDevice(connection,
-                        deviceRequest.getDeviceIdentification(), LogicalDevice.RTU_ONE,
-                        DataAttribute.REPORT_RTU_STATUS);
-
-                Iec61850DeviceService.this.enableStatusReportingOnDevice(connection,
-                        deviceRequest.getDeviceIdentification(), LogicalDevice.PV_ONE, DataAttribute.REPORT_STATUS_ONE);
-                Iec61850DeviceService.this.enableStatusReportingOnDevice(connection,
-                        deviceRequest.getDeviceIdentification(), LogicalDevice.PV_TWO, DataAttribute.REPORT_STATUS_ONE);
-                Iec61850DeviceService.this.enableStatusReportingOnDevice(connection,
-                        deviceRequest.getDeviceIdentification(), LogicalDevice.PV_THREE,
-                        DataAttribute.REPORT_STATUS_ONE);
-
-                Iec61850DeviceService.this.enableStatusReportingOnDevice(connection,
-                        deviceRequest.getDeviceIdentification(), LogicalDevice.BATTERY_ONE,
-                        DataAttribute.REPORT_STATUS_ONE);
-                Iec61850DeviceService.this.enableStatusReportingOnDevice(connection,
-                        deviceRequest.getDeviceIdentification(), LogicalDevice.BATTERY_TWO,
-                        DataAttribute.REPORT_STATUS_ONE);
-
-                Iec61850DeviceService.this.enableStatusReportingOnDevice(connection,
-                        deviceRequest.getDeviceIdentification(), LogicalDevice.ENGINE_ONE,
-                        DataAttribute.REPORT_STATUS_ONE);
-                Iec61850DeviceService.this.enableStatusReportingOnDevice(connection,
-                        deviceRequest.getDeviceIdentification(), LogicalDevice.ENGINE_TWO,
-                        DataAttribute.REPORT_STATUS_ONE);
-                Iec61850DeviceService.this.enableStatusReportingOnDevice(connection,
-                        deviceRequest.getDeviceIdentification(), LogicalDevice.ENGINE_THREE,
-                        DataAttribute.REPORT_STATUS_ONE);
-
-                // Iec61850DeviceService.this.enableStatusReportingOnDevice(connection,
-                // deviceRequest.getDeviceIdentification(),
-                // LogicalDevice.LOAD_ONE,
-                // DataAttribute.REPORT_STATUS_ONE);
-                // Iec61850DeviceService.this.enableStatusReportingOnDevice(connection,
-                // deviceRequest.getDeviceIdentification(),
-                // LogicalDevice.LOAD_TWO,
-                // DataAttribute.REPORT_STATUS_ONE);
-                // Iec61850DeviceService.this.enableStatusReportingOnDevice(connection,
-                // deviceRequest.getDeviceIdentification(),
-                // LogicalDevice.LOAD_THREE,
-                // DataAttribute.REPORT_STATUS_ONE);
-                // Iec61850DeviceService.this.enableStatusReportingOnDevice(connection,
-                // deviceRequest.getDeviceIdentification(),
-                // LogicalDevice.LOAD_FOUR,
-                // DataAttribute.REPORT_STATUS_ONE);
-                // Iec61850DeviceService.this.enableStatusReportingOnDevice(connection,
-                // deviceRequest.getDeviceIdentification(),
-                // LogicalDevice.LOAD_FIVE,
-                // DataAttribute.REPORT_STATUS_ONE);
-
-                Iec61850DeviceService.this.enableMeasurementReportingOnDevice(connection,
-                        deviceRequest.getDeviceIdentification(), LogicalDevice.PV_ONE,
-                        DataAttribute.REPORT_MEASUREMENTS_ONE);
-                Iec61850DeviceService.this.enableMeasurementReportingOnDevice(connection,
-                        deviceRequest.getDeviceIdentification(), LogicalDevice.PV_TWO,
-                        DataAttribute.REPORT_MEASUREMENTS_ONE);
-                Iec61850DeviceService.this.enableMeasurementReportingOnDevice(connection,
-                        deviceRequest.getDeviceIdentification(), LogicalDevice.PV_THREE,
-                        DataAttribute.REPORT_MEASUREMENTS_ONE);
-
-                Iec61850DeviceService.this.enableMeasurementReportingOnDevice(connection,
-                        deviceRequest.getDeviceIdentification(), LogicalDevice.BATTERY_ONE,
-                        DataAttribute.REPORT_MEASUREMENTS_ONE);
-                Iec61850DeviceService.this.enableMeasurementReportingOnDevice(connection,
-                        deviceRequest.getDeviceIdentification(), LogicalDevice.BATTERY_TWO,
-                        DataAttribute.REPORT_MEASUREMENTS_ONE);
-
-                Iec61850DeviceService.this.enableMeasurementReportingOnDevice(connection,
-                        deviceRequest.getDeviceIdentification(), LogicalDevice.ENGINE_ONE,
-                        DataAttribute.REPORT_MEASUREMENTS_ONE);
-                Iec61850DeviceService.this.enableMeasurementReportingOnDevice(connection,
-                        deviceRequest.getDeviceIdentification(), LogicalDevice.ENGINE_TWO,
-                        DataAttribute.REPORT_MEASUREMENTS_ONE);
-                Iec61850DeviceService.this.enableMeasurementReportingOnDevice(connection,
-                        deviceRequest.getDeviceIdentification(), LogicalDevice.ENGINE_THREE,
-                        DataAttribute.REPORT_MEASUREMENTS_ONE);
-
-                // Iec61850DeviceService.this.enableMeasurementReportingOnDevice(connection,
-                // deviceRequest.getDeviceIdentification(),
-                // LogicalDevice.LOAD_ONE,
-                // DataAttribute.REPORT_MEASUREMENTS_ONE);
-                // Iec61850DeviceService.this.enableMeasurementReportingOnDevice(connection,
-                // deviceRequest.getDeviceIdentification(),
-                // LogicalDevice.LOAD_TWO,
-                // DataAttribute.REPORT_MEASUREMENTS_ONE);
-                // Iec61850DeviceService.this.enableMeasurementReportingOnDevice(connection,
-                // deviceRequest.getDeviceIdentification(),
-                // LogicalDevice.LOAD_THREE,
-                // DataAttribute.REPORT_MEASUREMENTS_ONE);
-                // Iec61850DeviceService.this.enableMeasurementReportingOnDevice(connection,
-                // deviceRequest.getDeviceIdentification(),
-                // LogicalDevice.LOAD_FOUR,
-                // DataAttribute.REPORT_MEASUREMENTS_ONE);
-                // Iec61850DeviceService.this.enableMeasurementReportingOnDevice(connection,
-                // deviceRequest.getDeviceIdentification(),
-                // LogicalDevice.LOAD_FIVE,
-                // DataAttribute.REPORT_MEASUREMENTS_ONE);
-
-                final List<MeasurementResultSystemIdentifierDto> identifiers = new ArrayList<>();
-
-                for (final SystemFilterDto systemFilter : requestedData.getSystemFilters()) {
-
-                    final List<MeasurementDto> measurements = new ArrayList<>();
-
-                    final SystemService systemService = Iec61850DeviceService.this.systemServiceFactory
-                            .getSystemService(systemFilter);
-                    measurements.addAll(
-                            systemService.GetData(systemFilter, Iec61850DeviceService.this.iec61850Client, connection));
-
-                    final MeasurementResultSystemIdentifierDto measurementIdentifier = new MeasurementResultSystemIdentifierDto(
-                            systemFilter.getId(), systemFilter.getSystemType(), measurements);
-
-                    identifiers.add(measurementIdentifier);
-                }
-
-                return new DataResponseDto(identifiers);
-            }
-        };
-
-        return this.iec61850Client.sendCommandWithRetry(function);
     }
 
     private boolean timePeriodContainsDateTime(final TimePeriodDto timePeriod, final DateTime date,

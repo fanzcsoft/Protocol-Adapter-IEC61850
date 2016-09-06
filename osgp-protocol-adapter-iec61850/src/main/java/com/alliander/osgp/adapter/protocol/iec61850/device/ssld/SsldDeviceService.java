@@ -5,31 +5,26 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
-package com.alliander.osgp.adapter.protocol.iec61850.infra.networking;
+package com.alliander.osgp.adapter.protocol.iec61850.device.ssld;
 
 import com.alliander.osgp.adapter.protocol.iec61850.device.DeviceMessageStatus;
 import com.alliander.osgp.adapter.protocol.iec61850.device.DeviceRequest;
 import com.alliander.osgp.adapter.protocol.iec61850.device.DeviceResponseHandler;
-import com.alliander.osgp.adapter.protocol.iec61850.device.requests.GetPowerUsageHistoryDeviceRequest;
-import com.alliander.osgp.adapter.protocol.iec61850.device.requests.SetConfigurationDeviceRequest;
-import com.alliander.osgp.adapter.protocol.iec61850.device.requests.SetEventNotificationsDeviceRequest;
-import com.alliander.osgp.adapter.protocol.iec61850.device.requests.SetLightDeviceRequest;
-import com.alliander.osgp.adapter.protocol.iec61850.device.requests.SetScheduleDeviceRequest;
-import com.alliander.osgp.adapter.protocol.iec61850.device.requests.SetTransitionDeviceRequest;
-import com.alliander.osgp.adapter.protocol.iec61850.device.requests.UpdateDeviceSslCertificationDeviceRequest;
-import com.alliander.osgp.adapter.protocol.iec61850.device.requests.UpdateFirmwareDeviceRequest;
-import com.alliander.osgp.adapter.protocol.iec61850.device.responses.GetConfigurationDeviceResponse;
-import com.alliander.osgp.adapter.protocol.iec61850.device.responses.GetDataDeviceResponse;
-import com.alliander.osgp.adapter.protocol.iec61850.device.responses.GetFirmwareVersionDeviceResponse;
-import com.alliander.osgp.adapter.protocol.iec61850.device.responses.GetPowerUsageHistoryDeviceResponse;
-import com.alliander.osgp.adapter.protocol.iec61850.device.responses.GetStatusDeviceResponse;
-import com.alliander.osgp.adapter.protocol.iec61850.device.rtu.requests.GetDataDeviceRequest;
-import com.alliander.osgp.adapter.protocol.iec61850.device.rtu.requests.SetSetPointsDeviceRequest;
+import com.alliander.osgp.adapter.protocol.iec61850.device.ssld.requests.GetPowerUsageHistoryDeviceRequest;
+import com.alliander.osgp.adapter.protocol.iec61850.device.ssld.requests.SetConfigurationDeviceRequest;
+import com.alliander.osgp.adapter.protocol.iec61850.device.ssld.requests.SetEventNotificationsDeviceRequest;
+import com.alliander.osgp.adapter.protocol.iec61850.device.ssld.requests.SetLightDeviceRequest;
+import com.alliander.osgp.adapter.protocol.iec61850.device.ssld.requests.SetScheduleDeviceRequest;
+import com.alliander.osgp.adapter.protocol.iec61850.device.ssld.requests.SetTransitionDeviceRequest;
+import com.alliander.osgp.adapter.protocol.iec61850.device.ssld.requests.UpdateDeviceSslCertificationDeviceRequest;
+import com.alliander.osgp.adapter.protocol.iec61850.device.ssld.requests.UpdateFirmwareDeviceRequest;
+import com.alliander.osgp.adapter.protocol.iec61850.device.ssld.responses.GetConfigurationDeviceResponse;
+import com.alliander.osgp.adapter.protocol.iec61850.device.ssld.responses.GetFirmwareVersionDeviceResponse;
+import com.alliander.osgp.adapter.protocol.iec61850.device.ssld.responses.GetPowerUsageHistoryDeviceResponse;
+import com.alliander.osgp.adapter.protocol.iec61850.device.ssld.responses.GetStatusDeviceResponse;
 import com.alliander.osgp.dto.valueobjects.EventNotificationTypeDto;
-import com.alliander.osgp.dto.valueobjects.microgrids.DataRequestDto;
-import com.alliander.osgp.dto.valueobjects.microgrids.SetPointsRequestDto;
 
-public interface DeviceService {
+public interface SsldDeviceService {
 
     /**
      * Reads the {@link DeviceStatus} from the device.
@@ -143,19 +138,4 @@ public interface DeviceService {
     void setEventNotifications(SetEventNotificationsDeviceRequest deviceRequest,
             DeviceResponseHandler deviceResponseHandler);
 
-    /**
-     * Reads the {@link DataRequestDto} from the device.
-     *
-     * Returns a {@link GetDataDeviceResponse} via the deviceResponseHandler's
-     * callback.
-     */
-    void getData(GetDataDeviceRequest deviceRequest, DeviceResponseHandler deviceResponseHandler);
-
-    /**
-     * Writes the {@link SetPointsRequestDto} to the device.
-     *
-     * Returns a {@link DeviceMessageStatus} via the deviceResponseHandler's
-     * callback.
-     */
-    void setSetPoints(SetSetPointsDeviceRequest deviceRequest, DeviceResponseHandler deviceResponseHandler);
 }

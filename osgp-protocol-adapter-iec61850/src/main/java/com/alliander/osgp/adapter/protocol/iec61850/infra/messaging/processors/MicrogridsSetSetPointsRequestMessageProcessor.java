@@ -17,8 +17,8 @@ import org.springframework.stereotype.Component;
 import com.alliander.osgp.adapter.protocol.iec61850.device.DeviceResponse;
 import com.alliander.osgp.adapter.protocol.iec61850.device.DeviceResponseHandler;
 import com.alliander.osgp.adapter.protocol.iec61850.device.rtu.requests.SetSetPointsDeviceRequest;
-import com.alliander.osgp.adapter.protocol.iec61850.infra.messaging.DeviceRequestMessageProcessor;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.messaging.DeviceRequestMessageType;
+import com.alliander.osgp.adapter.protocol.iec61850.infra.messaging.RtuDeviceRequestMessageProcessor;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.RequestMessageData;
 import com.alliander.osgp.dto.valueobjects.microgrids.SetPointsRequestDto;
 import com.alliander.osgp.shared.exceptionhandling.ComponentType;
@@ -29,7 +29,7 @@ import com.alliander.osgp.shared.infra.jms.Constants;
  * Class for processing microgrids get data request messages
  */
 @Component("iec61850MicrogridsSetSetPointsRequestMessageProcessor")
-public class MicrogridsSetSetPointsRequestMessageProcessor extends DeviceRequestMessageProcessor {
+public class MicrogridsSetSetPointsRequestMessageProcessor extends RtuDeviceRequestMessageProcessor {
     /**
      * Logger for this class
      */

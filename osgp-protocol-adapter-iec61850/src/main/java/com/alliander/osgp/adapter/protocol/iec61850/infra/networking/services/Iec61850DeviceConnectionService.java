@@ -32,7 +32,8 @@ import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.Data
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.IED;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.LogicalDevice;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.LogicalNode;
-import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.reporting.Iec61850ClientRTUEventListener;
+import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.reporting.Iec61850ClientBaseEventListener;
+import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.reporting.Iec61850ClientEventListenerFactory;
 
 @Component
 public class Iec61850DeviceConnectionService {
@@ -109,11 +110,11 @@ public class Iec61850DeviceConnectionService {
             LOGGER.info("Trying to connect to deviceIdentification: {} at IP address {}", deviceIdentification,
                     ipAddress);
 
-            // TODO select correct report listener, use the RTU version (for
-            // now)
-            final Iec61850ClientAssociation iec61850clientAssociation = this.iec61850Client.connect(
-                    deviceIdentification, inetAddress,
-                    new Iec61850ClientRTUEventListener(deviceIdentification, this.deviceManagementService));
+            final Iec61850ClientBaseEventListener eventListener = Iec61850ClientEventListenerFactory.getInstance()
+                    .getEventListener(ied, deviceIdentification, this.deviceManagementService);
+
+            final Iec61850ClientAssociation iec61850clientAssociation = this.iec61850Client
+                    .connect(deviceIdentification, inetAddress, eventListener);
             final ClientAssociation clientAssociation = iec61850clientAssociation.getClientAssociation();
 
             // Set response time-out

@@ -5,7 +5,7 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
-package com.alliander.osgp.adapter.protocol.iec61850.device.responses;
+package com.alliander.osgp.adapter.protocol.iec61850.device.ssld.responses;
 
 import java.util.List;
 

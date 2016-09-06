@@ -17,9 +17,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.alliander.osgp.adapter.protocol.iec61850.device.DeviceResponse;
-import com.alliander.osgp.adapter.protocol.iec61850.device.responses.EmptyDeviceResponse;
-import com.alliander.osgp.adapter.protocol.iec61850.device.responses.GetStatusDeviceResponse;
-import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.DeviceService;
+import com.alliander.osgp.adapter.protocol.iec61850.device.ssld.SsldDeviceService;
+import com.alliander.osgp.adapter.protocol.iec61850.device.ssld.responses.EmptyDeviceResponse;
+import com.alliander.osgp.adapter.protocol.iec61850.device.ssld.responses.GetStatusDeviceResponse;
 import com.alliander.osgp.adapter.protocol.iec61850.services.DeviceResponseService;
 import com.alliander.osgp.dto.valueobjects.DeviceStatusDto;
 import com.alliander.osgp.shared.exceptionhandling.ComponentType;
@@ -38,14 +38,14 @@ import com.alliander.osgp.shared.infra.jms.ResponseMessageSender;
  * construction. The Singleton instance is added to the HashMap of
  * MessageProcessors after dependency injection has completed.
  */
-public abstract class DeviceRequestMessageProcessor implements MessageProcessor {
+public abstract class SsldDeviceRequestMessageProcessor implements MessageProcessor {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DeviceRequestMessageProcessor.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SsldDeviceRequestMessageProcessor.class);
 
     protected final static String UNEXPECTED_EXCEPTION = "Unexpected exception while retrieving response message";
 
     @Autowired
-    protected DeviceService deviceService;
+    protected SsldDeviceService deviceService;
 
     @Autowired
     protected DeviceResponseMessageSender responseMessageSender;
@@ -66,7 +66,7 @@ public abstract class DeviceRequestMessageProcessor implements MessageProcessor 
      *            The MessageType the MessageProcessor implementation can
      *            process.
      */
-    protected DeviceRequestMessageProcessor(final DeviceRequestMessageType deviceRequestMessageType) {
+    protected SsldDeviceRequestMessageProcessor(final DeviceRequestMessageType deviceRequestMessageType) {
         this.deviceRequestMessageType = deviceRequestMessageType;
     }
 
