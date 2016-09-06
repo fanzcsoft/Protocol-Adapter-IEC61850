@@ -992,8 +992,8 @@ public class Iec61850DeviceService implements DeviceService {
 
                 // NOTE remove this once the Kaifa device can handle the
                 // calls again
-                LOGGER.warn("Sleeping for 5 seconds before moving on");
-                Thread.sleep(5000);
+                LOGGER.warn("Sleeping for 10 seconds before moving on");
+                Thread.sleep(10000);
 
                 // return null == Void
                 return null;
@@ -1033,7 +1033,11 @@ public class Iec61850DeviceService implements DeviceService {
 
         final NodeContainer softwareConfiguration = deviceConnection.getFcModelNode(LogicalDevice.LIGHTING,
                 LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.SOFTWARE_CONFIGURATION, Fc.CF);
-        final String lightTypeValue = softwareConfiguration.getString(SubDataAttribute.LIGHT_TYPE);
+        String lightTypeValue = softwareConfiguration.getString(SubDataAttribute.LIGHT_TYPE);
+        // Fix for Kaifa bug KI-31
+        if (lightTypeValue == null || lightTypeValue.isEmpty()) {
+            lightTypeValue = "RELAY";
+        }
         final LightTypeDto lightType = LightTypeDto.valueOf(lightTypeValue);
 
         /*
@@ -1111,7 +1115,11 @@ public class Iec61850DeviceService implements DeviceService {
         final NodeContainer softwareConfiguration = deviceConnection.getFcModelNode(LogicalDevice.LIGHTING,
                 LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.SOFTWARE_CONFIGURATION, Fc.CF);
 
-        final String lightTypeValue = softwareConfiguration.getString(SubDataAttribute.LIGHT_TYPE);
+        String lightTypeValue = softwareConfiguration.getString(SubDataAttribute.LIGHT_TYPE);
+        // Fix for Kaifa bug KI-31
+        if (lightTypeValue == null || lightTypeValue.isEmpty()) {
+            lightTypeValue = "RELAY";
+        }
         final LightTypeDto lightType = LightTypeDto.valueOf(lightTypeValue);
         final short astroGateSunRiseOffset = softwareConfiguration.getShort(SubDataAttribute.ASTRONOMIC_SUNRISE_OFFSET)
                 .getValue();
@@ -1295,8 +1303,8 @@ public class Iec61850DeviceService implements DeviceService {
 
                     if (configuration.getTimeSyncFrequency() != null) {
                         LOGGER.info("Updating TimeSyncFrequency to {}", configuration.getTimeSyncFrequency());
-                        clock.writeShort(SubDataAttribute.TIME_SYNC_FREQUENCY,
-                                configuration.getTimeSyncFrequency().shortValue());
+                        clock.writeUnsignedShort(SubDataAttribute.TIME_SYNC_FREQUENCY,
+                                configuration.getTimeSyncFrequency());
                     }
 
                     if (configuration.isAutomaticSummerTimingEnabled() != null) {
