@@ -24,6 +24,7 @@ public class Iec61850LoadReportHandler implements Iec61850ReportHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(Iec61850LoadReportHandler.class);
 
     private static final String SYSTEM_TYPE = "LOAD";
+    private static final String NODES_USING_ID = "TotWh,TotW";
 
     private int systemId;
 
@@ -43,14 +44,24 @@ public class Iec61850LoadReportHandler implements Iec61850ReportHandler {
     @Override
     public MeasurementDto handleMember(final ReadOnlyNodeContainer member) {
 
-        final RtuCommand command = Iec61850LoadCommandFactory.getInstance()
-                .getCommand(member.getFcmodelNode().getName());
+        final RtuCommand command = Iec61850LoadCommandFactory.getInstance().getCommand(this.getCommandName(member));
 
         if (command == null) {
             LOGGER.warn("No command found for node {}", member.getFcmodelNode().getName());
             return null;
         } else {
             return command.translate(member);
+        }
+    }
+
+    private String getCommandName(final ReadOnlyNodeContainer member) {
+        final String nodeName = member.getFcmodelNode().getName();
+        if (NODES_USING_ID.contains(nodeName)) {
+            final String refName = member.getFcmodelNode().getReference().toString();
+            final int startIndex = refName.length() - nodeName.length() - 2;
+            return nodeName + refName.substring(startIndex, startIndex + 1);
+        } else {
+            return nodeName;
         }
     }
 }

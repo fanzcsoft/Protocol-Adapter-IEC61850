@@ -16,6 +16,7 @@ import org.openmuc.openiec61850.BdaFloat32;
 import org.openmuc.openiec61850.BdaInt16;
 import org.openmuc.openiec61850.BdaInt16U;
 import org.openmuc.openiec61850.BdaInt32;
+import org.openmuc.openiec61850.BdaInt64;
 import org.openmuc.openiec61850.BdaInt8;
 import org.openmuc.openiec61850.BdaInt8U;
 import org.openmuc.openiec61850.BdaTimestamp;
@@ -164,6 +165,16 @@ public class NodeContainer {
 
     public void writeInteger(final SubDataAttribute child, final Integer value) {
         final BdaInt32 bdaInteger = (BdaInt32) this.parent.getChild(child.getDescription());
+        bdaInteger.setValue(value);
+        this.writeNode(bdaInteger);
+    }
+
+    public BdaInt64 getLong(final SubDataAttribute child) {
+        return (BdaInt64) this.parent.getChild(child.getDescription());
+    }
+
+    public void writeLong(final SubDataAttribute child, final Integer value) {
+        final BdaInt64 bdaInteger = (BdaInt64) this.parent.getChild(child.getDescription());
         bdaInteger.setValue(value);
         this.writeNode(bdaInteger);
     }

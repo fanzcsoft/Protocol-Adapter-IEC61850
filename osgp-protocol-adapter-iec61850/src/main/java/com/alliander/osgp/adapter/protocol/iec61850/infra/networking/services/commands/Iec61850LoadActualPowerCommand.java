@@ -8,6 +8,7 @@
 package com.alliander.osgp.adapter.protocol.iec61850.infra.networking.services.commands;
 
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.openmuc.openiec61850.Fc;
 
 import com.alliander.osgp.adapter.protocol.iec61850.device.rtu.RtuCommand;
@@ -20,15 +21,13 @@ import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.Node
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.SubDataAttribute;
 import com.alliander.osgp.dto.valueobjects.microgrids.MeasurementDto;
 
-public class Iec61850LoadTotalEnergyCommand implements RtuCommand {
-
-    private static final String NODE = "MMTR";
+public class Iec61850LoadActualPowerCommand implements RtuCommand {
 
     private LogicalNode logicalNode;
     private int index;
 
-    public Iec61850LoadTotalEnergyCommand(final int index) {
-        this.logicalNode = LogicalNode.fromString(NODE + index);
+    public Iec61850LoadActualPowerCommand(final int index) {
+        this.logicalNode = LogicalNode.fromString("MMXU" + index);
         this.index = index;
     }
 
@@ -36,17 +35,15 @@ public class Iec61850LoadTotalEnergyCommand implements RtuCommand {
     public MeasurementDto execute(final Iec61850Client client, final DeviceConnection connection,
             final LogicalDevice logicalDevice) {
         final NodeContainer containingNode = connection.getFcModelNode(logicalDevice, this.logicalNode,
-                DataAttribute.TOTAL_ENERGY, Fc.MX);
+                DataAttribute.ACTUAL_POWER, Fc.MX);
         client.readNodeDataValues(connection.getConnection().getClientAssociation(), containingNode.getFcmodelNode());
         return this.translate(containingNode);
     }
 
     @Override
     public MeasurementDto translate(final NodeContainer containingNode) {
-        return new MeasurementDto(this.index, DataAttribute.TOTAL_ENERGY.getDescription(), 0,
-                // TODO - Substitute value does not contain a datetime, like for
-                // example Status fields, Determine if local datetime or null
-                // should be used...
-                new DateTime(), containingNode.getLong(SubDataAttribute.ACTUAL_VALUE).getValue());
+        return new MeasurementDto(this.index, DataAttribute.ACTUAL_POWER.getDescription(), 0,
+                new DateTime(containingNode.getDate(SubDataAttribute.TIME), DateTimeZone.UTC),
+                containingNode.getChild(SubDataAttribute.MAGNITUDE).getFloat(SubDataAttribute.FLOAT).getFloat());
     }
 }

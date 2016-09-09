@@ -52,9 +52,41 @@ public enum LogicalNode {
      */
     MEASUREMENT_ONE("MMXU1"),
     /**
+     * MMXU2, Measurements Logical Node.
+     */
+    MEASUREMENT_TWO("MMXU2"),
+    /**
+     * MMXU3, Measurements Logical Node.
+     */
+    MEASUREMENT_THREE("MMXU3"),
+    /**
+     * MMXU4, Measurements Logical Node.
+     */
+    MEASUREMENT_FOUR("MMXU4"),
+    /**
+     * MMXU5, Measurements Logical Node.
+     */
+    MEASUREMENT_FIVE("MMXU5"),
+    /**
      * MMTR1, Logical Node Meter Reading
      */
     METER_READING_ONE("MMTR1"),
+    /**
+     * MMTR2, Logical Node Meter Reading
+     */
+    METER_READING_TWO("MMTR2"),
+    /**
+     * MMTR3, Logical Node Meter Reading
+     */
+    METER_READING_THREE("MMTR3"),
+    /**
+     * MMTR4, Logical Node Meter Reading
+     */
+    METER_READING_FOUR("MMTR4"),
+    /**
+     * MMTR5, Logical Node Meter Reading
+     */
+    METER_READING_FIVE("MMTR5"),
     /**
      * DRCT, DER Controller characteristics;
      */
@@ -95,5 +127,17 @@ public enum LogicalNode {
         default:
             throw new IllegalArgumentException("Invalid index value : " + index);
         }
+    }
+
+    public static LogicalNode fromString(final String description) {
+
+        if (description != null) {
+            for (final LogicalNode ln : LogicalNode.values()) {
+                if (description.equalsIgnoreCase(ln.description)) {
+                    return ln;
+                }
+            }
+        }
+        throw new IllegalArgumentException("No LogicalNode constant with description " + description + " found.");
     }
 }

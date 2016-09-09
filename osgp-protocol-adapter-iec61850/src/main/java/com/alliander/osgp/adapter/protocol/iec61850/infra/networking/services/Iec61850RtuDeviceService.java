@@ -256,8 +256,7 @@ public class Iec61850RtuDeviceService implements RtuDeviceService {
 
         Iec61850RtuDeviceService.this.enableEngineReportingOnDevice(connection, deviceIdentification);
 
-        // Iec61850RtuDeviceService.this.enableLoadReportingOnDevice(connection,
-        // deviceIdentification);
+        Iec61850RtuDeviceService.this.enableLoadReportingOnDevice(connection, deviceIdentification);
     }
 
     private void enableRtuReportingOnDevice(final DeviceConnection connection, final String deviceIdentification)
@@ -318,25 +317,9 @@ public class Iec61850RtuDeviceService implements RtuDeviceService {
 
         Iec61850RtuDeviceService.this.enableStatusReportingOnDevice(connection, deviceIdentification,
                 LogicalDevice.LOAD_ONE, DataAttribute.REPORT_STATUS_ONE);
-        Iec61850RtuDeviceService.this.enableStatusReportingOnDevice(connection, deviceIdentification,
-                LogicalDevice.LOAD_TWO, DataAttribute.REPORT_STATUS_ONE);
-        Iec61850RtuDeviceService.this.enableStatusReportingOnDevice(connection, deviceIdentification,
-                LogicalDevice.LOAD_THREE, DataAttribute.REPORT_STATUS_ONE);
-        Iec61850RtuDeviceService.this.enableStatusReportingOnDevice(connection, deviceIdentification,
-                LogicalDevice.LOAD_FOUR, DataAttribute.REPORT_STATUS_ONE);
-        Iec61850RtuDeviceService.this.enableStatusReportingOnDevice(connection, deviceIdentification,
-                LogicalDevice.LOAD_FIVE, DataAttribute.REPORT_STATUS_ONE);
 
         Iec61850RtuDeviceService.this.enableMeasurementReportingOnDevice(connection, deviceIdentification,
                 LogicalDevice.LOAD_ONE, DataAttribute.REPORT_MEASUREMENTS_ONE);
-        Iec61850RtuDeviceService.this.enableMeasurementReportingOnDevice(connection, deviceIdentification,
-                LogicalDevice.LOAD_TWO, DataAttribute.REPORT_MEASUREMENTS_ONE);
-        Iec61850RtuDeviceService.this.enableMeasurementReportingOnDevice(connection, deviceIdentification,
-                LogicalDevice.LOAD_THREE, DataAttribute.REPORT_MEASUREMENTS_ONE);
-        Iec61850RtuDeviceService.this.enableMeasurementReportingOnDevice(connection, deviceIdentification,
-                LogicalDevice.LOAD_FOUR, DataAttribute.REPORT_MEASUREMENTS_ONE);
-        Iec61850RtuDeviceService.this.enableMeasurementReportingOnDevice(connection, deviceIdentification,
-                LogicalDevice.LOAD_FIVE, DataAttribute.REPORT_MEASUREMENTS_ONE);
     }
 
     private void enableStatusReportingOnDevice(final DeviceConnection deviceConnection,

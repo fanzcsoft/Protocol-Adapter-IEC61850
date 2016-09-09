@@ -170,6 +170,6 @@ public enum DataAttribute {
                 }
             }
         }
-        throw new IllegalArgumentException("No LogicalDevice constant with description " + description + " found.");
+        throw new IllegalArgumentException("No DataAttribute constant with description " + description + " found.");
     }
 }

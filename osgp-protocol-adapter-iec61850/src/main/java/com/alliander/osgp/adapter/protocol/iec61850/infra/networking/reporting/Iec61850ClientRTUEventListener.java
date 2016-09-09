@@ -52,6 +52,8 @@ public class Iec61850ClientRTUEventListener extends Iec61850ClientBaseEventListe
         handlers.put("WAGO61850ServerENGINE1/LLN0$Status", new Iec61850EngineReportHandler(1));
         handlers.put("WAGO61850ServerENGINE2/LLN0$Status", new Iec61850EngineReportHandler(2));
         handlers.put("WAGO61850ServerENGINE3/LLN0$Status", new Iec61850EngineReportHandler(3));
+        handlers.put("WAGO61850ServerLOAD1/LLN0$Status", new Iec61850EngineReportHandler(1));
+
         handlers.put("WAGO61850ServerPV1/LLN0$Measurements", new Iec61850PvReportHandler(1));
         handlers.put("WAGO61850ServerPV2/LLN0$Measurements", new Iec61850PvReportHandler(2));
         handlers.put("WAGO61850ServerPV3/LLN0$Measurements", new Iec61850PvReportHandler(3));
@@ -60,6 +62,7 @@ public class Iec61850ClientRTUEventListener extends Iec61850ClientBaseEventListe
         handlers.put("WAGO61850ServerENGINE1/LLN0$Measurements", new Iec61850EngineReportHandler(1));
         handlers.put("WAGO61850ServerENGINE2/LLN0$Measurements", new Iec61850EngineReportHandler(2));
         handlers.put("WAGO61850ServerENGINE3/LLN0$Measurements", new Iec61850EngineReportHandler(3));
+        handlers.put("WAGO61850ServerLOAD1/LLN0$Measurements", new Iec61850LoadReportHandler(1));
         REPORT_HANDLERS = Collections.unmodifiableMap(handlers);
     }
 

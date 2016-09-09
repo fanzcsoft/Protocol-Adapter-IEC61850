@@ -54,23 +54,7 @@ public enum LogicalDevice {
     /**
      * Logical Device Load 1
      */
-    LOAD_ONE("LOAD1"),
-    /**
-     * Logical Device Load 2
-     */
-    LOAD_TWO("LOAD2"),
-    /**
-     * Logical Device Load 3
-     */
-    LOAD_THREE("LOAD3"),
-    /**
-     * Logical Device Load 4
-     */
-    LOAD_FOUR("LOAD4"),
-    /**
-     * Logical Device Load 5
-     */
-    LOAD_FIVE("LOAD5");
+    LOAD_ONE("LOAD1");
 
     private String description;
 
