@@ -12,6 +12,7 @@ import javax.annotation.PreDestroy;
 import org.openmuc.openiec61850.BasicDataAttribute;
 import org.openmuc.openiec61850.BdaFloat32;
 import org.openmuc.openiec61850.BdaInt32;
+import org.openmuc.openiec61850.BdaInt64;
 import org.openmuc.openiec61850.BdaInt8;
 import org.openmuc.openiec61850.BdaTimestamp;
 import org.openmuc.openiec61850.Fc;
@@ -216,6 +217,15 @@ public class RtuSimulator implements ServerEventListener {
         values.add(this.incrementInt("WAGO61850ServerBATTERY2/DGEN1.OpTmsRs.stVal", Fc.ST));
         values.add(this.setTime("WAGO61850ServerBATTERY2/DGEN1.OpTmsRs.t", Fc.ST, timestamp));
 
+        // Logical Device LOAD1
+        for (int i = 1; i <= 5; i++) {
+            values.add(this.setFixedFloat("WAGO61850ServerLOAD1/MMXU" + i + ".TotW.mag.f", Fc.MX, i));
+            values.add(this.setTime("WAGO61850ServerLOAD1/MMXU" + i + ".TotW.t", Fc.MX, timestamp));
+
+            values.add(this.setFixedInt("WAGO61850ServerLOAD1/MMTR" + i + ".TotWh.actVal", Fc.ST, i));
+            values.add(this.setTime("WAGO61850ServerLOAD1/MMTR" + i + ".TotWh.t", Fc.ST, timestamp));
+        }
+
         this.server.setValues(values);
         LOGGER.info("Generated values");
     }
@@ -238,9 +248,21 @@ public class RtuSimulator implements ServerEventListener {
         return value;
     }
 
+    private BasicDataAttribute setFixedFloat(final String node, final Fc fc, final int val) {
+        final BdaFloat32 value = (BdaFloat32) this.serverModel.findModelNode(node, fc);
+        value.setFloat((float) val);
+        return value;
+    }
+
     private BasicDataAttribute setRandomByte(final String node, final Fc fc, final int min, final int max) {
         final BdaInt8 value = (BdaInt8) this.serverModel.findModelNode(node, fc);
         value.setValue((byte) ThreadLocalRandom.current().nextInt(min, max));
+        return value;
+    }
+
+    private BasicDataAttribute setFixedInt(final String node, final Fc fc, final int val) {
+        final BdaInt64 value = (BdaInt64) this.serverModel.findModelNode(node, fc);
+        value.setValue((byte) val);
         return value;
     }
 
