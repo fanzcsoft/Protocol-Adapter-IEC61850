@@ -8,6 +8,7 @@
 package com.alliander.osgp.adapter.protocol.iec61850.infra.networking.services.commands;
 
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.openmuc.openiec61850.Fc;
 
 import com.alliander.osgp.adapter.protocol.iec61850.device.rtu.RtuCommand;
@@ -34,10 +35,7 @@ public class Iec61850TotalEnergyCommand implements RtuCommand {
     @Override
     public MeasurementDto translate(final NodeContainer containingNode) {
         return new MeasurementDto(1, DataAttribute.TOTAL_ENERGY.getDescription(), 0,
-                // TODO - Substitute value does not contain a datetime, like for
-                // example Status fields, Determine if local datetime or null
-                // should be used...
-                new DateTime(),
+                new DateTime(containingNode.getDate(SubDataAttribute.TIME), DateTimeZone.UTC),
                 containingNode.getChild(SubDataAttribute.MAGNITUDE).getFloat(SubDataAttribute.FLOAT).getFloat());
     }
 }

@@ -25,11 +25,21 @@ import com.alliander.osgp.dto.valueobjects.microgrids.SystemFilterDto;
 public class Iec61850BatterySystemService implements SystemService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Iec61850BatterySystemService.class);
-    private static final String BATTERY = "BATTERY";
+    private static final String DEVICE = "BATTERY";
+
+    private int index;
+    private LogicalDevice logicalDevice;
+
+    public Iec61850BatterySystemService(final int index) {
+        this.index = index;
+        this.logicalDevice = LogicalDevice.fromString(DEVICE + index);
+    }
 
     @Override
     public List<MeasurementDto> GetData(final SystemFilterDto systemFilter, final Iec61850Client client,
             final DeviceConnection connection) {
+
+        LOGGER.info("Get data called for logical device {}", DEVICE + this.index);
 
         final List<MeasurementDto> measurements = new ArrayList<>();
 
@@ -39,15 +49,11 @@ public class Iec61850BatterySystemService implements SystemService {
             if (command == null) {
                 LOGGER.warn("Unsupported data attribute [{}], skip get data for it", filter.getNode());
             } else {
-                measurements.add(command.execute(client, connection, this.getLogicalDevice(systemFilter.getId())));
+                measurements.add(command.execute(client, connection, this.logicalDevice));
             }
 
         }
 
         return measurements;
-    }
-
-    private LogicalDevice getLogicalDevice(final int id) {
-        return LogicalDevice.fromString(BATTERY + id);
     }
 }

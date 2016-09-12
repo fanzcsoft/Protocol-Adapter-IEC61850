@@ -27,9 +27,19 @@ public class Iec61850RtuSystemService implements SystemService {
     private static final Logger LOGGER = LoggerFactory.getLogger(Iec61850RtuSystemService.class);
     private static final String DEVICE = "RTU";
 
+    private int index;
+    private LogicalDevice logicalDevice;
+
+    public Iec61850RtuSystemService(final int index) {
+        this.index = index;
+        this.logicalDevice = LogicalDevice.fromString(DEVICE + index);
+    }
+
     @Override
     public List<MeasurementDto> GetData(final SystemFilterDto systemFilter, final Iec61850Client client,
             final DeviceConnection connection) {
+
+        LOGGER.info("Get data called for logical device {}", DEVICE + this.index);
 
         final List<MeasurementDto> measurements = new ArrayList<>();
 
@@ -39,15 +49,11 @@ public class Iec61850RtuSystemService implements SystemService {
             if (command == null) {
                 LOGGER.warn("Unsupported data attribute [{}], skip get data for it", filter.getNode());
             } else {
-                measurements.add(command.execute(client, connection, this.getLogicalDevice(systemFilter.getId())));
+                measurements.add(command.execute(client, connection, this.logicalDevice));
             }
 
         }
 
         return measurements;
-    }
-
-    private LogicalDevice getLogicalDevice(final int id) {
-        return LogicalDevice.fromString(DEVICE + id);
     }
 }

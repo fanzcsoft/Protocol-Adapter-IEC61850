@@ -8,7 +8,6 @@
 package com.alliander.osgp.adapter.protocol.iec61850.infra.networking.services.commands;
 
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 import org.openmuc.openiec61850.Fc;
 
 import com.alliander.osgp.adapter.protocol.iec61850.device.rtu.RtuCommand;
@@ -18,7 +17,6 @@ import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.Devi
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.LogicalDevice;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.LogicalNode;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.NodeContainer;
-import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.SubDataAttribute;
 import com.alliander.osgp.dto.valueobjects.microgrids.MeasurementDto;
 
 public class Iec61850MaximumPowerLimitCommand implements RtuCommand {
@@ -26,17 +24,18 @@ public class Iec61850MaximumPowerLimitCommand implements RtuCommand {
     @Override
     public MeasurementDto execute(final Iec61850Client client, final DeviceConnection connection,
             final LogicalDevice logicalDevice) {
-        final NodeContainer containingNode = connection.getFcModelNode(logicalDevice, LogicalNode.LOGICAL_NODE_ZERO,
-                DataAttribute.MAXIMUM_POWER_LIMIT, Fc.SV);
+        final NodeContainer containingNode = connection.getFcModelNode(logicalDevice,
+                LogicalNode.DER_CONTROLLER_CHARACTERISTICS_ONE, DataAttribute.MAXIMUM_POWER_LIMIT, Fc.CF);
         client.readNodeDataValues(connection.getConnection().getClientAssociation(), containingNode.getFcmodelNode());
         return this.translate(containingNode);
     }
 
     @Override
     public MeasurementDto translate(final NodeContainer containingNode) {
+
         return new MeasurementDto(1, DataAttribute.MAXIMUM_POWER_LIMIT.getDescription(), 0,
-                new DateTime(containingNode.getDate(SubDataAttribute.TIME), DateTimeZone.UTC),
-                containingNode.getChild(SubDataAttribute.SUBSTITUDE_VALUE).getFloat(SubDataAttribute.FLOAT).getFloat());
+                // TODO - Implement when available
+                new DateTime(), 1);
     }
 
 }

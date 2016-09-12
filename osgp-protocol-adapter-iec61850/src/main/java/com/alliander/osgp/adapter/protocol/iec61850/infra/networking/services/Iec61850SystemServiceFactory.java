@@ -21,7 +21,7 @@ public class Iec61850SystemServiceFactory {
     private Map<String, SystemService> systemServices = null;
 
     public SystemService getSystemService(final SystemFilterDto systemFilter) throws Exception {
-        final String key = systemFilter.getSystemType().toUpperCase();
+        final String key = systemFilter.getSystemType().toUpperCase() + systemFilter.getId();
         if (this.getSystemServices().containsKey(key)) {
             return this.getSystemServices().get(key);
         }
@@ -32,13 +32,18 @@ public class Iec61850SystemServiceFactory {
     private Map<String, SystemService> getSystemServices() {
         if (this.systemServices == null) {
             this.systemServices = new HashMap<>();
-            this.systemServices.put("PV", new Iec61850PvSystemService());
-            this.systemServices.put("BATTERY", new Iec61850BatterySystemService());
-            this.systemServices.put("RTU", new Iec61850RtuSystemService());
-            this.systemServices.put("ENGINE", new Iec61850EngineSystemService());
-            this.systemServices.put("LOAD", new Iec61850LoadSystemService());
+
+            // TODO Refactor to read logical devices from file
+            this.systemServices.put("RTU1", new Iec61850RtuSystemService(1));
+            this.systemServices.put("LOAD1", new Iec61850LoadSystemService(1));
+            for (int i = 1; i <= 2; i++) {
+                this.systemServices.put("BATTERY" + i, new Iec61850BatterySystemService(i));
+            }
+            for (int i = 1; i <= 3; i++) {
+                this.systemServices.put("PV" + i, new Iec61850PvSystemService(i));
+                this.systemServices.put("ENGINE" + i, new Iec61850EngineSystemService(i));
+            }
         }
         return this.systemServices;
     }
-
 }
