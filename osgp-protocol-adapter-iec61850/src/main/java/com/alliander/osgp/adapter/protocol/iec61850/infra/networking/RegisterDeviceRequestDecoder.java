@@ -16,14 +16,17 @@ import org.jboss.netty.handler.codec.frame.FrameDecoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.IED;
 import com.alliander.osgp.iec61850.RegisterDeviceRequest;
 
 public class RegisterDeviceRequestDecoder extends FrameDecoder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RegisterDeviceRequestDecoder.class);
+    private static IED ied;
 
-    public RegisterDeviceRequestDecoder() {
+    public RegisterDeviceRequestDecoder(final IED ied) {
         LOGGER.debug("Created new IEC61850 Register Device Request decoder");
+        RegisterDeviceRequestDecoder.ied = ied;
     }
 
     @Override
@@ -49,7 +52,7 @@ public class RegisterDeviceRequestDecoder extends FrameDecoder {
         buffer.readBytes(availableBytes);
 
         try {
-            return new RegisterDeviceRequest(availableBytes);
+            return new RegisterDeviceRequest(availableBytes, ied.getDescription());
         } catch (final Exception e) {
             LOGGER.error("Unable to construct a {} based on the bytes received: {}",
                     RegisterDeviceRequest.class.getSimpleName(), Arrays.toString(availableBytes), e);
