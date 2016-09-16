@@ -468,9 +468,6 @@ public class Iec61850SsldDeviceService implements SsldDeviceService {
                         deviceRequest.getDeviceIdentification(), IED.FLEX_OVL));
             }
 
-            // Disconnect from the device.
-            clientAssociation.disconnect();
-
             // Sleep and wait
             try {
                 LOGGER.info("Waiting {} seconds before getting the device status", this.selftestTimeout / 1000);
