@@ -40,9 +40,9 @@ import com.alliander.osgp.shared.infra.jms.ResponseMessageSender;
  */
 public abstract class SsldDeviceRequestMessageProcessor implements MessageProcessor {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SsldDeviceRequestMessageProcessor.class);
+    protected static final String UNEXPECTED_EXCEPTION = "Unexpected exception while retrieving response message";
 
-    protected final static String UNEXPECTED_EXCEPTION = "Unexpected exception while retrieving response message";
+    private static final Logger LOGGER = LoggerFactory.getLogger(SsldDeviceRequestMessageProcessor.class);
 
     @Autowired
     protected SsldDeviceService deviceService;
