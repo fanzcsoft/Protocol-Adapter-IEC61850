@@ -24,21 +24,16 @@ public class RegisterDeviceRequest implements Serializable {
 
     private final String serialNumber;
     private final String ipAddress;
-    private final String ied;
 
-    public RegisterDeviceRequest(final byte[] bytes, final String ied) {
-
+    public RegisterDeviceRequest(final byte[] bytes) {
         final int splitIndex = this.getSeparatorPos(bytes);
-
         this.serialNumber = new String(bytes, 0, splitIndex, StandardCharsets.US_ASCII);
         this.ipAddress = new String(bytes, splitIndex + 1, bytes.length - splitIndex - 1, StandardCharsets.US_ASCII);
-        this.ied = ied;
     }
 
-    public RegisterDeviceRequest(final String serialNumber, final String ipAddress, final String ied) {
+    public RegisterDeviceRequest(final String serialNumber, final String ipAddress) {
         this.serialNumber = serialNumber;
         this.ipAddress = ipAddress;
-        this.ied = ied;
     }
 
     private int getSeparatorPos(final byte[] bytes) {
@@ -92,9 +87,5 @@ public class RegisterDeviceRequest implements Serializable {
 
     public String getIpAddress() {
         return this.ipAddress;
-    }
-
-    public String getIed() {
-        return this.ied;
     }
 }

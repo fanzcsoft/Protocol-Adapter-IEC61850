@@ -54,7 +54,7 @@ public class Iec61850ChannelHandlerServer extends Iec61850ChannelHandler {
 
         final String deviceIdentification = message.getDeviceIdentification();
         final String deviceType = Ssld.SSLD_TYPE;
-        final IED iec = IED.FLEX_OVL;
+        final IED ied = IED.FLEX_OVL;
         final String ipAddress = message.getIpAddress();
 
         final DeviceRegistrationDataDto deviceRegistrationData = new DeviceRegistrationDataDto(ipAddress, deviceType,
@@ -67,7 +67,7 @@ public class Iec61850ChannelHandlerServer extends Iec61850ChannelHandler {
         this.osgpRequestMessageSender.send(requestMessage, DeviceFunctionDto.REGISTER_DEVICE.name());
 
         try {
-            this.iec61850Client.disableRegistration(deviceIdentification, InetAddress.getByName(ipAddress), iec);
+            this.iec61850Client.disableRegistration(deviceIdentification, InetAddress.getByName(ipAddress), ied);
             LOGGER.info("Disabled registration for device: {}, at IP address: {}", deviceIdentification, ipAddress);
         } catch (final Exception e) {
             LOGGER.error("Failed to disable registration for device: {}, at IP address: {}", deviceIdentification,

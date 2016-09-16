@@ -34,7 +34,6 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import com.alliander.osgp.adapter.protocol.iec61850.exceptions.ProtocolAdapterException;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.Iec61850ChannelHandlerServer;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.RegisterDeviceRequestDecoder;
-import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.IED;
 
 @Configuration
 @EnableTransactionManagement()
@@ -120,7 +119,7 @@ public class Iec61850Config {
 
         pipeline.addLast("loggingHandler", new LoggingHandler(InternalLogLevel.INFO, true));
 
-        pipeline.addLast("iec61850RegisterDeviceRequestDecoder", new RegisterDeviceRequestDecoder(IED.FLEX_OVL));
+        pipeline.addLast("iec61850RegisterDeviceRequestDecoder", new RegisterDeviceRequestDecoder());
 
         pipeline.addLast("iec61850ChannelHandler", handler);
 
