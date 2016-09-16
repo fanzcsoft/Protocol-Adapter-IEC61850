@@ -36,7 +36,7 @@ public class Iec61850RtuSystemService implements SystemService {
     }
 
     @Override
-    public List<MeasurementDto> GetData(final SystemFilterDto systemFilter, final Iec61850Client client,
+    public List<MeasurementDto> getData(final SystemFilterDto systemFilter, final Iec61850Client client,
             final DeviceConnection connection) {
 
         LOGGER.info("Get data called for logical device {}", DEVICE + this.index);

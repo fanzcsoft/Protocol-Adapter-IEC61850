@@ -14,53 +14,55 @@ import org.openmuc.openiec61850.FcModelNode;
 
 public final class ReadOnlyNodeContainer extends NodeContainer {
 
+    private static final String NOT_SUPPORTED = "Writing is not supported";
+
     public ReadOnlyNodeContainer(final String deviceIdentification, final FcModelNode fcmodelNode) {
         super(deviceIdentification, fcmodelNode);
     }
 
     @Override
     public void write() {
-        throw new NotImplementedException("Writing is not supported");
+        throw new NotImplementedException(NOT_SUPPORTED);
     }
 
     @Override
     public void writeBoolean(final SubDataAttribute child, final boolean value) {
-        throw new NotImplementedException("Writing is not supported");
+        throw new NotImplementedException(NOT_SUPPORTED);
     }
 
     @Override
     public void writeByte(final SubDataAttribute child, final byte value) {
-        throw new NotImplementedException("Writing is not supported");
+        throw new NotImplementedException(NOT_SUPPORTED);
     }
 
     @Override
     public void writeDate(final SubDataAttribute child, final Date value) {
-        throw new NotImplementedException("Writing is not supported");
+        throw new NotImplementedException(NOT_SUPPORTED);
     }
 
     @Override
     public void writeFloat(final SubDataAttribute child, final Float value) {
-        throw new NotImplementedException("Writing is not supported");
+        throw new NotImplementedException(NOT_SUPPORTED);
     }
 
     @Override
     public void writeInteger(final SubDataAttribute child, final Integer value) {
-        throw new NotImplementedException("Writing is not supported");
+        throw new NotImplementedException(NOT_SUPPORTED);
     }
 
     @Override
     public void writeShort(final SubDataAttribute child, final Short value) {
-        throw new NotImplementedException("Writing is not supported");
+        throw new NotImplementedException(NOT_SUPPORTED);
     }
 
     @Override
     public void writeString(final SubDataAttribute child, final String value) {
-        throw new NotImplementedException("Writing is not supported");
+        throw new NotImplementedException(NOT_SUPPORTED);
     }
 
     @Override
     public void writeUnsignedShort(final SubDataAttribute child, final Integer value) {
-        throw new NotImplementedException("Writing is not supported");
+        throw new NotImplementedException(NOT_SUPPORTED);
     }
 
     @Override

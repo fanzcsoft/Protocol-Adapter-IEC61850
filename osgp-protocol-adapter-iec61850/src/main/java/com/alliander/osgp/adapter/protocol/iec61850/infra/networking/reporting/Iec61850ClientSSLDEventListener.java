@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.openmuc.openiec61850.BdaBoolean;
 import org.openmuc.openiec61850.BdaInt8U;
@@ -101,22 +102,17 @@ public class Iec61850ClientSSLDEventListener extends Iec61850ClientBaseEventList
     @Override
     public void newReport(final Report report) {
 
-        final DateTime timeOfEntry = report.getTimeOfEntry() == null ? null
-                : new DateTime(report.getTimeOfEntry().getTimestampValue() + IEC61850_ENTRY_TIME_OFFSET);
+        final DateTime timeOfEntry = this.getTimeOfEntry(report);
 
-        final String reportDescription = String.format("device: %s, reportId: %s, timeOfEntry: %s, sqNum: %s%s%s",
-                this.deviceIdentification, report.getRptId(), timeOfEntry == null ? "-" : timeOfEntry,
-                report.getSqNum(), report.getSubSqNum() == null ? "" : " subSqNum: " + report.getSubSqNum(),
-                report.isMoreSegmentsFollow() ? " (more segments follow for this sqNum)" : "");
+        final String reportDescription = this.getReportDescription(report, timeOfEntry);
+
         this.logger.info("newReport for {}", reportDescription);
         boolean skipRecordBecauseOfOldSqNum = false;
         if (report.isBufOvfl()) {
             this.logger.warn("Buffer Overflow reported for {} - entries within the buffer may have been lost.",
                     reportDescription);
-        } else if (this.firstNewSqNum != null && report.getSqNum() != null) {
-            if (report.getSqNum() < this.firstNewSqNum) {
-                skipRecordBecauseOfOldSqNum = true;
-            }
+        } else if (this.firstNewSqNum != null && report.getSqNum() != null && report.getSqNum() < this.firstNewSqNum) {
+            skipRecordBecauseOfOldSqNum = true;
         }
         this.logReportDetails(report);
 
@@ -151,6 +147,18 @@ public class Iec61850ClientSSLDEventListener extends Iec61850ClientBaseEventList
                         reportDescription, e);
             }
         }
+    }
+
+    private DateTime getTimeOfEntry(final Report report) {
+        return report.getTimeOfEntry() == null ? null
+                : new DateTime(report.getTimeOfEntry().getTimestampValue() + IEC61850_ENTRY_TIME_OFFSET);
+    }
+
+    private String getReportDescription(final Report report, final DateTime timeOfEntry) {
+        return String.format("device: %s, reportId: %s, timeOfEntry: %s, sqNum: %s%s%s", this.deviceIdentification,
+                report.getRptId(), timeOfEntry == null ? "-" : timeOfEntry, report.getSqNum(),
+                report.getSubSqNum() == null ? "" : " subSqNum: " + report.getSubSqNum(),
+                report.isMoreSegmentsFollow() ? " (more segments follow for this sqNum)" : "");
     }
 
     private void addEventNotificationForReportedData(final FcModelNode evnRpn, final DateTime timeOfEntry,
@@ -328,126 +336,65 @@ public class Iec61850ClientSSLDEventListener extends Iec61850ClientBaseEventList
         if (reason == null) {
             return "null";
         }
-        final StringBuilder sb = new StringBuilder();
-        boolean addSeparator = false;
+
+        final List<String> reasons = new ArrayList<>();
+
         if (reason.isApplicationTrigger()) {
-            addSeparator = true;
-            sb.append("ApplicationTrigger");
+            reasons.add("ApplicationTrigger");
         }
         if (reason.isDataChange()) {
-            if (addSeparator) {
-                sb.append(", ");
-            } else {
-                addSeparator = true;
-            }
-            sb.append("DataChange");
+            reasons.add("DataChange");
         }
         if (reason.isDataUpdate()) {
-            if (addSeparator) {
-                sb.append(", ");
-            } else {
-                addSeparator = true;
-            }
-            sb.append("DataUpdate");
+            reasons.add("DataUpdate");
         }
         if (reason.isGeneralInterrogation()) {
-            if (addSeparator) {
-                sb.append(", ");
-            } else {
-                addSeparator = true;
-            }
-            sb.append("GeneralInterrogation");
+            reasons.add("GeneralInterrogation");
         }
         if (reason.isIntegrity()) {
-            if (addSeparator) {
-                sb.append(", ");
-            } else {
-                addSeparator = true;
-            }
-            sb.append("Integrity");
+            reasons.add("Integrity");
         }
         if (reason.isQualityChange()) {
-            if (addSeparator) {
-                sb.append(", ");
-            }
-            sb.append("QualityChange");
+            reasons.add("QualityChange");
         }
-        return sb.toString();
+        return StringUtils.join(reasons, ", ");
     }
 
     private String optFldsInfo(final BdaOptFlds optFlds) {
         if (optFlds == null) {
             return "null";
         }
-        final StringBuilder sb = new StringBuilder();
-        boolean addSeparator = false;
+
+        final List<String> fields = new ArrayList<>();
+
         if (optFlds.isBufferOverflow()) {
-            addSeparator = true;
-            sb.append("BufferOverflow");
+            fields.add("BufferOverflow");
         }
         if (optFlds.isConfigRevision()) {
-            if (addSeparator) {
-                sb.append(", ");
-            } else {
-                addSeparator = true;
-            }
-            sb.append("ConfigRevision");
+            fields.add("ConfigRevision");
         }
         if (optFlds.isDataReference()) {
-            if (addSeparator) {
-                sb.append(", ");
-            } else {
-                addSeparator = true;
-            }
-            sb.append("DataReference");
+            fields.add("DataReference");
         }
         if (optFlds.isDataSetName()) {
-            if (addSeparator) {
-                sb.append(", ");
-            } else {
-                addSeparator = true;
-            }
-            sb.append("DataSetName");
+            fields.add("DataSetName");
         }
         if (optFlds.isEntryId()) {
-            if (addSeparator) {
-                sb.append(", ");
-            } else {
-                addSeparator = true;
-            }
-            sb.append("EntryId");
+            fields.add("EntryId");
         }
         if (optFlds.isReasonForInclusion()) {
-            if (addSeparator) {
-                sb.append(", ");
-            } else {
-                addSeparator = true;
-            }
-            sb.append("ReasonForInclusion");
+            fields.add("ReasonForInclusion");
         }
         if (optFlds.isReportTimestamp()) {
-            if (addSeparator) {
-                sb.append(", ");
-            } else {
-                addSeparator = true;
-            }
-            sb.append("ReportTimestamp");
+            fields.add("ReportTimestamp");
         }
         if (optFlds.isSegmentation()) {
-            if (addSeparator) {
-                sb.append(", ");
-            } else {
-                addSeparator = true;
-            }
-            sb.append("Segmentation");
+            fields.add("Segmentation");
         }
         if (optFlds.isSequenceNumber()) {
-            if (addSeparator) {
-                sb.append(", ");
-            }
-            sb.append("SequenceNumber");
+            fields.add("SequenceNumber");
         }
-        return sb.toString();
+        return StringUtils.join(fields, ", ");
     }
 
     private String evnRpnInfo(final String linePrefix, final FcModelNode evnRpn) {

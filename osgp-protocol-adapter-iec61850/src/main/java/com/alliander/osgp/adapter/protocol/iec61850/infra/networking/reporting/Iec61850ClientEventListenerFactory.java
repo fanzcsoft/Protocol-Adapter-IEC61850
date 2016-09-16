@@ -8,7 +8,7 @@ import com.alliander.osgp.adapter.protocol.iec61850.exceptions.ProtocolAdapterEx
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.IED;
 
 public class Iec61850ClientEventListenerFactory {
-    private static Logger LOGGER = LoggerFactory.getLogger(Iec61850ClientEventListenerFactory.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Iec61850ClientEventListenerFactory.class);
 
     private static Iec61850ClientEventListenerFactory instance;
 

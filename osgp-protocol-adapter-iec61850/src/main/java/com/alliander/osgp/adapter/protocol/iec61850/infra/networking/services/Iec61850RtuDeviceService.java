@@ -220,7 +220,7 @@ public class Iec61850RtuDeviceService implements RtuDeviceService {
 
                     final SystemService systemService = Iec61850RtuDeviceService.this.systemServiceFactory
                             .getSystemService(systemFilter);
-                    measurements.addAll(systemService.GetData(systemFilter,
+                    measurements.addAll(systemService.getData(systemFilter,
                             Iec61850RtuDeviceService.this.iec61850Client, connection));
 
                     final MeasurementResultSystemIdentifierDto measurementIdentifier = new MeasurementResultSystemIdentifierDto(
