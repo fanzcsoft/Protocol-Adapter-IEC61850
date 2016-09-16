@@ -154,7 +154,8 @@ public class Iec61850RtuDeviceService implements RtuDeviceService {
             @Override
             public Void apply() throws Exception {
                 for (final SetPointSystemIdentifierDto spsi : setPointsRequest.getSetPointSystemIdentifiers()) {
-                    LOGGER.debug("Dummy logger for unused parameters {},{},{}", connection.toString(), serverModel.toString(), clientAssociation.toString())
+                    LOGGER.debug("Dummy logger for unused parameters {},{},{}", connection.toString(),
+                            serverModel.toString(), clientAssociation.toString());
                     LOGGER.info("Skipping Set SetPoint for unsupported system {} with id {}", spsi.getSystemType(),
                             spsi.getId());
                 }
