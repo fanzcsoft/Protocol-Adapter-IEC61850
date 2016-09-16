@@ -74,7 +74,7 @@ public class Iec61850RtuDeviceService implements RtuDeviceService {
 
             final DataResponseDto getDataResponse = this.getData(new DeviceConnection(
                     new Iec61850Connection(new Iec61850ClientAssociation(clientAssociation, null), serverModel),
-                    deviceRequest.getDeviceIdentification(), IED.ZOWN_RTU), clientAssociation, deviceRequest);
+                    deviceRequest.getDeviceIdentification(), IED.ZOWN_RTU), deviceRequest);
 
             final GetDataDeviceResponse deviceResponse = new GetDataDeviceResponse(
                     deviceRequest.getOrganisationIdentification(), deviceRequest.getDeviceIdentification(),
@@ -183,8 +183,8 @@ public class Iec61850RtuDeviceService implements RtuDeviceService {
     // PRIVATE HELPER METHODS =
     // ========================
 
-    private DataResponseDto getData(final DeviceConnection connection, final ClientAssociation clientAssociation,
-            final GetDataDeviceRequest deviceRequest) throws ProtocolAdapterException {
+    private DataResponseDto getData(final DeviceConnection connection, final GetDataDeviceRequest deviceRequest)
+            throws ProtocolAdapterException {
 
         final DataRequestDto requestedData = deviceRequest.getDataRequest();
 

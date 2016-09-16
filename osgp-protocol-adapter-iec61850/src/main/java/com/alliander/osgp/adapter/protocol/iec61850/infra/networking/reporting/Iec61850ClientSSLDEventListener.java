@@ -16,11 +16,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.openmuc.openiec61850.BdaBoolean;
 import org.openmuc.openiec61850.BdaInt8U;
-import org.openmuc.openiec61850.BdaOptFlds;
 import org.openmuc.openiec61850.BdaReasonForInclusion;
 import org.openmuc.openiec61850.BdaTimestamp;
 import org.openmuc.openiec61850.BdaVisibleString;
@@ -32,6 +30,7 @@ import org.openmuc.openiec61850.Report;
 import com.alliander.osgp.adapter.protocol.iec61850.application.services.DeviceManagementService;
 import com.alliander.osgp.adapter.protocol.iec61850.domain.valueobjects.EventType;
 import com.alliander.osgp.adapter.protocol.iec61850.exceptions.ProtocolAdapterException;
+import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.services.Iec61850BdaOptFldsHelper;
 import com.alliander.osgp.core.db.api.iec61850.entities.DeviceOutputSetting;
 import com.alliander.osgp.dto.valueobjects.EventNotificationDto;
 import com.alliander.osgp.dto.valueobjects.EventTypeDto;
@@ -307,12 +306,13 @@ public class Iec61850ClientSSLDEventListener extends Iec61850ClientBaseEventList
                 sb.append("\t                   \t")
                         .append(reasonCode.getReference() == null ? HexConverter.toHexString(reasonCode.getValue())
                                 : reasonCode)
-                        .append("\t(").append(this.reasonCodeInfo(reasonCode)).append(')')
+                        .append("\t(").append(new Iec61850BdaReasonForInclusionHelper(reasonCode).getInfo()).append(')')
                         .append(System.lineSeparator());
             }
         }
         sb.append("\t           optFlds:").append(report.getOptFlds()).append("\t(")
-                .append(this.optFldsInfo(report.getOptFlds())).append(')').append(System.lineSeparator());
+                .append(new Iec61850BdaOptFldsHelper(report.getOptFlds()).getInfo()).append(')')
+                .append(System.lineSeparator());
         final DataSet dataSet = report.getDataSet();
         if (dataSet == null) {
             sb.append("\t           DataSet:\tnull").append(System.lineSeparator());
@@ -330,71 +330,6 @@ public class Iec61850ClientSSLDEventListener extends Iec61850ClientBaseEventList
             }
         }
         this.logger.info(sb.append(System.lineSeparator()).toString());
-    }
-
-    private String reasonCodeInfo(final BdaReasonForInclusion reason) {
-        if (reason == null) {
-            return "null";
-        }
-
-        final List<String> reasons = new ArrayList<>();
-
-        if (reason.isApplicationTrigger()) {
-            reasons.add("ApplicationTrigger");
-        }
-        if (reason.isDataChange()) {
-            reasons.add("DataChange");
-        }
-        if (reason.isDataUpdate()) {
-            reasons.add("DataUpdate");
-        }
-        if (reason.isGeneralInterrogation()) {
-            reasons.add("GeneralInterrogation");
-        }
-        if (reason.isIntegrity()) {
-            reasons.add("Integrity");
-        }
-        if (reason.isQualityChange()) {
-            reasons.add("QualityChange");
-        }
-        return StringUtils.join(reasons, ", ");
-    }
-
-    private String optFldsInfo(final BdaOptFlds optFlds) {
-        if (optFlds == null) {
-            return "null";
-        }
-
-        final List<String> fields = new ArrayList<>();
-
-        if (optFlds.isBufferOverflow()) {
-            fields.add("BufferOverflow");
-        }
-        if (optFlds.isConfigRevision()) {
-            fields.add("ConfigRevision");
-        }
-        if (optFlds.isDataReference()) {
-            fields.add("DataReference");
-        }
-        if (optFlds.isDataSetName()) {
-            fields.add("DataSetName");
-        }
-        if (optFlds.isEntryId()) {
-            fields.add("EntryId");
-        }
-        if (optFlds.isReasonForInclusion()) {
-            fields.add("ReasonForInclusion");
-        }
-        if (optFlds.isReportTimestamp()) {
-            fields.add("ReportTimestamp");
-        }
-        if (optFlds.isSegmentation()) {
-            fields.add("Segmentation");
-        }
-        if (optFlds.isSequenceNumber()) {
-            fields.add("SequenceNumber");
-        }
-        return StringUtils.join(fields, ", ");
     }
 
     private String evnRpnInfo(final String linePrefix, final FcModelNode evnRpn) {

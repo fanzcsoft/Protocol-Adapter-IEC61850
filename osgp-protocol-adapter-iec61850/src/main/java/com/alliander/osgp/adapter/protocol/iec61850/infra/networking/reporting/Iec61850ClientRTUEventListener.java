@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.joda.time.DateTime;
-import org.openmuc.openiec61850.BdaOptFlds;
 import org.openmuc.openiec61850.BdaReasonForInclusion;
 import org.openmuc.openiec61850.DataSet;
 import org.openmuc.openiec61850.FcModelNode;
@@ -26,6 +25,7 @@ import org.openmuc.openiec61850.Report;
 import com.alliander.osgp.adapter.protocol.iec61850.application.services.DeviceManagementService;
 import com.alliander.osgp.adapter.protocol.iec61850.exceptions.ProtocolAdapterException;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.ReadOnlyNodeContainer;
+import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.services.Iec61850BdaOptFldsHelper;
 import com.alliander.osgp.dto.valueobjects.microgrids.DataResponseDto;
 import com.alliander.osgp.dto.valueobjects.microgrids.MeasurementDto;
 import com.alliander.osgp.dto.valueobjects.microgrids.MeasurementResultSystemIdentifierDto;
@@ -180,12 +180,13 @@ public class Iec61850ClientRTUEventListener extends Iec61850ClientBaseEventListe
                 sb.append("\t                   \t")
                         .append(reasonCode.getReference() == null ? HexConverter.toHexString(reasonCode.getValue())
                                 : reasonCode)
-                        .append("\t(").append(this.reasonCodeInfo(reasonCode)).append(')')
+                        .append("\t(").append(new Iec61850BdaReasonForInclusionHelper(reasonCode).getInfo()).append(')')
                         .append(System.lineSeparator());
             }
         }
         sb.append("\t           optFlds:").append(report.getOptFlds()).append("\t(")
-                .append(this.optFldsInfo(report.getOptFlds())).append(')').append(System.lineSeparator());
+                .append(new Iec61850BdaOptFldsHelper(report.getOptFlds()).getInfo()).append(')')
+                .append(System.lineSeparator());
         final DataSet dataSet = report.getDataSet();
         if (dataSet == null) {
             sb.append("\t           DataSet:\tnull").append(System.lineSeparator());
@@ -201,132 +202,6 @@ public class Iec61850ClientRTUEventListener extends Iec61850ClientBaseEventListe
             }
         }
         this.logger.info(sb.append(System.lineSeparator()).toString());
-    }
-
-    private String reasonCodeInfo(final BdaReasonForInclusion reason) {
-        if (reason == null) {
-            return "null";
-        }
-        final StringBuilder sb = new StringBuilder();
-        boolean addSeparator = false;
-        if (reason.isApplicationTrigger()) {
-            addSeparator = true;
-            sb.append("ApplicationTrigger");
-        }
-        if (reason.isDataChange()) {
-            if (addSeparator) {
-                sb.append(", ");
-            } else {
-                addSeparator = true;
-            }
-            sb.append("DataChange");
-        }
-        if (reason.isDataUpdate()) {
-            if (addSeparator) {
-                sb.append(", ");
-            } else {
-                addSeparator = true;
-            }
-            sb.append("DataUpdate");
-        }
-        if (reason.isGeneralInterrogation()) {
-            if (addSeparator) {
-                sb.append(", ");
-            } else {
-                addSeparator = true;
-            }
-            sb.append("GeneralInterrogation");
-        }
-        if (reason.isIntegrity()) {
-            if (addSeparator) {
-                sb.append(", ");
-            } else {
-                addSeparator = true;
-            }
-            sb.append("Integrity");
-        }
-        if (reason.isQualityChange()) {
-            if (addSeparator) {
-                sb.append(", ");
-            }
-            sb.append("QualityChange");
-        }
-        return sb.toString();
-    }
-
-    private String optFldsInfo(final BdaOptFlds optFlds) {
-        if (optFlds == null) {
-            return "null";
-        }
-        final StringBuilder sb = new StringBuilder();
-        boolean addSeparator = false;
-        if (optFlds.isBufferOverflow()) {
-            addSeparator = true;
-            sb.append("BufferOverflow");
-        }
-        if (optFlds.isConfigRevision()) {
-            if (addSeparator) {
-                sb.append(", ");
-            } else {
-                addSeparator = true;
-            }
-            sb.append("ConfigRevision");
-        }
-        if (optFlds.isDataReference()) {
-            if (addSeparator) {
-                sb.append(", ");
-            } else {
-                addSeparator = true;
-            }
-            sb.append("DataReference");
-        }
-        if (optFlds.isDataSetName()) {
-            if (addSeparator) {
-                sb.append(", ");
-            } else {
-                addSeparator = true;
-            }
-            sb.append("DataSetName");
-        }
-        if (optFlds.isEntryId()) {
-            if (addSeparator) {
-                sb.append(", ");
-            } else {
-                addSeparator = true;
-            }
-            sb.append("EntryId");
-        }
-        if (optFlds.isReasonForInclusion()) {
-            if (addSeparator) {
-                sb.append(", ");
-            } else {
-                addSeparator = true;
-            }
-            sb.append("ReasonForInclusion");
-        }
-        if (optFlds.isReportTimestamp()) {
-            if (addSeparator) {
-                sb.append(", ");
-            } else {
-                addSeparator = true;
-            }
-            sb.append("ReportTimestamp");
-        }
-        if (optFlds.isSegmentation()) {
-            if (addSeparator) {
-                sb.append(", ");
-            } else {
-                addSeparator = true;
-            }
-            sb.append("Segmentation");
-        }
-        if (optFlds.isSequenceNumber()) {
-            if (addSeparator) {
-                sb.append(", ");
-            }
-            sb.append("SequenceNumber");
-        }
-        return sb.toString();
     }
 
     @Override

@@ -40,7 +40,7 @@ import com.alliander.osgp.shared.infra.jms.ResponseMessageSender;
  */
 public abstract class RtuDeviceRequestMessageProcessor implements MessageProcessor {
 
-    protected final static String UNEXPECTED_EXCEPTION = "Unexpected exception while retrieving response message";
+    protected static final String UNEXPECTED_EXCEPTION = "Unexpected exception while retrieving response message";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RtuDeviceRequestMessageProcessor.class);
 
