@@ -49,15 +49,19 @@ public class Iec61850Client {
     private int iec61850PortClientLocal;
 
     @Autowired
-    private int iec61850PortServer;
+    private int iec61850SsldPortServer;
+
+    @Autowired
+    private int iec61850RtuPortServer;
 
     @Resource
     private int maxRetryCount;
 
     @PostConstruct
     private void init() {
-        LOGGER.info("portClient: {}, portClientLocal: {}, portServer: {}", this.iec61850PortClient,
-                this.iec61850PortClientLocal, this.iec61850PortServer);
+        LOGGER.info("portClient: {}, portClientLocal: {}, iec61850SsldPortServer: {}, iec61850RtuPortServer: {}",
+                this.iec61850PortClient, this.iec61850PortClientLocal, this.iec61850SsldPortServer,
+                this.iec61850RtuPortServer);
     }
 
     /**
@@ -76,19 +80,17 @@ public class Iec61850Client {
      *             established.
      */
     public Iec61850ClientAssociation connect(final String deviceIdentification, final InetAddress ipAddress,
-            final Iec61850ClientBaseEventListener reportListener) throws ServiceError {
+            final Iec61850ClientBaseEventListener reportListener, final int port) throws ServiceError {
         // Alternatively you could use ClientSap(SocketFactory factory) to e.g.
         // connect using SSL.
 
         final ClientSap clientSap = new ClientSap();
         final Iec61850ClientAssociation clientAssociation;
 
-        LOGGER.info("Attempting to connect to server: {} on port: {}", ipAddress.getHostAddress(),
-                this.iec61850PortServer);
+        LOGGER.info("Attempting to connect to server: {} on port: {}", ipAddress.getHostAddress(), port);
         try {
 
-            final ClientAssociation association = clientSap.associate(ipAddress, this.iec61850PortServer, null,
-                    reportListener);
+            final ClientAssociation association = clientSap.associate(ipAddress, port, null, reportListener);
             clientAssociation = new Iec61850ClientAssociation(association, reportListener);
         } catch (final IOException e) {
             // an IOException will always indicate a fatal exception. It
@@ -178,11 +180,24 @@ public class Iec61850Client {
      * @throws ProtocolAdapterException
      *             In case the connection to the device can not be established.
      */
-    public void disableRegistration(final String deviceIdentification, final InetAddress ipAddress)
+    public void disableRegistration(final String deviceIdentification, final InetAddress ipAddress, final IED ied)
             throws ProtocolAdapterException {
         final Iec61850ClientAssociation iec61850ClientAssociation;
         try {
-            iec61850ClientAssociation = this.connect(deviceIdentification, ipAddress, null);
+            // Currently, only the SSLD devices use this method.
+            switch (ied) {
+            case FLEX_OVL:
+                iec61850ClientAssociation = this.connect(deviceIdentification, ipAddress, null,
+                        this.iec61850SsldPortServer);
+                break;
+            case ZOWN_RTU:
+                iec61850ClientAssociation = this.connect(deviceIdentification, ipAddress, null,
+                        this.iec61850RtuPortServer);
+                break;
+            default:
+                throw new ProtocolAdapterException("Unable to execute Disable Registration for IED "
+                        + ied.getDescription());
+            }
         } catch (final ServiceError e) {
             throw new ProtocolAdapterException("Unexpected error connecting to device to disable registration.", e);
         }
@@ -194,8 +209,8 @@ public class Iec61850Client {
 
             @Override
             public Void apply() throws Exception {
-                final DeviceConnection deviceConnection = new DeviceConnection(
-                        new Iec61850Connection(iec61850ClientAssociation, null), deviceIdentification, IED.FLEX_OVL);
+                final DeviceConnection deviceConnection = new DeviceConnection(new Iec61850Connection(
+                        iec61850ClientAssociation, null), deviceIdentification, IED.FLEX_OVL);
                 final NodeContainer deviceRegistration = deviceConnection.getFcModelNode(LogicalDevice.LIGHTING,
                         LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.REGISTRATION, Fc.CF);
                 deviceRegistration.writeBoolean(SubDataAttribute.DEVICE_REGISTRATION_ENABLED, false);
