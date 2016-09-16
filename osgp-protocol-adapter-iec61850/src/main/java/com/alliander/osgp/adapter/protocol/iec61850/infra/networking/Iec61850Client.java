@@ -59,8 +59,9 @@ public class Iec61850Client {
 
     @PostConstruct
     private void init() {
-        LOGGER.info("portClient: {}, portClientLocal: {}, portServer: {}", this.iec61850PortClient,
-                this.iec61850PortClientLocal, this.iec61850SsldPortServer, this.iec61850RtuPortServer);
+        LOGGER.info("portClient: {}, portClientLocal: {}, iec61850SsldPortServer: {}, iec61850RtuPortServer: {}",
+                this.iec61850PortClient, this.iec61850PortClientLocal, this.iec61850SsldPortServer,
+                this.iec61850RtuPortServer);
     }
 
     /**
@@ -181,7 +182,7 @@ public class Iec61850Client {
             throws ProtocolAdapterException {
         final Iec61850ClientAssociation iec61850ClientAssociation;
         try {
-            //Currently, only the SSLD devices use this method.
+            // Currently, only the SSLD devices use this method.
             switch (ied) {
             case FLEX_OVL:
                 iec61850ClientAssociation = this.connect(deviceIdentification, ipAddress, null,
@@ -206,8 +207,8 @@ public class Iec61850Client {
 
             @Override
             public Void apply() throws Exception {
-                final DeviceConnection deviceConnection = new DeviceConnection(
-                        new Iec61850Connection(iec61850ClientAssociation, null), deviceIdentification, IED.FLEX_OVL);
+                final DeviceConnection deviceConnection = new DeviceConnection(new Iec61850Connection(
+                        iec61850ClientAssociation, null), deviceIdentification, IED.FLEX_OVL);
                 final NodeContainer deviceRegistration = deviceConnection.getFcModelNode(LogicalDevice.LIGHTING,
                         LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.REGISTRATION, Fc.CF);
                 deviceRegistration.writeBoolean(SubDataAttribute.DEVICE_REGISTRATION_ENABLED, false);
