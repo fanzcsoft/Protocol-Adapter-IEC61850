@@ -48,6 +48,12 @@ public class Iec61850DeviceConnectionService {
     @Autowired
     private Iec61850Client iec61850Client;
 
+    @Autowired
+    private int iec61850SsldPortServer;
+
+    @Autowired
+    private int iec61850RtuPortServer;
+
     @Resource
     private int responseTimeout;
 
@@ -113,8 +119,21 @@ public class Iec61850DeviceConnectionService {
             final Iec61850ClientBaseEventListener eventListener = Iec61850ClientEventListenerFactory.getInstance()
                     .getEventListener(ied, deviceIdentification, this.deviceManagementService);
 
-            final Iec61850ClientAssociation iec61850clientAssociation = this.iec61850Client
-                    .connect(deviceIdentification, inetAddress, eventListener);
+            Iec61850ClientAssociation iec61850clientAssociation;
+            switch (ied) {
+            case FLEX_OVL:
+                iec61850clientAssociation = this.iec61850Client.connect(deviceIdentification, inetAddress,
+                        eventListener, this.iec61850SsldPortServer);
+                break;
+            case ZOWN_RTU:
+                iec61850clientAssociation = this.iec61850Client.connect(deviceIdentification, inetAddress,
+                        eventListener, this.iec61850RtuPortServer);
+                break;
+            default:
+                throw new ProtocolAdapterException("Unable to execute Disable Registration for IED "
+                        + ied.getDescription());
+            }
+
             final ClientAssociation clientAssociation = iec61850clientAssociation.getClientAssociation();
 
             // Set response time-out

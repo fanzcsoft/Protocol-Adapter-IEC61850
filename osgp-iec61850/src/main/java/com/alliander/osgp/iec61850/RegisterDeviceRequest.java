@@ -26,9 +26,7 @@ public class RegisterDeviceRequest implements Serializable {
     private final String ipAddress;
 
     public RegisterDeviceRequest(final byte[] bytes) {
-
         final int splitIndex = this.getSeparatorPos(bytes);
-
         this.serialNumber = new String(bytes, 0, splitIndex, StandardCharsets.US_ASCII);
         this.ipAddress = new String(bytes, splitIndex + 1, bytes.length - splitIndex - 1, StandardCharsets.US_ASCII);
     }
