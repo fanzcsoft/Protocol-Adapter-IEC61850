@@ -17,7 +17,7 @@ public class RegisterDeviceRequestTest {
     @Test
     public void testRegisterDeviceRequestFromBytes() throws Exception {
 
-        final RegisterDeviceRequest request = new RegisterDeviceRequest(TESTED_BYTES, "SWDeviceGeneric");
+        final RegisterDeviceRequest request = new RegisterDeviceRequest(TESTED_BYTES);
 
         assertEquals(TESTED_SERIAL_NUMBER, request.getSerialNumber());
         assertEquals(TESTED_IP_ADDRESS, request.getIpAddress());
@@ -34,7 +34,7 @@ public class RegisterDeviceRequestTest {
     @Test
     public void testRegisterDeviceRequestFromFieldValues() throws Exception {
 
-        final RegisterDeviceRequest request = new RegisterDeviceRequest(TESTED_SERIAL_NUMBER, TESTED_IP_ADDRESS, "SWDeviceGeneric");
+        final RegisterDeviceRequest request = new RegisterDeviceRequest(TESTED_SERIAL_NUMBER, TESTED_IP_ADDRESS);
 
         assertEquals(TESTED_SERIAL_NUMBER, request.getSerialNumber());
         assertEquals(TESTED_IP_ADDRESS, request.getIpAddress());
