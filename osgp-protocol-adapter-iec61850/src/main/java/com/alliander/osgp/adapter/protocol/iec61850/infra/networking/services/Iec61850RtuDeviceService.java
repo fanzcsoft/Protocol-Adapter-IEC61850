@@ -72,11 +72,9 @@ public class Iec61850RtuDeviceService implements RtuDeviceService {
             final ClientAssociation clientAssociation = this.iec61850DeviceConnectionService
                     .getClientAssociation(deviceRequest.getDeviceIdentification());
 
-            final DataResponseDto getDataResponse = this.getData(
-                    new DeviceConnection(
-                            new Iec61850Connection(new Iec61850ClientAssociation(clientAssociation, null), serverModel),
-                            deviceRequest.getDeviceIdentification(), IED.ZOWN_RTU),
-                    serverModel, clientAssociation, deviceRequest);
+            final DataResponseDto getDataResponse = this.getData(new DeviceConnection(
+                    new Iec61850Connection(new Iec61850ClientAssociation(clientAssociation, null), serverModel),
+                    deviceRequest.getDeviceIdentification(), IED.ZOWN_RTU), clientAssociation, deviceRequest);
 
             final GetDataDeviceResponse deviceResponse = new GetDataDeviceResponse(
                     deviceRequest.getOrganisationIdentification(), deviceRequest.getDeviceIdentification(),
@@ -156,18 +154,9 @@ public class Iec61850RtuDeviceService implements RtuDeviceService {
             @Override
             public Void apply() throws Exception {
                 for (final SetPointSystemIdentifierDto spsi : setPointsRequest.getSetPointSystemIdentifiers()) {
-                    // For POC the controller 'substitute' is supported
-                    // final String systemName = spsi.getSystemType() +
-                    // spsi.getId();
-                    // if
-                    // (systemName.equals(LogicalDevice.LOCAL_MICROGRID_CONTROLLER.getDescription()))
-                    // {
-                    // Iec61850DeviceService.this.setSubstitution(connection,
-                    // spsi);
-                    // } else {
+                    LOGGER.debug("Dummy logger for unused parameters {},{},{}", connection.toString(), serverModel.toString(), clientAssociation.toString())
                     LOGGER.info("Skipping Set SetPoint for unsupported system {} with id {}", spsi.getSystemType(),
                             spsi.getId());
-                    // }
                 }
 
                 return null;
@@ -183,12 +172,7 @@ public class Iec61850RtuDeviceService implements RtuDeviceService {
 
     private ServerModel connectAndRetrieveServerModel(final DeviceRequest deviceRequest)
             throws ProtocolAdapterException {
-        /*
-         * // Check for existing connection (and serverModel) ServerModel
-         * serverModel = this.iec61850DeviceConnectionService
-         * .getServerModel(deviceRequest.getDeviceIdentification()); if
-         * (serverModel == null) { // reconnect }
-         */
+
         this.iec61850DeviceConnectionService.connect(deviceRequest.getIpAddress(),
                 deviceRequest.getDeviceIdentification(), IED.ZOWN_RTU, LogicalDevice.RTU_ONE);
         return this.iec61850DeviceConnectionService.getServerModel(deviceRequest.getDeviceIdentification());
@@ -198,9 +182,8 @@ public class Iec61850RtuDeviceService implements RtuDeviceService {
     // PRIVATE HELPER METHODS =
     // ========================
 
-    private DataResponseDto getData(final DeviceConnection connection, final ServerModel serverModel,
-            final ClientAssociation clientAssociation, final GetDataDeviceRequest deviceRequest)
-            throws ProtocolAdapterException {
+    private DataResponseDto getData(final DeviceConnection connection, final ClientAssociation clientAssociation,
+            final GetDataDeviceRequest deviceRequest) throws ProtocolAdapterException {
 
         final DataRequestDto requestedData = deviceRequest.getDataRequest();
 
@@ -245,9 +228,6 @@ public class Iec61850RtuDeviceService implements RtuDeviceService {
 
         // TODO - Refactor - make it more flexible for any kind of
         // devices (store number of devices in DB?)
-
-        // TODO - Uncomment reporting for load when load reporting is
-        // available on device
         Iec61850RtuDeviceService.this.enableRtuReportingOnDevice(connection, deviceIdentification);
 
         Iec61850RtuDeviceService.this.enablePvReportingOnDevice(connection, deviceIdentification);
@@ -331,6 +311,7 @@ public class Iec61850RtuDeviceService implements RtuDeviceService {
                     LogicalNode.LOGICAL_NODE_ZERO, reportName, Fc.BR);
             reportingPv.writeBoolean(SubDataAttribute.ENABLE_REPORTING, true);
         } catch (final NullPointerException e) {
+            LOGGER.debug("Nullpointer exception", e);
             LOGGER.warn("Skip enable reporting for device {}, report {}.", logicalDevice, reportName.getDescription());
         }
 
@@ -346,6 +327,7 @@ public class Iec61850RtuDeviceService implements RtuDeviceService {
                     LogicalNode.LOGICAL_NODE_ZERO, reportName, Fc.RP);
             reportingPv.writeBoolean(SubDataAttribute.ENABLE_REPORTING, true);
         } catch (final NullPointerException e) {
+            LOGGER.debug("Nullpointer exception", e);
             LOGGER.warn("Skip enable reporting for device {}, report {}.", logicalDevice, reportName.getDescription());
         }
 

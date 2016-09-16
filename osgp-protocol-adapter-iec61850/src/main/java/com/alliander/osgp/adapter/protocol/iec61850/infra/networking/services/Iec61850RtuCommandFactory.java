@@ -23,7 +23,7 @@ import com.alliander.osgp.dto.valueobjects.microgrids.MeasurementFilterDto;
 
 public class Iec61850RtuCommandFactory implements RtuCommandFactory {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(Iec61850RtuCommandFactory.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Iec61850RtuCommandFactory.class);
 
     private static Iec61850RtuCommandFactory instance;
 

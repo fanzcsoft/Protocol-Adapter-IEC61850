@@ -29,7 +29,7 @@ import com.alliander.osgp.dto.valueobjects.microgrids.MeasurementFilterDto;
 
 public class Iec61850BatteryCommandFactory implements RtuCommandFactory {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(Iec61850BatteryCommandFactory.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Iec61850BatteryCommandFactory.class);
 
     private static Iec61850BatteryCommandFactory instance;
 
@@ -41,9 +41,6 @@ public class Iec61850BatteryCommandFactory implements RtuCommandFactory {
         this.rtuCommandMap.put(DataAttribute.OPERATIONAL_HOURS, new Iec61850OperationalHoursCommand());
         this.rtuCommandMap.put(DataAttribute.MODE, new Iec61850ModeCommand());
         this.rtuCommandMap.put(DataAttribute.ACTUAL_POWER, new Iec61850ActualPowerCommand());
-        // TODO command not available on wago device
-        // this.rtuCommandMap.put(DataAttribute.MAXIMUM_POWER_LIMIT, new
-        // Iec61850MaximumPowerLimitCommand());
         this.rtuCommandMap.put(DataAttribute.ACTUAL_POWER_LIMIT, new Iec61850ActualPowerLimitCommand());
         this.rtuCommandMap.put(DataAttribute.TOTAL_ENERGY, new Iec61850TotalEnergyCommand());
         this.rtuCommandMap.put(DataAttribute.STATE_OF_CHARGE, new Iec61850StateOfChargeCommand());

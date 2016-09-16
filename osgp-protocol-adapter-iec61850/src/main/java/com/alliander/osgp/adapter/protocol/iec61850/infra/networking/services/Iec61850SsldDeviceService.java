@@ -806,12 +806,6 @@ public class Iec61850SsldDeviceService implements SsldDeviceService {
 
     private ServerModel connectAndRetrieveServerModel(final DeviceRequest deviceRequest)
             throws ProtocolAdapterException {
-        /*
-         * // Check for existing connection (and serverModel) ServerModel
-         * serverModel = this.iec61850DeviceConnectionService
-         * .getServerModel(deviceRequest.getDeviceIdentification()); if
-         * (serverModel == null) { // reconnect }
-         */
         this.iec61850DeviceConnectionService.connect(deviceRequest.getIpAddress(),
                 deviceRequest.getDeviceIdentification(), IED.ZOWN_RTU, LogicalDevice.RTU_ONE);
         return this.iec61850DeviceConnectionService.getServerModel(deviceRequest.getDeviceIdentification());

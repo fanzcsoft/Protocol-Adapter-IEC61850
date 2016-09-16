@@ -34,18 +34,13 @@ public class OsgpResponseMessageListener implements MessageListener {
 
             final ObjectMessage objectMessage = (ObjectMessage) message;
             final String messageType = objectMessage.getJMSType();
-            final String deviceIdentifcation = objectMessage.getStringProperty(Constants.DEVICE_IDENTIFICATION);
+            final String deviceIdentification = objectMessage.getStringProperty(Constants.DEVICE_IDENTIFICATION);
             final ResponseMessage responseMessage = (ResponseMessage) objectMessage.getObject();
             final String result = responseMessage == null ? null : responseMessage.getResult().toString();
             final OsgpException osgpException = responseMessage == null ? null : responseMessage.getOsgpException();
 
-            if (DeviceFunctionDto.REGISTER_DEVICE.equals(DeviceFunctionDto.valueOf(messageType))) {
-                if (ResponseMessageResultType.NOT_OK.equals(ResponseMessageResultType.valueOf(result))) {
-                    throw new ProtocolAdapterException(
-                            String.format("Response for device: %s for MessageType: %s is: %s, error: %s",
-                                    deviceIdentifcation, messageType, result, osgpException));
-                }
-
+            if (DeviceFunctionDto.valueOf(messageType).equals(DeviceFunctionDto.REGISTER_DEVICE)) {
+                this.handleDeviceRegistration(result, deviceIdentification, messageType, osgpException);
             } else {
                 throw new UnknownMessageTypeException("Unknown JMSType: " + messageType);
             }
@@ -56,6 +51,17 @@ public class OsgpResponseMessageListener implements MessageListener {
             LOGGER.error("ProtocolAdapterException", e);
         } catch (final UnknownMessageTypeException e) {
             LOGGER.error("UnknownMessageTypeException", e);
+        }
+    }
+
+    private void handleDeviceRegistration(final String result, final String deviceIdentification,
+            final String messageType, final OsgpException osgpException) throws ProtocolAdapterException {
+        if (ResponseMessageResultType.valueOf(result).equals(ResponseMessageResultType.NOT_OK)) {
+            throw new ProtocolAdapterException(
+                    String.format("Response for device: %s for MessageType: %s is: %s, error: %s", deviceIdentification,
+                            messageType, result, osgpException));
+        } else {
+            LOGGER.info("Device registration successful for device: {}", deviceIdentification);
         }
     }
 }

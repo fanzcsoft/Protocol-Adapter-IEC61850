@@ -33,11 +33,7 @@ public class Iec61850ActualPowerLimitCommand implements RtuCommand {
 
     @Override
     public MeasurementDto translate(final NodeContainer containingNode) {
-        return new MeasurementDto(1, DataAttribute.ACTUAL_POWER_LIMIT.getDescription(), 0,
-                // TODO - Substitute value does not contain a datetime, like for
-                // example Status fields, Determine if local datetime or null
-                // should be used...
-                new DateTime(),
+        return new MeasurementDto(1, DataAttribute.ACTUAL_POWER_LIMIT.getDescription(), 0, new DateTime(),
                 containingNode.getChild(SubDataAttribute.SUBSTITUDE_VALUE).getFloat(SubDataAttribute.FLOAT).getFloat());
     }
 }

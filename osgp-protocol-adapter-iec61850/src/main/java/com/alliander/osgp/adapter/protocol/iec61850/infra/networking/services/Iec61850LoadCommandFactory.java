@@ -25,7 +25,7 @@ import com.alliander.osgp.dto.valueobjects.microgrids.MeasurementFilterDto;
 
 public class Iec61850LoadCommandFactory implements RtuCommandFactory {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(Iec61850LoadCommandFactory.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Iec61850LoadCommandFactory.class);
 
     private static final int ID_START = 1;
     private static final int ID_END = 5;
@@ -75,6 +75,6 @@ public class Iec61850LoadCommandFactory implements RtuCommandFactory {
     }
 
     private boolean useFilterId(final DataAttribute da) {
-        return (da != DataAttribute.BEHAVIOR && da != DataAttribute.HEALTH && da != DataAttribute.MODE);
+        return da != DataAttribute.BEHAVIOR && da != DataAttribute.HEALTH && da != DataAttribute.MODE;
     }
 }
