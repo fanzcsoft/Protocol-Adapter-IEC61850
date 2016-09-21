@@ -38,10 +38,10 @@ public class DeviceConnection {
      */
     public NodeContainer getFcModelNode(final LogicalDevice logicalDevice, final LogicalNode logicalNode,
             final DataAttribute dataAttribute, final Fc fc) {
-        final FcModelNode fcModelNode = (FcModelNode) this.connection.getServerModel()
-                .findModelNode(this.createObjectReference(logicalDevice, logicalNode, dataAttribute), fc);
+        final FcModelNode fcModelNode = (FcModelNode) this.connection.getServerModel().findModelNode(
+                this.createObjectReference(logicalDevice, logicalNode, dataAttribute), fc);
         if (fcModelNode == null) {
-            LOGGER.error("FcModelNdoe is null, most likely the data attribute: {} does not exist",
+            LOGGER.error("FcModelNode is null, most likely the data attribute: {} does not exist",
                     dataAttribute.getDescription());
         }
 

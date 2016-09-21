@@ -12,6 +12,10 @@ package com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper;
  */
 public enum DataAttribute {
     /**
+     * /** Property of CSLC Node, astronomical time based on GPS location.
+     */
+    ASTRONOMICAL("Atnm"),
+    /**
      * Property of CSLC Node, Certificate authority replacement.
      */
     CERTIFICATE_AUTHORITY_REPLACE("CARepl"),
@@ -36,6 +40,10 @@ public enum DataAttribute {
      * determines if the relay can be operated.
      */
     MASTER_CONTROL("CfSt"),
+    /**
+     *
+     */
+    NAME_PLATE("NamPlt"),
     /**
      * Property of XSWC Node, Pos.
      */

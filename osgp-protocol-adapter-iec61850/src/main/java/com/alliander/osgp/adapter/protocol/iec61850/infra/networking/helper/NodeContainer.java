@@ -26,7 +26,6 @@ import org.openmuc.openiec61850.ServiceError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-// TODO make base class or something, this is not nice... :(
 public class NodeContainer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NodeContainer.class);

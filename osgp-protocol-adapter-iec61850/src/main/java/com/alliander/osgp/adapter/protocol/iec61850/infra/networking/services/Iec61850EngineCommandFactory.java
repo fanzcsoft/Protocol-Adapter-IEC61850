@@ -40,9 +40,6 @@ public class Iec61850EngineCommandFactory implements RtuCommandFactory {
         this.rtuCommandMap.put(DataAttribute.OPERATIONAL_HOURS, new Iec61850OperationalHoursCommand());
         this.rtuCommandMap.put(DataAttribute.MODE, new Iec61850ModeCommand());
         this.rtuCommandMap.put(DataAttribute.ACTUAL_POWER, new Iec61850ActualPowerCommand());
-        // TODO command not available on wago device
-        // this.rtuCommandMap.put(DataAttribute.MAXIMUM_POWER_LIMIT, new
-        // Iec61850MaximumPowerLimitCommand());
         this.rtuCommandMap.put(DataAttribute.ACTUAL_POWER_LIMIT, new Iec61850ActualPowerLimitCommand());
         this.rtuCommandMap.put(DataAttribute.TOTAL_ENERGY, new Iec61850TotalEnergyCommand());
         this.rtuCommandMap.put(DataAttribute.STATE, new Iec61850StateCommand());

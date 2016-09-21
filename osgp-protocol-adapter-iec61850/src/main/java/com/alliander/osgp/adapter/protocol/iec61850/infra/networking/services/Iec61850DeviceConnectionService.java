@@ -11,8 +11,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.annotation.Resource;
-
 import org.openmuc.openiec61850.ClientAssociation;
 import org.openmuc.openiec61850.Fc;
 import org.openmuc.openiec61850.FcModelNode;
@@ -54,12 +52,8 @@ public class Iec61850DeviceConnectionService {
     @Autowired
     private int iec61850RtuPortServer;
 
-    @Resource
+    @Autowired
     private int responseTimeout;
-
-    public synchronized void connect(final String ipAddress, final String deviceIdentification) {
-        this.connect(ipAddress, deviceIdentification, null, null);
-    }
 
     public synchronized void connect(final String ipAddress, final String deviceIdentification, final IED ied,
             final LogicalDevice logicalDevice) {
@@ -77,10 +71,10 @@ public class Iec61850DeviceConnectionService {
                 if (ied != null && logicalDevice != null) {
                     isConnectionAlive = this.iec61850Client.readNodeDataValues(
                             iec61850Connection.getClientAssociation(),
-                            (FcModelNode) iec61850Connection.getServerModel()
-                                    .findModelNode(ied.getDescription() + logicalDevice.getDescription() + "/"
-                                            + LogicalNode.PHYSICAL_DEVICE_ONE.getDescription() + "."
-                                            + DataAttribute.PHYSICAL_NAME.getDescription(), Fc.DC));
+                            (FcModelNode) iec61850Connection.getServerModel().findModelNode(
+                                    ied.getDescription() + logicalDevice.getDescription() + "/"
+                                            + LogicalNode.LOGICAL_NODE_ZERO.getDescription() + "."
+                                            + DataAttribute.NAME_PLATE.getDescription(), Fc.DC));
                 } else {
                     // Read all data values, which is much slower, but requires
                     // no manual reads of remote data
@@ -146,8 +140,8 @@ public class Iec61850DeviceConnectionService {
             this.iec61850Client.readAllDataValues(clientAssociation);
 
             // Cache the connection.
-            this.cacheIec61850Connection(deviceIdentification,
-                    new Iec61850Connection(iec61850clientAssociation, serverModel));
+            this.cacheIec61850Connection(deviceIdentification, new Iec61850Connection(iec61850clientAssociation,
+                    serverModel));
         } catch (final ServiceError e) {
             LOGGER.error("Unexpected exception when connecting to an IEC61850 device", e);
             return;
@@ -203,8 +197,7 @@ public class Iec61850DeviceConnectionService {
         return this.iec61850Client.readAllDataValues(clientAssociation);
     }
 
-    private void cacheIec61850Connection(final String deviceIdentification,
-            final Iec61850Connection iec61850Connection) {
+    private void cacheIec61850Connection(final String deviceIdentification, final Iec61850Connection iec61850Connection) {
         cache.put(deviceIdentification, iec61850Connection);
     }
 

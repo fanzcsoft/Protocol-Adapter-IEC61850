@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
 
 import org.openmuc.openiec61850.ClientAssociation;
 import org.openmuc.openiec61850.ClientSap;
@@ -36,6 +35,8 @@ import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.Logi
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.NodeContainer;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.SubDataAttribute;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.reporting.Iec61850ClientBaseEventListener;
+import com.alliander.osgp.core.db.api.iec61850.entities.Ssld;
+import com.alliander.osgp.core.db.api.iec61850.repositories.SsldDataRepository;
 
 @Component
 public class Iec61850Client {
@@ -54,14 +55,18 @@ public class Iec61850Client {
     @Autowired
     private int iec61850RtuPortServer;
 
-    @Resource
+    @Autowired
     private int maxRetryCount;
+
+    @Autowired
+    private SsldDataRepository ssldDataRepository;
 
     @PostConstruct
     private void init() {
-        LOGGER.info("portClient: {}, portClientLocal: {}, iec61850SsldPortServer: {}, iec61850RtuPortServer: {}",
+        LOGGER.info(
+                "portClient: {}, portClientLocal: {}, iec61850SsldPortServer: {}, iec61850RtuPortServer: {}, maxRetryCount: {}",
                 this.iec61850PortClient, this.iec61850PortClientLocal, this.iec61850SsldPortServer,
-                this.iec61850RtuPortServer);
+                this.iec61850RtuPortServer, this.maxRetryCount);
     }
 
     /**
@@ -117,7 +122,7 @@ public class Iec61850Client {
     public void disconnect(final ClientAssociation clientAssociation, final String deviceIdentification) {
         LOGGER.info("disconnecting from device: {}...", deviceIdentification);
         clientAssociation.disconnect();
-        LOGGER.info("disconnected from device: {} !!!", deviceIdentification);
+        LOGGER.info("disconnected from device: {}", deviceIdentification);
     }
 
     /**
@@ -205,15 +210,44 @@ public class Iec61850Client {
             throw new ProtocolAdapterException("Unable to connect to device to disable registration.");
         }
 
+        final ServerModel serverModel = this
+                .readServerModelFromDevice(iec61850ClientAssociation.getClientAssociation());
+
         final Function<Void> function = new Function<Void>() {
 
             @Override
             public Void apply() throws Exception {
                 final DeviceConnection deviceConnection = new DeviceConnection(new Iec61850Connection(
-                        iec61850ClientAssociation, null), deviceIdentification, IED.FLEX_OVL);
+                        iec61850ClientAssociation, serverModel), deviceIdentification, IED.FLEX_OVL);
+
+                // Set the location information for this device.
+                final Ssld ssld = Iec61850Client.this.ssldDataRepository
+                        .findByDeviceIdentification(deviceIdentification);
+                if (ssld != null) {
+                    final Float longitude = ssld.getGpsLongitude();
+                    final Float latitude = ssld.getGpsLatitude();
+                    LOGGER.info("Ssld found for device: {} longitude: {}, latitude: {}", deviceIdentification,
+                            longitude, latitude);
+
+                    if (longitude != null && latitude != null) {
+                        final NodeContainer astronomical = deviceConnection.getFcModelNode(LogicalDevice.LIGHTING,
+                                LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.ASTRONOMICAL, Fc.CF);
+                        astronomical.writeFloat(SubDataAttribute.GPS_LONGITUDE, ssld.getGpsLongitude());
+                        astronomical.writeFloat(SubDataAttribute.GPS_LATITUDE, ssld.getGpsLatitude());
+                        LOGGER.info("longitude: {}, latitude: {} written for device: {}", longitude, latitude,
+                                deviceIdentification);
+                    }
+                }
+
+                // Set attribute to false in order to signal the device the
+                // registration was successful.
                 final NodeContainer deviceRegistration = deviceConnection.getFcModelNode(LogicalDevice.LIGHTING,
                         LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.REGISTRATION, Fc.CF);
                 deviceRegistration.writeBoolean(SubDataAttribute.DEVICE_REGISTRATION_ENABLED, false);
+                LOGGER.info("Registration disabled");
+
+                // Disconnect from the device.
+                Iec61850Client.this.disconnect(iec61850ClientAssociation.getClientAssociation(), deviceIdentification);
 
                 return null;
             }
