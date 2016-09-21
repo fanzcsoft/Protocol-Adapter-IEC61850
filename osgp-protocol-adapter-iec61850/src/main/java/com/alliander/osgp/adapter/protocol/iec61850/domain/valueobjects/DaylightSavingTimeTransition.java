@@ -242,7 +242,7 @@ public class DaylightSavingTimeTransition {
                     d = Integer.parseInt(transition.substring(dotAfterW + 1, timeSeparatorPos));
                 }
                 final int dayOfWeek = d == 0 ? DateTimeConstants.SUNDAY : d;
-                final int startAtDate = (w == 5 ? 22 : (w - 1) * 7 + 1);
+                final int startAtDate = w == 5 ? 22 : (w - 1) * 7 + 1;
                 final DateTime firstAttempt = new DateTime(year, m, startAtDate, 0, 0, 0, 0, dateTimeZone);
                 final int dayDiff = dayOfWeek - firstAttempt.getDayOfWeek();
                 final DateTime secondAttempt;
@@ -314,6 +314,10 @@ public class DaylightSavingTimeTransition {
 
     private static final DateTimeZone TIME_ZONE_AMSTERDAM = DateTimeZone.forID("Europe/Amsterdam");
 
+    private final DstTransitionFormat format;
+    private final String transition;
+    private final DateTimeZone dateTimeZone;
+
     public static DaylightSavingTimeTransition forDateTimeAccordingToFormat(final DateTime dateTime,
             final DstTransitionFormat format) {
         Objects.requireNonNull(dateTime, "dateTime must not be null");
@@ -321,10 +325,6 @@ public class DaylightSavingTimeTransition {
 
         return format.getDaylightSavingTimeTransition(dateTime);
     }
-
-    private final DstTransitionFormat format;
-    private final String transition;
-    private final DateTimeZone dateTimeZone;
 
     /**
      * Creates a {@link DaylightSavingTimeTransition} for the given textual
@@ -413,10 +413,10 @@ public class DaylightSavingTimeTransition {
         }
         final DaylightSavingTimeTransition o = (DaylightSavingTimeTransition) obj;
         return Objects.equals(this.transition, o.transition) && Objects.equals(this.dateTimeZone, o.dateTimeZone);
-    };
+    }
 
     @Override
     public int hashCode() {
         return Objects.hash(this.transition, this.dateTimeZone);
-    };
+    }
 }

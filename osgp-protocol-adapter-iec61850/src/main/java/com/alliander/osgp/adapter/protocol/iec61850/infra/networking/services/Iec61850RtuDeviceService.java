@@ -7,14 +7,12 @@
  */
 package com.alliander.osgp.adapter.protocol.iec61850.infra.networking.services;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.openmuc.openiec61850.ClientAssociation;
 import org.openmuc.openiec61850.Fc;
 import org.openmuc.openiec61850.ServerModel;
-import org.openmuc.openiec61850.ServiceError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,9 +70,9 @@ public class Iec61850RtuDeviceService implements RtuDeviceService {
             final ClientAssociation clientAssociation = this.iec61850DeviceConnectionService
                     .getClientAssociation(deviceRequest.getDeviceIdentification());
 
-            final DataResponseDto getDataResponse = this.getData(new DeviceConnection(
-                    new Iec61850Connection(new Iec61850ClientAssociation(clientAssociation, null), serverModel),
-                    deviceRequest.getDeviceIdentification(), IED.ZOWN_RTU), deviceRequest);
+            final DataResponseDto getDataResponse = this.getData(
+                    new DeviceConnection(new Iec61850Connection(new Iec61850ClientAssociation(clientAssociation, null),
+                            serverModel), deviceRequest.getDeviceIdentification(), IED.ZOWN_RTU), deviceRequest);
 
             final GetDataDeviceResponse deviceResponse = new GetDataDeviceResponse(
                     deviceRequest.getOrganisationIdentification(), deviceRequest.getDeviceIdentification(),
@@ -110,10 +108,8 @@ public class Iec61850RtuDeviceService implements RtuDeviceService {
             final ClientAssociation clientAssociation = this.iec61850DeviceConnectionService
                     .getClientAssociation(deviceRequest.getDeviceIdentification());
 
-            this.setSetPoints(
-                    new DeviceConnection(
-                            new Iec61850Connection(new Iec61850ClientAssociation(clientAssociation, null), serverModel),
-                            deviceRequest.getDeviceIdentification(), IED.ZOWN_RTU),
+            this.setSetPoints(new DeviceConnection(new Iec61850Connection(new Iec61850ClientAssociation(
+                    clientAssociation, null), serverModel), deviceRequest.getDeviceIdentification(), IED.ZOWN_RTU),
                     serverModel, clientAssociation, deviceRequest);
 
         } catch (final ConnectionFailureException se) {
@@ -224,10 +220,9 @@ public class Iec61850RtuDeviceService implements RtuDeviceService {
     // PRIVATE REPORTING METHODS =
     // ===========================
 
-    private void enableReportingOnDevice(final DeviceConnection connection, final String deviceIdentification)
-            throws ServiceError, IOException {
+    private void enableReportingOnDevice(final DeviceConnection connection, final String deviceIdentification) {
 
-        // TODO - Refactor - make it more flexible for any kind of
+        // Refactor - make it more flexible for any kind of
         // devices (store number of devices in DB?)
         Iec61850RtuDeviceService.this.enableRtuReportingOnDevice(connection, deviceIdentification);
 
@@ -240,14 +235,12 @@ public class Iec61850RtuDeviceService implements RtuDeviceService {
         Iec61850RtuDeviceService.this.enableLoadReportingOnDevice(connection, deviceIdentification);
     }
 
-    private void enableRtuReportingOnDevice(final DeviceConnection connection, final String deviceIdentification)
-            throws ServiceError, IOException {
+    private void enableRtuReportingOnDevice(final DeviceConnection connection, final String deviceIdentification) {
         Iec61850RtuDeviceService.this.enableStatusReportingOnDevice(connection, deviceIdentification,
                 LogicalDevice.RTU_ONE, DataAttribute.REPORT_RTU_STATUS);
     }
 
-    private void enablePvReportingOnDevice(final DeviceConnection connection, final String deviceIdentification)
-            throws ServiceError, IOException {
+    private void enablePvReportingOnDevice(final DeviceConnection connection, final String deviceIdentification) {
         Iec61850RtuDeviceService.this.enableStatusReportingOnDevice(connection, deviceIdentification,
                 LogicalDevice.PV_ONE, DataAttribute.REPORT_STATUS_ONE);
         Iec61850RtuDeviceService.this.enableStatusReportingOnDevice(connection, deviceIdentification,
@@ -263,8 +256,7 @@ public class Iec61850RtuDeviceService implements RtuDeviceService {
                 LogicalDevice.PV_THREE, DataAttribute.REPORT_MEASUREMENTS_ONE);
     }
 
-    private void enableBatteryReportingOnDevice(final DeviceConnection connection, final String deviceIdentification)
-            throws ServiceError, IOException {
+    private void enableBatteryReportingOnDevice(final DeviceConnection connection, final String deviceIdentification) {
         Iec61850RtuDeviceService.this.enableStatusReportingOnDevice(connection, deviceIdentification,
                 LogicalDevice.BATTERY_ONE, DataAttribute.REPORT_STATUS_ONE);
         Iec61850RtuDeviceService.this.enableStatusReportingOnDevice(connection, deviceIdentification,
@@ -276,8 +268,7 @@ public class Iec61850RtuDeviceService implements RtuDeviceService {
                 LogicalDevice.BATTERY_TWO, DataAttribute.REPORT_MEASUREMENTS_ONE);
     }
 
-    private void enableEngineReportingOnDevice(final DeviceConnection connection, final String deviceIdentification)
-            throws ServiceError, IOException {
+    private void enableEngineReportingOnDevice(final DeviceConnection connection, final String deviceIdentification) {
         Iec61850RtuDeviceService.this.enableStatusReportingOnDevice(connection, deviceIdentification,
                 LogicalDevice.ENGINE_ONE, DataAttribute.REPORT_STATUS_ONE);
         Iec61850RtuDeviceService.this.enableStatusReportingOnDevice(connection, deviceIdentification,
@@ -293,8 +284,7 @@ public class Iec61850RtuDeviceService implements RtuDeviceService {
                 LogicalDevice.ENGINE_THREE, DataAttribute.REPORT_MEASUREMENTS_ONE);
     }
 
-    private void enableLoadReportingOnDevice(final DeviceConnection connection, final String deviceIdentification)
-            throws ServiceError, IOException {
+    private void enableLoadReportingOnDevice(final DeviceConnection connection, final String deviceIdentification) {
 
         Iec61850RtuDeviceService.this.enableStatusReportingOnDevice(connection, deviceIdentification,
                 LogicalDevice.LOAD_ONE, DataAttribute.REPORT_STATUS_ONE);
@@ -304,8 +294,7 @@ public class Iec61850RtuDeviceService implements RtuDeviceService {
     }
 
     private void enableStatusReportingOnDevice(final DeviceConnection deviceConnection,
-            final String deviceIdentification, final LogicalDevice logicalDevice, final DataAttribute reportName)
-            throws ServiceError, IOException {
+            final String deviceIdentification, final LogicalDevice logicalDevice, final DataAttribute reportName) {
 
         try {
             final NodeContainer reportingPv = deviceConnection.getFcModelNode(logicalDevice,
@@ -320,8 +309,7 @@ public class Iec61850RtuDeviceService implements RtuDeviceService {
     }
 
     private void enableMeasurementReportingOnDevice(final DeviceConnection deviceConnection,
-            final String deviceIdentification, final LogicalDevice logicalDevice, final DataAttribute reportName)
-            throws ServiceError, IOException {
+            final String deviceIdentification, final LogicalDevice logicalDevice, final DataAttribute reportName) {
 
         try {
             final NodeContainer reportingPv = deviceConnection.getFcModelNode(logicalDevice,

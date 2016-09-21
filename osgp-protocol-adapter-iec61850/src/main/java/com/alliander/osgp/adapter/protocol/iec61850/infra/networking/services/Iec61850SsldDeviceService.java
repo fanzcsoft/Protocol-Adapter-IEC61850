@@ -7,7 +7,6 @@
  */
 package com.alliander.osgp.adapter.protocol.iec61850.infra.networking.services;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -469,10 +468,6 @@ public class Iec61850SsldDeviceService implements SsldDeviceService {
             // Reconnecting to the device
             this.iec61850DeviceConnectionService.connect(deviceRequest.getIpAddress(),
                     deviceRequest.getDeviceIdentification(), IED.FLEX_OVL, LogicalDevice.LIGHTING);
-
-            // Refreshing the servermodel
-            // serverModel =
-            // this.iec61850DeviceConnectionService.getServerModel(deviceRequest.getDeviceIdentification());
 
             // Getting the status
             final DeviceStatusDto deviceStatus = this.getStatusFromDevice(
@@ -1561,7 +1556,7 @@ public class Iec61850SsldDeviceService implements SsldDeviceService {
     }
 
     public void enableReportingOnDevice(final DeviceConnection deviceConnection, final String deviceIdentification)
-            throws ServiceError, IOException {
+            throws ServiceError {
         final NodeContainer reporting = deviceConnection.getFcModelNode(LogicalDevice.LIGHTING,
                 LogicalNode.LOGICAL_NODE_ZERO, DataAttribute.REPORTING, Fc.BR);
 
@@ -1569,14 +1564,7 @@ public class Iec61850SsldDeviceService implements SsldDeviceService {
                 .getIec61850ClientAssociation().getReportListener();
 
         final Integer sqNum = reporting.getUnsignedShort(SubDataAttribute.SEQUENCE_NUMBER).getValue();
-        // if (sqNum == null) {
-        // LOGGER.warn("Child {} of {} is null. No SqNum available for filtering
-        // incoming event reports.",
-        // SubDataAttribute.SEQUENCE_NUMBER.getDescription(), reporting);
-        // } else {
         reportListener.setSqNum(sqNum);
-        // }
-
         reporting.writeBoolean(SubDataAttribute.ENABLE_REPORTING, true);
         LOGGER.info("Allowing device {} to send events", deviceIdentification);
     }

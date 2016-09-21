@@ -14,26 +14,28 @@ import org.springframework.stereotype.Component;
 
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.SystemService;
 import com.alliander.osgp.dto.valueobjects.microgrids.SystemFilterDto;
+import com.alliander.osgp.shared.exceptionhandling.ComponentType;
+import com.alliander.osgp.shared.exceptionhandling.OsgpException;
 
 @Component
 public class Iec61850SystemServiceFactory {
 
     private Map<String, SystemService> systemServices = null;
 
-    public SystemService getSystemService(final SystemFilterDto systemFilter) throws Exception {
+    public SystemService getSystemService(final SystemFilterDto systemFilter) throws OsgpException {
         final String key = systemFilter.getSystemType().toUpperCase() + systemFilter.getId();
         if (this.getSystemServices().containsKey(key)) {
             return this.getSystemServices().get(key);
         }
 
-        throw new Exception("Invalid System Type in System Filter: [" + key + "]");
+        throw new OsgpException(ComponentType.PROTOCOL_IEC61850, "Invalid System Type in System Filter: [" + key + "]");
     }
 
     private Map<String, SystemService> getSystemServices() {
         if (this.systemServices == null) {
             this.systemServices = new HashMap<>();
 
-            // TODO Refactor to read logical devices from file
+            // Refactor to read logical devices from file
             this.systemServices.put("RTU1", new Iec61850RtuSystemService(1));
             this.systemServices.put("LOAD1", new Iec61850LoadSystemService(1));
             for (int i = 1; i <= 2; i++) {

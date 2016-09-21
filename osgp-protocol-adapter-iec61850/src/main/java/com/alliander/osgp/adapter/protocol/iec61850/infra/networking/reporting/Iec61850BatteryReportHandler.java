@@ -21,7 +21,7 @@ import com.alliander.osgp.dto.valueobjects.microgrids.MeasurementResultSystemIde
 
 public class Iec61850BatteryReportHandler implements Iec61850ReportHandler {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(Iec61850BatteryReportHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Iec61850BatteryReportHandler.class);
 
     private static String SYSTEM_TYPE = "BATTERY";
 
@@ -43,8 +43,8 @@ public class Iec61850BatteryReportHandler implements Iec61850ReportHandler {
     @Override
     public MeasurementDto handleMember(final ReadOnlyNodeContainer member) {
 
-        final RtuCommand command = Iec61850BatteryCommandFactory.getInstance()
-                .getCommand(member.getFcmodelNode().getName());
+        final RtuCommand command = Iec61850BatteryCommandFactory.getInstance().getCommand(
+                member.getFcmodelNode().getName());
 
         if (command == null) {
             LOGGER.warn("No command found for node {}", member.getFcmodelNode().getName());
