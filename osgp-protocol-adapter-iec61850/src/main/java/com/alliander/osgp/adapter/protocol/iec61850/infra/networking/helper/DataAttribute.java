@@ -137,6 +137,14 @@ public enum DataAttribute {
      */
     ACTUAL_POWER("TotW"),
     /**
+     * Minimum Actual Power
+     */
+    MAX_ACTUAL_POWER("MaxWPhs"),
+    /**
+     * Minimum Actual Power
+     */
+    MIN_ACTUAL_POWER("MinWPhs"),
+    /**
      * Total Energy
      */
     TOTAL_ENERGY("TotWh"),
