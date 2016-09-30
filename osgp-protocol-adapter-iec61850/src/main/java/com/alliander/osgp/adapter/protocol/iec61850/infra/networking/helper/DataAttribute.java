@@ -137,7 +137,7 @@ public enum DataAttribute {
      */
     ACTUAL_POWER("TotW"),
     /**
-     * Minimum Actual Power
+     * Maximum Actual Power
      */
     MAX_ACTUAL_POWER("MaxWPhs"),
     /**
