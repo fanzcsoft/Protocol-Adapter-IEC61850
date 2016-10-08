@@ -14,13 +14,14 @@
   <artifactId>osgp-core-db-api-iec61850</artifactId>
   <name>osgp-core-db-api-iec61850</name>
   <packaging>jar</packaging>
-  <!-- Description, Organization, Licenses, URL and Distribution Management elements are needed for the maven-jxr-plugin to generate a maven site -->
+  <!-- Description, Organization, Licenses, URL and Distribution Management elements are needed for the maven-jxr-plugin 
+    to generate a maven site -->
   <description>Database API for core database.</description>
 
   <parent>
     <groupId>com.alliander.osgp</groupId>
     <artifactId>parent-pa-iec61850</artifactId>
-    <version>3.6.1</version>
+    <version>4.1.0</version>
     <relativePath>../parent-pa-iec61850/pom.xml</relativePath>
   </parent>
 
