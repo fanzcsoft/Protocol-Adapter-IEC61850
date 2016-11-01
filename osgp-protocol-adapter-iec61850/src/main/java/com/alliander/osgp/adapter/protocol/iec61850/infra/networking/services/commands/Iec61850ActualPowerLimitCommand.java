@@ -11,7 +11,9 @@ import org.joda.time.DateTime;
 import org.openmuc.openiec61850.Fc;
 
 import com.alliander.osgp.adapter.protocol.iec61850.device.rtu.RtuCommand;
+import com.alliander.osgp.adapter.protocol.iec61850.exceptions.NodeReadException;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.Iec61850Client;
+import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.QualityConverter;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.DataAttribute;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.DeviceConnection;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.LogicalDevice;
@@ -24,7 +26,7 @@ public class Iec61850ActualPowerLimitCommand implements RtuCommand {
 
     @Override
     public MeasurementDto execute(final Iec61850Client client, final DeviceConnection connection,
-            final LogicalDevice logicalDevice) {
+            final LogicalDevice logicalDevice) throws NodeReadException {
         final NodeContainer containingNode = connection.getFcModelNode(logicalDevice,
                 LogicalNode.DER_SUPERVISORY_CONTROL_ONE, DataAttribute.ACTUAL_POWER_LIMIT, Fc.SV);
         client.readNodeDataValues(connection.getConnection().getClientAssociation(), containingNode.getFcmodelNode());
@@ -33,7 +35,10 @@ public class Iec61850ActualPowerLimitCommand implements RtuCommand {
 
     @Override
     public MeasurementDto translate(final NodeContainer containingNode) {
-        return new MeasurementDto(1, DataAttribute.ACTUAL_POWER_LIMIT.getDescription(), 0, new DateTime(),
+        return new MeasurementDto(1, DataAttribute.ACTUAL_POWER_LIMIT.getDescription(),
+                QualityConverter.toShort(
+                        containingNode.getQuality(SubDataAttribute.SUBSTITUDE_QUALITY).getValue()),
+                new DateTime(),
                 containingNode.getChild(SubDataAttribute.SUBSTITUDE_VALUE).getFloat(SubDataAttribute.FLOAT).getFloat());
     }
 }

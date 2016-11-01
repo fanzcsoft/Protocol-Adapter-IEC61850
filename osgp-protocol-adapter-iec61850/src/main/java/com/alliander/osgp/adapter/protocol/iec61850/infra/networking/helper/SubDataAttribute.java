@@ -34,6 +34,10 @@ public enum SubDataAttribute {
      */
     CONTROL_VALUE("ctlVal"),
     /**
+     * Attribute of Property Clock, current time.
+     */
+    CURRENT_TIME("curT"),
+    /**
      * Attribute of both firmware configuration nodes, used to read the value of
      * the current firmware version
      */
@@ -117,6 +121,12 @@ public enum SubDataAttribute {
      * used to reboot the device.
      */
     OPERATION("Oper"),
+    /**
+     * Property of LLN0's Node, evn_rpn01. Clears the event buffer. This boolean
+     * instructs the device to clear the event buffer. Can only be used if
+     * reporting is disabled! {@link RptEna} must be set to false.
+     */
+    PURGE_BUF("PurgeBuf"),
     /**
      * Attribute of Property Clock, contains the time zone value
      */
@@ -245,7 +255,11 @@ public enum SubDataAttribute {
     /**
      * Substitution value
      */
-    SUBSTITUDE_VALUE("subVal");
+    SUBSTITUDE_VALUE("subVal"),
+    /**
+     * Substitution quality
+     */
+    SUBSTITUDE_QUALITY("subQ");
     private String description;
 
     private SubDataAttribute(final String description) {
