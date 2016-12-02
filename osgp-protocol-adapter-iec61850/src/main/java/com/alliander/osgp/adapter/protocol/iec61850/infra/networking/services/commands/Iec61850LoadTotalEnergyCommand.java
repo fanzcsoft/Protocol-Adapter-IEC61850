@@ -51,14 +51,14 @@ public class Iec61850LoadTotalEnergyCommand implements RtuCommand {
     public MeasurementDto translate(final NodeContainer containingNode) {
         // Load total energy is implemented different on both RTUs
         // (one uses Int64, the other Int32)
-        // As a workaround first try to read the value as Long
-        // If that fails read the value as Integer
+        // As a workaround first try to read the value as Integer
+        // If that fails read the value as Long
         long value = 0;
         try {
-            value = containingNode.getLong(SubDataAttribute.ACTUAL_VALUE).getValue();
-        } catch (final ClassCastException e) {
-            LOGGER.info("Reading long value resulted in class cast exception, trying to read integer value", e);
             value = containingNode.getInteger(SubDataAttribute.ACTUAL_VALUE).getValue();
+        } catch (final ClassCastException e) {
+            LOGGER.info("Reading integer value resulted in class cast exception, trying to read long value", e);
+            value = containingNode.getLong(SubDataAttribute.ACTUAL_VALUE).getValue();
         }
 
         return new MeasurementDto(this.index, DataAttribute.TOTAL_ENERGY.getDescription(),
