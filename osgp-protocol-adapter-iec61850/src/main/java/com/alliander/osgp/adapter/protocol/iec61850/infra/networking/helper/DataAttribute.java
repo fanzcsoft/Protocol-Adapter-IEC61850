@@ -205,11 +205,51 @@ public enum DataAttribute {
     /**
      * Other warnings
      */
-    WARNING_OTHER("IntIn2");
+    WARNING_OTHER("IntIn2"),
+    /**
+     * Schedule ID
+     */
+    SCHEDULE_ID("SchdId"),
+    /**
+     * Schedule Type
+     */
+    SCHEDULE_TYPE("SchdTyp"),
+    /**
+     * Schedule Category
+     */
+    SCHEDULE_CAT("SchdCat"),
+    /**
+     * Schedule Category WAGO RTU
+     */
+    SCHEDULE_CAT_RTU("SchCat"),
+    /**
+     * Absolute time schedule entries
+     */
+    SCHEDULE_ABS_TIME("SchdAbsTm"),
+    /**
+     * Volume Heat Buffer
+     */
+    VLMCAP("VlmCap"),
+    /**
+     * Absolute time schedule entries
+     */
+    TEMPERATURE("TmpSv"),
+    /**
+     * Absolute time schedule entries
+     */
+    MATERIAL_STATUS("MatStat"),
+    /**
+     * Absolute time schedule entries
+     */
+    MATERIAL_TYPE("MatTyp"),
+    /**
+     * Absolute time schedule entries
+     */
+    MATERIAL_FLOW("FlwRte");
 
     private String description;
 
-    private DataAttribute(final String description) {
+    DataAttribute(final String description) {
         this.description = description;
     }
 

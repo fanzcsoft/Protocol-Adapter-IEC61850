@@ -22,6 +22,9 @@ import org.openmuc.openiec61850.BdaQuality;
 import org.openmuc.openiec61850.BdaTimestamp;
 import org.openmuc.openiec61850.Fc;
 import org.openmuc.openiec61850.ServerModel;
+import org.springframework.util.StringUtils;
+
+import com.alliander.osgp.simulator.protocol.iec61850.server.BasicDataAttributesHelper;
 
 public abstract class LogicalDevice {
 
@@ -36,7 +39,27 @@ public abstract class LogicalDevice {
         this.serverModel = serverModel;
     }
 
-    public abstract List<BasicDataAttribute> getValues(Date timestamp);
+    public void refreshServerModel(final ServerModel serverModel) {
+        this.serverModel = serverModel;
+    }
+
+    public abstract List<BasicDataAttribute> getAttributesAndSetValues(Date timestamp);
+
+    public abstract BasicDataAttribute getAttributeAndSetValue(String node, String value);
+
+    protected abstract Fc getFunctionalConstraint(String node);
+
+    public BasicDataAttribute getBasicDataAttribute(final String node) {
+        final Fc fc = this.getFunctionalConstraint(node);
+        if (fc == null) {
+            throw this.illegalNodeException(node);
+        }
+        return this.getBasicDataAttribute(node, fc);
+    }
+
+    protected BasicDataAttribute getBasicDataAttribute(final String node, final Fc fc) {
+        return (BasicDataAttribute) this.serverModel.findModelNode(this.createNodeName(node), fc);
+    }
 
     public String getPhysicalDeviceName() {
         return this.physicalDeviceName;
@@ -84,6 +107,12 @@ public abstract class LogicalDevice {
         return value;
     }
 
+    protected BasicDataAttribute setByte(final String node, final Fc fc, final byte val) {
+        final BdaInt8 value = (BdaInt8) this.serverModel.findModelNode(this.createNodeName(node), fc);
+        value.setValue(val);
+        return value;
+    }
+
     protected BasicDataAttribute setFixedInt(final String node, final Fc fc, final int val) {
         final BdaInt64 value = (BdaInt64) this.serverModel.findModelNode(this.createNodeName(node), fc);
         value.setValue((byte) val);
@@ -93,6 +122,12 @@ public abstract class LogicalDevice {
     protected BasicDataAttribute setRandomInt(final String node, final Fc fc, final int min, final int max) {
         final BdaInt32 value = (BdaInt32) this.serverModel.findModelNode(this.createNodeName(node), fc);
         value.setValue(ThreadLocalRandom.current().nextInt(min, max));
+        return value;
+    }
+
+    protected BasicDataAttribute setInt(final String node, final Fc fc, final int val) {
+        final BdaInt32 value = (BdaInt32) this.serverModel.findModelNode(this.createNodeName(node), fc);
+        value.setValue(val);
         return value;
     }
 
@@ -110,5 +145,23 @@ public abstract class LogicalDevice {
 
     private byte[] shortToByteArray(final short value) {
         return ByteBuffer.allocate(2).putShort(value).array();
+    }
+
+    protected Date parseDate(final String date) {
+        if (StringUtils.isEmpty(date)) {
+            return null;
+        }
+        return BasicDataAttributesHelper.parseDate(date);
+    }
+
+    protected IllegalArgumentException illegalNodeException(final String node) {
+        return new IllegalArgumentException("Node \"" + node + "\" is not registered with logical device \""
+                + this.getLogicalDeviceName() + "\" on simulated RTU device \"" + this.getPhysicalDeviceName() + "\".");
+    }
+
+    protected IllegalArgumentException nodeTypeNotConfiguredException(final String node) {
+        return new IllegalArgumentException("The data type of node \"" + node
+                + "\" is not configured with logical device \"" + this.getLogicalDeviceName()
+                + "\" on simulated RTU device \"" + this.getPhysicalDeviceName() + "\".");
     }
 }

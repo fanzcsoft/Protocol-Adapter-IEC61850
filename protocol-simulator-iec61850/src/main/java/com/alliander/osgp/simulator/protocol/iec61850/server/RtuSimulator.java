@@ -10,12 +10,15 @@ package com.alliander.osgp.simulator.protocol.iec61850.server;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.PreDestroy;
 
 import org.openmuc.openiec61850.BasicDataAttribute;
+import org.openmuc.openiec61850.ModelNode;
 import org.openmuc.openiec61850.SclParseException;
 import org.openmuc.openiec61850.ServerEventListener;
 import org.openmuc.openiec61850.ServerModel;
@@ -26,7 +29,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import com.alliander.osgp.simulator.protocol.iec61850.server.logicaldevices.Battery;
+import com.alliander.osgp.simulator.protocol.iec61850.server.logicaldevices.Chp;
 import com.alliander.osgp.simulator.protocol.iec61850.server.logicaldevices.Engine;
+import com.alliander.osgp.simulator.protocol.iec61850.server.logicaldevices.GasFurnace;
+import com.alliander.osgp.simulator.protocol.iec61850.server.logicaldevices.HeatBuffer;
 import com.alliander.osgp.simulator.protocol.iec61850.server.logicaldevices.Load;
 import com.alliander.osgp.simulator.protocol.iec61850.server.logicaldevices.LogicalDevice;
 import com.alliander.osgp.simulator.protocol.iec61850.server.logicaldevices.Pv;
@@ -46,22 +52,131 @@ public class RtuSimulator implements ServerEventListener {
 
     private boolean isStarted = false;
 
+    private final AtomicBoolean stopGeneratingValues = new AtomicBoolean(false);
+
     public RtuSimulator(final int port, final InputStream sclFile) throws SclParseException {
         final List<ServerSap> serverSaps = ServerSap.getSapsFromSclFile(sclFile);
         this.server = serverSaps.get(0);
         this.server.setPort(port);
         this.serverModel = this.server.getModelCopy();
 
-        this.logicalDevices.add(new Rtu(PHYSICAL_DEVICE, "RTU1", this.serverModel));
-        this.logicalDevices.add(new Pv(PHYSICAL_DEVICE, "PV1", this.serverModel));
-        this.logicalDevices.add(new Pv(PHYSICAL_DEVICE, "PV2", this.serverModel));
-        this.logicalDevices.add(new Pv(PHYSICAL_DEVICE, "PV3", this.serverModel));
-        this.logicalDevices.add(new Battery(PHYSICAL_DEVICE, "BATTERY1", this.serverModel));
-        this.logicalDevices.add(new Battery(PHYSICAL_DEVICE, "BATTERY2", this.serverModel));
-        this.logicalDevices.add(new Engine(PHYSICAL_DEVICE, "ENGINE1", this.serverModel));
-        this.logicalDevices.add(new Engine(PHYSICAL_DEVICE, "ENGINE2", this.serverModel));
-        this.logicalDevices.add(new Engine(PHYSICAL_DEVICE, "ENGINE3", this.serverModel));
-        this.logicalDevices.add(new Load(PHYSICAL_DEVICE, "LOAD1", this.serverModel));
+        this.addLogicalDevices(this.serverModel);
+    }
+
+    private void addLogicalDevices(final ServerModel serverModel) {
+
+        this.addRtuDevices(serverModel);
+        this.addPvDevices(serverModel);
+        this.addBatteryDevices(serverModel);
+        this.addEngineDevices(serverModel);
+        this.addLoadDevices(serverModel);
+        this.addHeatBufferDevices(serverModel);
+        this.addChpDevices(serverModel);
+        this.addGasFurnaceDevices(serverModel);
+    }
+
+    private void addRtuDevices(final ServerModel serverModel) {
+        final String rtuPrefix = "RTU";
+        int i = 1;
+        String logicalDeviceName = rtuPrefix + i;
+        ModelNode rtuNode = serverModel.getChild(PHYSICAL_DEVICE + logicalDeviceName);
+        while (rtuNode != null) {
+            this.logicalDevices.add(new Rtu(PHYSICAL_DEVICE, logicalDeviceName, serverModel));
+            i += 1;
+            logicalDeviceName = rtuPrefix + i;
+            rtuNode = serverModel.getChild(PHYSICAL_DEVICE + logicalDeviceName);
+        }
+    }
+
+    private void addPvDevices(final ServerModel serverModel) {
+        final String pvPrefix = "PV";
+        int i = 1;
+        String logicalDeviceName = pvPrefix + i;
+        ModelNode pvNode = serverModel.getChild(PHYSICAL_DEVICE + logicalDeviceName);
+        while (pvNode != null) {
+            this.logicalDevices.add(new Pv(PHYSICAL_DEVICE, logicalDeviceName, serverModel));
+            i += 1;
+            logicalDeviceName = pvPrefix + i;
+            pvNode = serverModel.getChild(PHYSICAL_DEVICE + logicalDeviceName);
+        }
+    }
+
+    private void addBatteryDevices(final ServerModel serverModel) {
+        final String batteryPrefix = "BATTERY";
+        int i = 1;
+        String logicalDeviceName = batteryPrefix + i;
+        ModelNode batteryNode = serverModel.getChild(PHYSICAL_DEVICE + logicalDeviceName);
+        while (batteryNode != null) {
+            this.logicalDevices.add(new Battery(PHYSICAL_DEVICE, logicalDeviceName, serverModel));
+            i += 1;
+            logicalDeviceName = batteryPrefix + i;
+            batteryNode = serverModel.getChild(PHYSICAL_DEVICE + logicalDeviceName);
+        }
+    }
+
+    private void addEngineDevices(final ServerModel serverModel) {
+        final String enginePrefix = "ENGINE";
+        int i = 1;
+        String logicalDeviceName = enginePrefix + i;
+        ModelNode engineNode = serverModel.getChild(PHYSICAL_DEVICE + logicalDeviceName);
+        while (engineNode != null) {
+            this.logicalDevices.add(new Engine(PHYSICAL_DEVICE, logicalDeviceName, serverModel));
+            i += 1;
+            logicalDeviceName = enginePrefix + i;
+            engineNode = serverModel.getChild(PHYSICAL_DEVICE + logicalDeviceName);
+        }
+    }
+
+    private void addLoadDevices(final ServerModel serverModel) {
+        final String loadPrefix = "LOAD";
+        int i = 1;
+        String logicalDeviceName = loadPrefix + i;
+        ModelNode loadNode = serverModel.getChild(PHYSICAL_DEVICE + logicalDeviceName);
+        while (loadNode != null) {
+            this.logicalDevices.add(new Load(PHYSICAL_DEVICE, logicalDeviceName, serverModel));
+            i += 1;
+            logicalDeviceName = loadPrefix + i;
+            loadNode = serverModel.getChild(PHYSICAL_DEVICE + logicalDeviceName);
+        }
+    }
+
+    private void addHeatBufferDevices(final ServerModel serverModel) {
+        final String heatBufferPrefix = "HEAT_BUFFER";
+        int i = 1;
+        String logicalDeviceName = heatBufferPrefix + i;
+        ModelNode heatBufferNode = serverModel.getChild(PHYSICAL_DEVICE + logicalDeviceName);
+        while (heatBufferNode != null) {
+            this.logicalDevices.add(new HeatBuffer(PHYSICAL_DEVICE, logicalDeviceName, serverModel));
+            i += 1;
+            logicalDeviceName = heatBufferPrefix + i;
+            heatBufferNode = serverModel.getChild(PHYSICAL_DEVICE + logicalDeviceName);
+        }
+    }
+
+    private void addChpDevices(final ServerModel serverModel) {
+        final String chpPrefix = "CHP";
+        int i = 1;
+        String logicalDeviceName = chpPrefix + i;
+        ModelNode chpNode = serverModel.getChild(PHYSICAL_DEVICE + logicalDeviceName);
+        while (chpNode != null) {
+            this.logicalDevices.add(new Chp(PHYSICAL_DEVICE, logicalDeviceName, serverModel));
+            i += 1;
+            logicalDeviceName = chpPrefix + i;
+            chpNode = serverModel.getChild(PHYSICAL_DEVICE + logicalDeviceName);
+        }
+    }
+
+    private void addGasFurnaceDevices(final ServerModel serverModel) {
+        final String gasFurnacePrefix = "GAS_FURNACE";
+        int i = 1;
+        String logicalDeviceName = gasFurnacePrefix + i;
+        ModelNode gasFurnaceNode = serverModel.getChild(PHYSICAL_DEVICE + logicalDeviceName);
+        while (gasFurnaceNode != null) {
+            this.logicalDevices.add(new GasFurnace(PHYSICAL_DEVICE, logicalDeviceName, serverModel));
+            i += 1;
+            logicalDeviceName = gasFurnacePrefix + i;
+            gasFurnaceNode = serverModel.getChild(PHYSICAL_DEVICE + logicalDeviceName);
+        }
     }
 
     public void start() throws IOException {
@@ -75,6 +190,7 @@ public class RtuSimulator implements ServerEventListener {
 
     public void stop() {
         this.server.stop();
+        this.isStarted = false;
         LOGGER.info("Server was stopped.");
     }
 
@@ -97,17 +213,83 @@ public class RtuSimulator implements ServerEventListener {
         LOGGER.error("The SAP stopped listening");
     }
 
+    public void assertValue(final String logicalDeviceName, final String node, final String value) {
+        final LogicalDevice logicalDevice = this.getLogicalDevice(logicalDeviceName);
+        // Get a new model copy to see values that have been set on the server.
+        logicalDevice.refreshServerModel(this.server.getModelCopy());
+        final ModelNode actual = logicalDevice.getBasicDataAttribute(node);
+        if (actual == null) {
+            throw new AssertionError("RTU Simulator does not have expected node \"" + node + "\" on logical device \""
+                    + logicalDeviceName + "\".");
+        }
+        if (!(actual instanceof BasicDataAttribute)) {
+            throw new AssertionError("RTU Simulator value has node \"" + node + "\" on logical device \""
+                    + logicalDeviceName + "\", but it is not a BasicDataAttribute: " + actual.getClass().getName());
+        }
+        final BasicDataAttribute expected = this.getCopyWithNewValue((BasicDataAttribute) actual, value);
+        if (!BasicDataAttributesHelper.equals(expected, (BasicDataAttribute) actual)) {
+            throw new AssertionError("RTU Simulator attribute for node \"" + node + "\" on logical device \""
+                    + logicalDeviceName + "\" - expected: [" + expected + "], actual: [" + actual + "]");
+        }
+    }
+
+    private BasicDataAttribute getCopyWithNewValue(final BasicDataAttribute original, final String value) {
+        final BasicDataAttribute copy = (BasicDataAttribute) original.copy();
+        BasicDataAttributesHelper.setValue(copy, value);
+        return copy;
+    }
+
+    public void mockValue(final String logicalDeviceName, final String node, final String value) {
+        if (!this.stopGeneratingValues.get()) {
+            /*
+             * A mocked value is explicitly set, stop changing values with
+             * generateData, because one of those might break the mock value
+             * that will be expected.
+             */
+            this.ensurePeriodicDataGenerationIsStopped();
+        }
+        final LogicalDevice logicalDevice = this.getLogicalDevice(logicalDeviceName);
+        final BasicDataAttribute basicDataAttribute = logicalDevice.getAttributeAndSetValue(node, value);
+        this.server.setValues(Arrays.asList(basicDataAttribute));
+    }
+
+    private void ensurePeriodicDataGenerationIsStopped() {
+        synchronized (this.stopGeneratingValues) {
+            this.stopGeneratingValues.set(true);
+        }
+    }
+
+    public void resumeGeneratingValues() {
+        synchronized (this.stopGeneratingValues) {
+            this.stopGeneratingValues.set(false);
+        }
+    }
+
+    private LogicalDevice getLogicalDevice(final String logicalDeviceName) {
+        for (final LogicalDevice ld : this.logicalDevices) {
+            if (ld.getLogicalDeviceName().equals(logicalDeviceName)) {
+                return ld;
+            }
+        }
+        throw new IllegalArgumentException("A logical device with name \"" + logicalDeviceName
+                + "\" is not registered with simulated RTU device \"" + PHYSICAL_DEVICE + "\".");
+    }
+
     @Scheduled(fixedDelay = 60000)
     public void generateData() {
-        final Date timestamp = new Date();
+        synchronized (this.stopGeneratingValues) {
+            if (!this.stopGeneratingValues.get()) {
+                final Date timestamp = new Date();
 
-        final List<BasicDataAttribute> values = new ArrayList<>();
+                final List<BasicDataAttribute> values = new ArrayList<>();
 
-        for (final LogicalDevice ld : this.logicalDevices) {
-            values.addAll(ld.getValues(timestamp));
+                for (final LogicalDevice ld : this.logicalDevices) {
+                    values.addAll(ld.getAttributesAndSetValues(timestamp));
+                }
+
+                this.server.setValues(values);
+                LOGGER.info("Generated values");
+            }
         }
-
-        this.server.setValues(values);
-        LOGGER.info("Generated values");
     }
 }

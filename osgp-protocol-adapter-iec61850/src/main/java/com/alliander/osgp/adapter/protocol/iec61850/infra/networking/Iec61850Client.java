@@ -24,7 +24,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.alliander.osgp.adapter.protocol.iec61850.application.services.DeviceManagementService;
 import com.alliander.osgp.adapter.protocol.iec61850.exceptions.ConnectionFailureException;
 import com.alliander.osgp.adapter.protocol.iec61850.exceptions.NodeReadException;
 import com.alliander.osgp.adapter.protocol.iec61850.exceptions.NodeWriteException;
@@ -56,9 +55,6 @@ public class Iec61850Client {
 
     @Autowired
     private int maxRetryCount;
-
-    @Autowired
-    private DeviceManagementService deviceManagementService;
 
     @PostConstruct
     private void init() {
@@ -94,8 +90,7 @@ public class Iec61850Client {
         // connect using SSL.
         final ClientSap clientSap = new ClientSap();
         final Iec61850ClientAssociation clientAssociation;
-        LOGGER.info(
-                "Attempting to connect to server: {} on port: {}, max redelivery count: {} and max retry count: {}",
+        LOGGER.info("Attempting to connect to server: {} on port: {}, max redelivery count: {} and max retry count: {}",
                 ipAddress.getHostAddress(), port, this.maxRedeliveriesForIec61850Requests, this.maxRetryCount);
 
         try {
@@ -136,23 +131,22 @@ public class Iec61850Client {
      *            The {@link ClientAssociation} instance.
      *
      * @return A {@link ServerModel} instance.
+     * @throws ProtocolAdapterException
      */
-    public ServerModel readServerModelFromDevice(final ClientAssociation clientAssociation) {
-        ServerModel serverModel;
+    public ServerModel readServerModelFromDevice(final ClientAssociation clientAssociation)
+            throws ProtocolAdapterException {
         try {
             LOGGER.debug("Start reading server model from device");
             // RetrieveModel() will call all GetDirectory and GetDefinition ACSI
             // services needed to get the complete server model.
-            serverModel = clientAssociation.retrieveModel();
+            final ServerModel serverModel = clientAssociation.retrieveModel();
             LOGGER.debug("Completed reading server model from device");
             return serverModel;
         } catch (final ServiceError e) {
-            LOGGER.error("Service Error requesting model.", e);
             clientAssociation.close();
-            return null;
+            throw new ProtocolAdapterException("Service Error requesting model.", e);
         } catch (final IOException e) {
-            LOGGER.error("Fatal IOException requesting model.", e);
-            return null;
+            throw new ProtocolAdapterException("Fatal IOException requesting model.", e);
         }
     }
 
@@ -175,13 +169,10 @@ public class Iec61850Client {
             throw new ProtocolAdapterException("File path is empty");
         }
 
-        // Instead of calling retrieveModel you could read the model directly
-        // from an SCL file.
         try {
             return clientAssociation.getModelFromSclFile(filePath);
         } catch (final SclParseException e) {
-            LOGGER.error("Error parsing SCL file: " + filePath, e);
-            return null;
+            throw new ProtocolAdapterException("Error parsing SCL file: " + filePath, e);
         }
     }
 

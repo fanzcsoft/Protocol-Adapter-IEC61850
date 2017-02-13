@@ -14,7 +14,7 @@
 
   <artifactId>parent-pa-iec61850</artifactId>
   <groupId>com.alliander.osgp</groupId>
-  <version>4.3.0</version>
+  <version>4.6.0</version>
   <packaging>pom</packaging>
   <name>parent-pa-iec61850</name>
   <!-- Description, Organization, Licenses, URL and Distribution Management elements are needed for the maven-jxr-plugin to generate a maven site -->
@@ -57,13 +57,14 @@
   <properties>
     <module.baseUri>${project.baseUri}/../</module.baseUri>
     <osgp.version>${project.version}</osgp.version>
-    <osgp.shared.version>4.3.0</osgp.shared.version>
+    <osgp.shared.version>4.6.0</osgp.shared.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <spring.version>4.3.0.RELEASE</spring.version>
-    <spring.ws.version>2.2.0.RELEASE</spring.ws.version>
-    <spring.data.version>1.8.2.RELEASE</spring.data.version>
-    <spring.security.version>4.0.2.RELEASE</spring.security.version>
+    <spring.version>4.3.5.RELEASE</spring.version>
+    <spring.ws.version>2.4.0.RELEASE</spring.ws.version>
+    <spring.data.version>1.10.6.RELEASE</spring.data.version>
+    <spring.data.key.version>1.1.5.RELEASE</spring.data.key.version>
+    <spring.security.version>4.2.1.RELEASE</spring.security.version>
     <servlet.version>3.0.1</servlet.version>
     <servlet.jstl.version>1.2</servlet.jstl.version>
     <hibernate.version>4.2.16.Final</hibernate.version>
@@ -81,7 +82,7 @@
     <maven.project.info.reports.plugin.version>2.8</maven.project.info.reports.plugin.version>
     <apache.activemq.version>5.10.0</apache.activemq.version>
     <commons.pool.version>1.6</commons.pool.version>
-    <jackson.jaxrs.version>2.4.2</jackson.jaxrs.version>
+    <jackson.jaxrs.version>2.8.6</jackson.jaxrs.version>
     <proton-jms.version>0.7</proton-jms.version>
     <logback.version>1.1.2</logback.version>
     <logback.ext.version>0.1.2</logback.ext.version>
@@ -222,6 +223,12 @@
         <groupId>org.springframework.data</groupId>
         <artifactId>spring-data-jpa</artifactId>
         <version>${spring.data.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.springframework.data</groupId>
+        <artifactId>spring-data-keyvalue</artifactId>
+        <version>${spring.data.key.version}</version>
       </dependency>
 
       <!-- Servlet API 3.0 -->
@@ -504,9 +511,8 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
           <fork>true</fork>
-          <executable>${JAVA_1_7_HOME}/bin/javac</executable>
-          <source>1.7</source>
-          <target>1.7</target>
+          <source>1.8</source>
+          <target>1.8</target>
         </configuration>
       </plugin>
     </plugins>
