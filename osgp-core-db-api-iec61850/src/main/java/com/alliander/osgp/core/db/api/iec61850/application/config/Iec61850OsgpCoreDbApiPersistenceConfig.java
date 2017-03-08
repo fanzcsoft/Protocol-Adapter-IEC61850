@@ -35,15 +35,15 @@ import com.zaxxer.hikari.HikariDataSource;
 @EnableTransactionManagement()
 public class Iec61850OsgpCoreDbApiPersistenceConfig extends AbstractCustomConfig {
 
-    private static final String PROPERTY_NAME_DATABASE_USERNAME = "db.api.username";
-    private static final String PROPERTY_NAME_DATABASE_PW = "db.api.password";
+    private static final String PROPERTY_NAME_DATABASE_USERNAME = "db.api.username.iec61850";
+    private static final String PROPERTY_NAME_DATABASE_PW = "db.api.password.iec61850";
 
-    private static final String PROPERTY_NAME_DATABASE_DRIVER = "db.api.driver";
-    private static final String PROPERTY_NAME_DATABASE_PROTOCOL = "db.api.protocol";
+    private static final String PROPERTY_NAME_DATABASE_DRIVER = "db.driver";
+    private static final String PROPERTY_NAME_DATABASE_PROTOCOL = "db.protocol";
 
-    private static final String PROPERTY_NAME_DATABASE_HOST = "db.api.host";
-    private static final String PROPERTY_NAME_DATABASE_PORT = "db.api.port";
-    private static final String PROPERTY_NAME_DATABASE_NAME = "db.api.name";
+    private static final String PROPERTY_NAME_DATABASE_HOST = "db.api.host.iec61850";
+    private static final String PROPERTY_NAME_DATABASE_PORT = "db.api.port.iec61850";
+    private static final String PROPERTY_NAME_DATABASE_NAME = "db.api.name.iec61850";
 
     private static final String PROPERTY_NAME_DATABASE_MIN_POOL_SIZE = "db.min_pool_size";
     private static final String PROPERTY_NAME_DATABASE_MAX_POOL_SIZE = "db.max_pool_size";
@@ -106,10 +106,10 @@ public class Iec61850OsgpCoreDbApiPersistenceConfig extends AbstractCustomConfig
                     .getRequiredProperty(PROPERTY_NAME_DATABASE_IDLE_TIMEOUT));
 
             final DefaultConnectionPoolFactory.Builder builder = new DefaultConnectionPoolFactory.Builder()
-            .withUsername(username).withPassword(password).withDriverClassName(driverClassName)
-            .withProtocol(databaseProtocol).withDatabaseHost(databaseHost).withDatabasePort(databasePort)
-            .withDatabaseName(databaseName).withMinPoolSize(minPoolSize).withMaxPoolSize(maxPoolSize)
-            .withAutoCommit(isAutoCommit).withIdleTimeout(idleTimeout);
+                    .withUsername(username).withPassword(password).withDriverClassName(driverClassName)
+                    .withProtocol(databaseProtocol).withDatabaseHost(databaseHost).withDatabasePort(databasePort)
+                    .withDatabaseName(databaseName).withMinPoolSize(minPoolSize).withMaxPoolSize(maxPoolSize)
+                    .withAutoCommit(isAutoCommit).withIdleTimeout(idleTimeout);
             final DefaultConnectionPoolFactory factory = builder.build();
             this.dataSource = factory.getDefaultConnectionPool();
         }
@@ -159,7 +159,7 @@ public class Iec61850OsgpCoreDbApiPersistenceConfig extends AbstractCustomConfig
 
         final Properties jpaProperties = new Properties();
         jpaProperties
-                .put(HIBERNATE_DIALECT_KEY, ENVIRONMENT.getRequiredProperty(PROPERTY_NAME_HIBERNATE_DIALECT_VALUE));
+        .put(HIBERNATE_DIALECT_KEY, ENVIRONMENT.getRequiredProperty(PROPERTY_NAME_HIBERNATE_DIALECT_VALUE));
         jpaProperties.put(HIBERNATE_FORMAT_SQL_KEY,
                 ENVIRONMENT.getRequiredProperty(PROPERTY_NAME_HIBERNATE_FORMAT_SQL_VALUE));
         jpaProperties.put(HIBERNATE_NAMING_STRATEGY_KEY,
