@@ -29,10 +29,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import com.alliander.osgp.simulator.protocol.iec61850.server.logicaldevices.Battery;
+import com.alliander.osgp.simulator.protocol.iec61850.server.logicaldevices.Boiler;
 import com.alliander.osgp.simulator.protocol.iec61850.server.logicaldevices.Chp;
 import com.alliander.osgp.simulator.protocol.iec61850.server.logicaldevices.Engine;
 import com.alliander.osgp.simulator.protocol.iec61850.server.logicaldevices.GasFurnace;
 import com.alliander.osgp.simulator.protocol.iec61850.server.logicaldevices.HeatBuffer;
+import com.alliander.osgp.simulator.protocol.iec61850.server.logicaldevices.HeatPump;
 import com.alliander.osgp.simulator.protocol.iec61850.server.logicaldevices.Load;
 import com.alliander.osgp.simulator.protocol.iec61850.server.logicaldevices.LogicalDevice;
 import com.alliander.osgp.simulator.protocol.iec61850.server.logicaldevices.Pv;
@@ -50,14 +52,18 @@ public class RtuSimulator implements ServerEventListener {
 
     private final ServerModel serverModel;
 
+    private final String serverName;
+
     private boolean isStarted = false;
 
     private final AtomicBoolean stopGeneratingValues = new AtomicBoolean(false);
 
-    public RtuSimulator(final int port, final InputStream sclFile) throws SclParseException {
+    public RtuSimulator(final int port, final InputStream sclFile, final String serverName) throws SclParseException {
         final List<ServerSap> serverSaps = ServerSap.getSapsFromSclFile(sclFile);
         this.server = serverSaps.get(0);
         this.server.setPort(port);
+        this.serverName = serverName;
+
         this.serverModel = this.server.getModelCopy();
 
         this.addLogicalDevices(this.serverModel);
@@ -73,18 +79,20 @@ public class RtuSimulator implements ServerEventListener {
         this.addHeatBufferDevices(serverModel);
         this.addChpDevices(serverModel);
         this.addGasFurnaceDevices(serverModel);
+        this.addHeatPumpDevices(serverModel);
+        this.addBoilerDevices(serverModel);
     }
 
     private void addRtuDevices(final ServerModel serverModel) {
         final String rtuPrefix = "RTU";
         int i = 1;
         String logicalDeviceName = rtuPrefix + i;
-        ModelNode rtuNode = serverModel.getChild(PHYSICAL_DEVICE + logicalDeviceName);
+        ModelNode rtuNode = serverModel.getChild(this.getDeviceName() + logicalDeviceName);
         while (rtuNode != null) {
-            this.logicalDevices.add(new Rtu(PHYSICAL_DEVICE, logicalDeviceName, serverModel));
+            this.logicalDevices.add(new Rtu(this.getDeviceName(), logicalDeviceName, serverModel));
             i += 1;
             logicalDeviceName = rtuPrefix + i;
-            rtuNode = serverModel.getChild(PHYSICAL_DEVICE + logicalDeviceName);
+            rtuNode = serverModel.getChild(this.getDeviceName() + logicalDeviceName);
         }
     }
 
@@ -92,12 +100,12 @@ public class RtuSimulator implements ServerEventListener {
         final String pvPrefix = "PV";
         int i = 1;
         String logicalDeviceName = pvPrefix + i;
-        ModelNode pvNode = serverModel.getChild(PHYSICAL_DEVICE + logicalDeviceName);
+        ModelNode pvNode = serverModel.getChild(this.getDeviceName() + logicalDeviceName);
         while (pvNode != null) {
-            this.logicalDevices.add(new Pv(PHYSICAL_DEVICE, logicalDeviceName, serverModel));
+            this.logicalDevices.add(new Pv(this.getDeviceName(), logicalDeviceName, serverModel));
             i += 1;
             logicalDeviceName = pvPrefix + i;
-            pvNode = serverModel.getChild(PHYSICAL_DEVICE + logicalDeviceName);
+            pvNode = serverModel.getChild(this.getDeviceName() + logicalDeviceName);
         }
     }
 
@@ -105,12 +113,12 @@ public class RtuSimulator implements ServerEventListener {
         final String batteryPrefix = "BATTERY";
         int i = 1;
         String logicalDeviceName = batteryPrefix + i;
-        ModelNode batteryNode = serverModel.getChild(PHYSICAL_DEVICE + logicalDeviceName);
+        ModelNode batteryNode = serverModel.getChild(this.getDeviceName() + logicalDeviceName);
         while (batteryNode != null) {
-            this.logicalDevices.add(new Battery(PHYSICAL_DEVICE, logicalDeviceName, serverModel));
+            this.logicalDevices.add(new Battery(this.getDeviceName(), logicalDeviceName, serverModel));
             i += 1;
             logicalDeviceName = batteryPrefix + i;
-            batteryNode = serverModel.getChild(PHYSICAL_DEVICE + logicalDeviceName);
+            batteryNode = serverModel.getChild(this.getDeviceName() + logicalDeviceName);
         }
     }
 
@@ -118,12 +126,12 @@ public class RtuSimulator implements ServerEventListener {
         final String enginePrefix = "ENGINE";
         int i = 1;
         String logicalDeviceName = enginePrefix + i;
-        ModelNode engineNode = serverModel.getChild(PHYSICAL_DEVICE + logicalDeviceName);
+        ModelNode engineNode = serverModel.getChild(this.getDeviceName() + logicalDeviceName);
         while (engineNode != null) {
-            this.logicalDevices.add(new Engine(PHYSICAL_DEVICE, logicalDeviceName, serverModel));
+            this.logicalDevices.add(new Engine(this.getDeviceName(), logicalDeviceName, serverModel));
             i += 1;
             logicalDeviceName = enginePrefix + i;
-            engineNode = serverModel.getChild(PHYSICAL_DEVICE + logicalDeviceName);
+            engineNode = serverModel.getChild(this.getDeviceName() + logicalDeviceName);
         }
     }
 
@@ -131,12 +139,12 @@ public class RtuSimulator implements ServerEventListener {
         final String loadPrefix = "LOAD";
         int i = 1;
         String logicalDeviceName = loadPrefix + i;
-        ModelNode loadNode = serverModel.getChild(PHYSICAL_DEVICE + logicalDeviceName);
+        ModelNode loadNode = serverModel.getChild(this.getDeviceName() + logicalDeviceName);
         while (loadNode != null) {
-            this.logicalDevices.add(new Load(PHYSICAL_DEVICE, logicalDeviceName, serverModel));
+            this.logicalDevices.add(new Load(this.getDeviceName(), logicalDeviceName, serverModel));
             i += 1;
             logicalDeviceName = loadPrefix + i;
-            loadNode = serverModel.getChild(PHYSICAL_DEVICE + logicalDeviceName);
+            loadNode = serverModel.getChild(this.getDeviceName() + logicalDeviceName);
         }
     }
 
@@ -144,12 +152,12 @@ public class RtuSimulator implements ServerEventListener {
         final String heatBufferPrefix = "HEAT_BUFFER";
         int i = 1;
         String logicalDeviceName = heatBufferPrefix + i;
-        ModelNode heatBufferNode = serverModel.getChild(PHYSICAL_DEVICE + logicalDeviceName);
+        ModelNode heatBufferNode = serverModel.getChild(this.getDeviceName() + logicalDeviceName);
         while (heatBufferNode != null) {
-            this.logicalDevices.add(new HeatBuffer(PHYSICAL_DEVICE, logicalDeviceName, serverModel));
+            this.logicalDevices.add(new HeatBuffer(this.getDeviceName(), logicalDeviceName, serverModel));
             i += 1;
             logicalDeviceName = heatBufferPrefix + i;
-            heatBufferNode = serverModel.getChild(PHYSICAL_DEVICE + logicalDeviceName);
+            heatBufferNode = serverModel.getChild(this.getDeviceName() + logicalDeviceName);
         }
     }
 
@@ -157,12 +165,12 @@ public class RtuSimulator implements ServerEventListener {
         final String chpPrefix = "CHP";
         int i = 1;
         String logicalDeviceName = chpPrefix + i;
-        ModelNode chpNode = serverModel.getChild(PHYSICAL_DEVICE + logicalDeviceName);
+        ModelNode chpNode = serverModel.getChild(this.getDeviceName() + logicalDeviceName);
         while (chpNode != null) {
-            this.logicalDevices.add(new Chp(PHYSICAL_DEVICE, logicalDeviceName, serverModel));
+            this.logicalDevices.add(new Chp(this.getDeviceName(), logicalDeviceName, serverModel));
             i += 1;
             logicalDeviceName = chpPrefix + i;
-            chpNode = serverModel.getChild(PHYSICAL_DEVICE + logicalDeviceName);
+            chpNode = serverModel.getChild(this.getDeviceName() + logicalDeviceName);
         }
     }
 
@@ -170,12 +178,38 @@ public class RtuSimulator implements ServerEventListener {
         final String gasFurnacePrefix = "GAS_FURNACE";
         int i = 1;
         String logicalDeviceName = gasFurnacePrefix + i;
-        ModelNode gasFurnaceNode = serverModel.getChild(PHYSICAL_DEVICE + logicalDeviceName);
+        ModelNode gasFurnaceNode = serverModel.getChild(this.getDeviceName() + logicalDeviceName);
         while (gasFurnaceNode != null) {
-            this.logicalDevices.add(new GasFurnace(PHYSICAL_DEVICE, logicalDeviceName, serverModel));
+            this.logicalDevices.add(new GasFurnace(this.getDeviceName(), logicalDeviceName, serverModel));
             i += 1;
             logicalDeviceName = gasFurnacePrefix + i;
-            gasFurnaceNode = serverModel.getChild(PHYSICAL_DEVICE + logicalDeviceName);
+            gasFurnaceNode = serverModel.getChild(this.getDeviceName() + logicalDeviceName);
+        }
+    }
+
+    private void addHeatPumpDevices(final ServerModel serverModel) {
+        final String heatPumpPrefix = "HEAT_PUMP";
+        int i = 1;
+        String logicalDeviceName = heatPumpPrefix + i;
+        ModelNode heatPumpNode = serverModel.getChild(this.getDeviceName() + logicalDeviceName);
+        while (heatPumpNode != null) {
+            this.logicalDevices.add(new HeatPump(this.getDeviceName(), logicalDeviceName, serverModel));
+            i += 1;
+            logicalDeviceName = heatPumpPrefix + i;
+            heatPumpNode = serverModel.getChild(this.getDeviceName() + logicalDeviceName);
+        }
+    }
+
+    private void addBoilerDevices(final ServerModel serverModel) {
+        final String boilerPrefix = "BOILER";
+        int i = 1;
+        String logicalDeviceName = boilerPrefix + i;
+        ModelNode boilerNode = serverModel.getChild(this.getDeviceName() + logicalDeviceName);
+        while (boilerNode != null) {
+            this.logicalDevices.add(new Boiler(this.getDeviceName(), logicalDeviceName, serverModel));
+            i += 1;
+            logicalDeviceName = boilerPrefix + i;
+            boilerNode = serverModel.getChild(this.getDeviceName() + logicalDeviceName);
         }
     }
 
@@ -272,7 +306,7 @@ public class RtuSimulator implements ServerEventListener {
             }
         }
         throw new IllegalArgumentException("A logical device with name \"" + logicalDeviceName
-                + "\" is not registered with simulated RTU device \"" + PHYSICAL_DEVICE + "\".");
+                + "\" is not registered with simulated RTU device \"" + this.getDeviceName() + "\".");
     }
 
     @Scheduled(fixedDelay = 60000)
@@ -290,6 +324,14 @@ public class RtuSimulator implements ServerEventListener {
                 this.server.setValues(values);
                 LOGGER.info("Generated values");
             }
+        }
+    }
+
+    private String getDeviceName() {
+        if ((this.serverName != null) && !this.serverName.isEmpty()) {
+            return this.serverName;
+        } else {
+            return PHYSICAL_DEVICE;
         }
     }
 }

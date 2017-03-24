@@ -23,16 +23,19 @@ public class RtuSimulatorConfig {
     private static final Logger LOGGER = LoggerFactory.getLogger(RtuSimulatorConfig.class);
 
     @Bean
-    public RtuSimulator rtuSimulator(@Value("${rtu.icd}") final String icdFilename,
-            @Value("${rtu.port}") final Integer port) throws IOException {
+    public RtuSimulator rtuSimulator(@Value("${rtu.icd:Pampus_v0.4.5.icd}") final String icdFilename,
+            @Value("${rtu.port:60102}") final Integer port,
+            @Value("${rtu.serverName:WAGO61850Server}") final String serverName) throws IOException {
         final InputStream icdFile = ClassLoader.getSystemResourceAsStream(icdFilename);
 
         try {
-            final RtuSimulator rtuSimulator = new RtuSimulator(port, icdFile);
+            final RtuSimulator rtuSimulator = new RtuSimulator(port, icdFile, serverName);
             rtuSimulator.start();
             return rtuSimulator;
         } catch (final SclParseException e) {
-            LOGGER.warn("Error parsing SCL/ICD file {}", e.getMessage());
+            LOGGER.warn("Error parsing SCL/ICD file {}", e);
+        } finally {
+            icdFile.close();
         }
 
         return null;

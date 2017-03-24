@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alliander.osgp.adapter.protocol.iec61850.application.services.DeviceRegistrationService;
+import com.alliander.osgp.adapter.protocol.iec61850.domain.repositories.Iec61850DeviceRepository;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.messaging.OsgpRequestMessageSender;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.IED;
 import com.alliander.osgp.core.db.api.iec61850.entities.Ssld;
@@ -40,6 +41,9 @@ public class Iec61850ChannelHandlerServer extends Iec61850ChannelHandler {
 
     @Autowired
     private String testDeviceIp;
+
+    @Autowired
+    private Iec61850DeviceRepository iec61850DeviceRepository;
 
     public Iec61850ChannelHandlerServer() {
         super(LOGGER);
@@ -84,7 +88,7 @@ public class Iec61850ChannelHandlerServer extends Iec61850ChannelHandler {
 
         try {
             this.deviceRegistrationService.disableRegistration(deviceIdentification, InetAddress.getByName(ipAddress),
-                    ied);
+                    ied, ied.getDescription());
             LOGGER.info("Disabled registration for device: {}, at IP address: {}", deviceIdentification, ipAddress);
         } catch (final Exception e) {
             LOGGER.error("Failed to disable registration for device: {}, at IP address: {}", deviceIdentification,
