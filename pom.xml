@@ -88,5 +88,8 @@
     <module>osgp-iec61850</module>
     <module>osgp-core-db-api-iec61850</module>
     <module>osgp-protocol-adapter-iec61850</module>
+
+    <!-- Protocol simulator -->
+    <module>protocol-simulator-iec61850</module>
   </modules>
 </project>
