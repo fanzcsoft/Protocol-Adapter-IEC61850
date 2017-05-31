@@ -32,11 +32,11 @@ public class Iec61850UpdateSslCertificateCommand {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Iec61850UpdateSslCertificateCommand.class);
 
-    private static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyy-mm-dd hh:mm:ss");
+    private static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 
     public void pushSslCertificateToDevice(final Iec61850Client iec61850Client,
             final DeviceConnection deviceConnection, final CertificationDto certification)
-                    throws ProtocolAdapterException {
+            throws ProtocolAdapterException {
         final Function<Void> function = new Function<Void>() {
 
             @Override

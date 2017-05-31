@@ -35,7 +35,7 @@ public class Iec61850UpdateFirmwareCommand {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Iec61850UpdateFirmwareCommand.class);
 
-    private static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyy-mm-dd hh:mm:ss");
+    private static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 
     public void pushFirmwareToDevice(final Iec61850Client iec61850Client, final DeviceConnection deviceConnection,
             final String fullUrl, final FirmwareModuleData firmwareModuleData) throws ProtocolAdapterException {
