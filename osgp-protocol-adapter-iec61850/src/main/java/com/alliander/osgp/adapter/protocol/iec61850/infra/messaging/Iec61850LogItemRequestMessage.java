@@ -51,8 +51,7 @@ public class Iec61850LogItemRequestMessage {
         this.payloadMessageSerializedSize = payloadMessageSerializedSize;
 
         // Truncate the log-items to max length.
-        this.encodedMessage = null;// StringUtils.substring(bytesToCArray(message.getBytes()),
-        // 0, MAX_MESSAGE_LENGTH);
+        this.encodedMessage = null;
         this.decodedMessage = StringUtils.substring(message.toString(), 0, MAX_MESSAGE_LENGTH);
     }
 
