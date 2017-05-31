@@ -74,7 +74,7 @@ public class Iec61850SetLightCommand {
                     operation.write();
 
                     deviceMessageLog.addVariable(logicalNode, DataAttribute.POSITION, Fc.CO,
-                            SubDataAttribute.OPERATION, SubDataAttribute.CONTROL_VALUE, on + "");
+                            SubDataAttribute.OPERATION, SubDataAttribute.CONTROL_VALUE, Boolean.toString(on));
 
                     DeviceMessageLoggingService.logMessage(deviceMessageLog,
                             deviceConnection.getDeviceIdentification(),

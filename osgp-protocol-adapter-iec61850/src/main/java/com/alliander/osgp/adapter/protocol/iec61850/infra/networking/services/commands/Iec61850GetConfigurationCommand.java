@@ -51,7 +51,7 @@ public class Iec61850GetConfigurationCommand {
 
     public ConfigurationDto getConfigurationFromDevice(final Iec61850Client iec61850Client,
             final DeviceConnection deviceConnection, final Ssld ssld, final Iec61850Mapper mapper)
-                    throws ProtocolAdapterException {
+            throws ProtocolAdapterException {
         final Function<ConfigurationDto> function = new Function<ConfigurationDto>() {
 
             @Override
@@ -107,10 +107,10 @@ public class Iec61850GetConfigurationCommand {
 
                 deviceMessageLog.addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION,
                         DataAttribute.SOFTWARE_CONFIGURATION, Fc.CF, SubDataAttribute.ASTRONOMIC_SUNRISE_OFFSET,
-                        astroGateSunRiseOffset + "");
+                        Short.toString(astroGateSunRiseOffset));
                 deviceMessageLog.addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION,
                         DataAttribute.SOFTWARE_CONFIGURATION, Fc.CF, SubDataAttribute.ASTRONOMIC_SUNSET_OFFSET,
-                        astroGateSunSetOffset + "");
+                        Short.toString(astroGateSunSetOffset));
 
                 final ConfigurationDto configuration = new ConfigurationDto(lightType, daliConfiguration,
                         relayConfiguration, shortTermHistoryIntervalMinutes, preferredLinkType, meterType,
@@ -132,7 +132,7 @@ public class Iec61850GetConfigurationCommand {
                 deviceMessageLog.addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.REGISTRATION, Fc.CF,
                         SubDataAttribute.SERVER_ADDRESS, serverAddress);
                 deviceMessageLog.addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.REGISTRATION, Fc.CF,
-                        SubDataAttribute.SERVER_PORT, serverPort + "");
+                        SubDataAttribute.SERVER_PORT, Integer.toString(serverPort));
 
                 // getting the IP configuration values
                 LOGGER.info("Reading the IP configuration values");
@@ -159,7 +159,7 @@ public class Iec61850GetConfigurationCommand {
                 deviceMessageLog.addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.IP_CONFIGURATION,
                         Fc.CF, SubDataAttribute.GATEWAY, deviceFixedIpGateway);
                 deviceMessageLog.addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.IP_CONFIGURATION,
-                        Fc.CF, SubDataAttribute.ENABLE_DHCP, isDhcpEnabled + "");
+                        Fc.CF, SubDataAttribute.ENABLE_DHCP, Boolean.toString(isDhcpEnabled));
 
                 // setting the software configuration values
                 configuration.setAstroGateSunRiseOffset((int) astroGateSunRiseOffset);
@@ -186,9 +186,10 @@ public class Iec61850GetConfigurationCommand {
                         winterTimeDetails).getDateTimeForNextTransition().toDateTime(DateTimeZone.UTC));
 
                 deviceMessageLog.addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.CLOCK, Fc.CF,
-                        SubDataAttribute.TIME_SYNC_FREQUENCY, timeSyncFrequency + "");
+                        SubDataAttribute.TIME_SYNC_FREQUENCY, Integer.toString(timeSyncFrequency));
                 deviceMessageLog.addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.CLOCK, Fc.CF,
-                        SubDataAttribute.AUTOMATIC_SUMMER_TIMING_ENABLED, automaticSummerTimingEnabled + "");
+                        SubDataAttribute.AUTOMATIC_SUMMER_TIMING_ENABLED,
+                        Boolean.toString(automaticSummerTimingEnabled));
                 deviceMessageLog.addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.CLOCK, Fc.CF,
                         SubDataAttribute.SUMMER_TIME_DETAILS, summerTimeDetails);
                 deviceMessageLog.addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.CLOCK, Fc.CF,
@@ -228,7 +229,7 @@ public class Iec61850GetConfigurationCommand {
 
     private void checkRelayType(final Iec61850Client iec61850Client, final DeviceConnection deviceConnection,
             final DeviceOutputSetting deviceOutputSetting, final DeviceMessageLog deviceMessageLog)
-            throws ProtocolAdapterException {
+                    throws ProtocolAdapterException {
         final RelayType registeredRelayType = deviceOutputSetting.getRelayType();
 
         final int expectedSwType;
