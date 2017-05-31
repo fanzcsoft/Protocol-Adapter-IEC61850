@@ -55,7 +55,7 @@ public class Iec61850RebootCommand {
                 oper.write();
 
                 deviceMessageLog.addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.REBOOT_OPERATION,
-                        Fc.ST, SubDataAttribute.OPERATION, SubDataAttribute.CONTROL_VALUE, true + "");
+                        Fc.ST, SubDataAttribute.OPERATION, SubDataAttribute.CONTROL_VALUE, Boolean.toString(true));
 
                 DeviceMessageLoggingService.logMessage(deviceMessageLog, deviceConnection.getDeviceIdentification(),
                         deviceConnection.getOrganisationIdentification(), false);

@@ -74,7 +74,8 @@ public class Iec61850SetConfigurationCommand {
                         operation.write();
 
                         deviceMessageLog.addVariable(logicalNode, DataAttribute.SWITCH_TYPE, Fc.CO,
-                                SubDataAttribute.OPERATION, SubDataAttribute.CONTROL_VALUE, switchTypeValue + "");
+                                SubDataAttribute.OPERATION, SubDataAttribute.CONTROL_VALUE,
+                                Byte.toString(switchTypeValue));
                     }
                 }
 
@@ -101,8 +102,8 @@ public class Iec61850SetConfigurationCommand {
                         registration.writeInteger(SubDataAttribute.SERVER_PORT, configuration.getOsgpPortNumber());
 
                         deviceMessageLog.addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION,
-                                DataAttribute.REGISTRATION, Fc.CF, SubDataAttribute.SERVER_PORT,
-                                configuration.getOsgpPortNumber() + "");
+                                DataAttribute.REGISTRATION, Fc.CF, SubDataAttribute.SERVER_PORT, configuration
+                                        .getOsgpPortNumber().toString());
                     }
                 }
 
@@ -124,8 +125,8 @@ public class Iec61850SetConfigurationCommand {
 
                         deviceMessageLog.addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION,
                                 DataAttribute.SOFTWARE_CONFIGURATION, Fc.CF,
-                                SubDataAttribute.ASTRONOMIC_SUNRISE_OFFSET, configuration.getAstroGateSunRiseOffset()
-                                .shortValue() + "");
+                                SubDataAttribute.ASTRONOMIC_SUNRISE_OFFSET,
+                                Short.toString(configuration.getAstroGateSunRiseOffset().shortValue()));
                     }
 
                     if (configuration.getAstroGateSunSetOffset() != null) {
@@ -135,7 +136,7 @@ public class Iec61850SetConfigurationCommand {
 
                         deviceMessageLog.addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION,
                                 DataAttribute.SOFTWARE_CONFIGURATION, Fc.CF, SubDataAttribute.ASTRONOMIC_SUNSET_OFFSET,
-                                configuration.getAstroGateSunSetOffset().shortValue() + "");
+                                Short.toString(configuration.getAstroGateSunSetOffset().shortValue()));
                     }
 
                     if (configuration.getLightType() != null) {
@@ -145,7 +146,7 @@ public class Iec61850SetConfigurationCommand {
 
                         deviceMessageLog.addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION,
                                 DataAttribute.SOFTWARE_CONFIGURATION, Fc.CF, SubDataAttribute.LIGHT_TYPE, configuration
-                                .getLightType().name());
+                                        .getLightType().name());
                     }
                 }
 
@@ -166,7 +167,8 @@ public class Iec61850SetConfigurationCommand {
                                 configuration.getTimeSyncFrequency());
 
                         deviceMessageLog.addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.CLOCK,
-                                Fc.CF, SubDataAttribute.TIME_SYNC_FREQUENCY, configuration.getTimeSyncFrequency() + "");
+                                Fc.CF, SubDataAttribute.TIME_SYNC_FREQUENCY,
+                                Integer.toString(configuration.getTimeSyncFrequency()));
                     }
 
                     if (configuration.isAutomaticSummerTimingEnabled() != null) {
@@ -177,7 +179,7 @@ public class Iec61850SetConfigurationCommand {
 
                         deviceMessageLog.addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.CLOCK,
                                 Fc.CF, SubDataAttribute.AUTOMATIC_SUMMER_TIMING_ENABLED,
-                                configuration.isAutomaticSummerTimingEnabled() + "");
+                                Boolean.toString(configuration.isAutomaticSummerTimingEnabled()));
                     }
 
                     /*
@@ -232,7 +234,7 @@ public class Iec61850SetConfigurationCommand {
 
                         deviceMessageLog.addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION,
                                 DataAttribute.IP_CONFIGURATION, Fc.CF, SubDataAttribute.ENABLE_DHCP,
-                                configuration.isDhcpEnabled() + "");
+                                Boolean.toString(configuration.isDhcpEnabled()));
                     }
 
                     // All values in DeviceFixedIpDto are non-nullable, so no
@@ -250,15 +252,15 @@ public class Iec61850SetConfigurationCommand {
                     ipConfiguration.writeString(SubDataAttribute.NETMASK, deviceFixedIp.getNetMask());
 
                     deviceMessageLog
-                    .addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.IP_CONFIGURATION, Fc.CF,
-                                    SubDataAttribute.NETMASK, deviceFixedIp.getNetMask());
+                            .addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.IP_CONFIGURATION, Fc.CF,
+                            SubDataAttribute.NETMASK, deviceFixedIp.getNetMask());
 
                     LOGGER.info("Updating deviceFixIpGateway to {}", configuration.getDeviceFixedIp().getGateWay());
                     ipConfiguration.writeString(SubDataAttribute.GATEWAY, deviceFixedIp.getGateWay());
 
                     deviceMessageLog
-                    .addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.IP_CONFIGURATION, Fc.CF,
-                                    SubDataAttribute.GATEWAY, deviceFixedIp.getGateWay());
+                            .addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.IP_CONFIGURATION, Fc.CF,
+                            SubDataAttribute.GATEWAY, deviceFixedIp.getGateWay());
                 }
 
                 // Checking to see if all TLS values are null, so that we

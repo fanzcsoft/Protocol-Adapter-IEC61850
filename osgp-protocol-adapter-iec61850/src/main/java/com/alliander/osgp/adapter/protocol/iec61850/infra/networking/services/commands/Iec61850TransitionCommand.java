@@ -65,7 +65,8 @@ public class Iec61850TransitionCommand {
                 oper.write();
 
                 deviceMessageLog.addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.SENSOR, Fc.CO,
-                        SubDataAttribute.OPERATION, SubDataAttribute.CONTROL_VALUE, controlValueForTransition + "");
+                        SubDataAttribute.OPERATION, SubDataAttribute.CONTROL_VALUE,
+                        Boolean.toString(controlValueForTransition));
 
                 DeviceMessageLoggingService.logMessage(deviceMessageLog, deviceConnection.getDeviceIdentification(),
                         deviceConnection.getOrganisationIdentification(), false);

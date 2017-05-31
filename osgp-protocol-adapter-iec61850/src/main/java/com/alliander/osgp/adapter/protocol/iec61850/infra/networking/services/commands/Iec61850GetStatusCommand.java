@@ -63,7 +63,7 @@ public class Iec61850GetStatusCommand {
                     LOGGER.info(String.format("Got status of relay %d => %s", deviceOutputSetting.getInternalId(),
                             on ? "on" : "off"));
 
-                    deviceMessageLog.addVariable(logicalNode, DataAttribute.POSITION, Fc.ST, on + "");
+                    deviceMessageLog.addVariable(logicalNode, DataAttribute.POSITION, Fc.ST, Boolean.toString(on));
                 }
 
                 final NodeContainer eventBuffer = deviceConnection.getFcModelNode(LogicalDevice.LIGHTING,

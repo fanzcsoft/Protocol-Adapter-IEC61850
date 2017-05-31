@@ -72,7 +72,7 @@ public class Iec61850PowerUsageHistoryCommand {
                  * element for the device, where data for the different relays
                  * is combined in the SsldData.relayData some sort of merge
                  * needs to be performed.
-                 *
+                 * 
                  * This can either be a rework of the list currently returned,
                  * or it can be a list constructed based on an altered return
                  * type from getPowerUsageHistoryDataFromRelay (for instance a
@@ -90,7 +90,7 @@ public class Iec61850PowerUsageHistoryCommand {
     private List<PowerUsageDataDto> getPowerUsageHistoryDataFromRelay(final Iec61850Client iec61850Client,
             final DeviceConnection deviceConnection, final TimePeriodDto timePeriod,
             final DeviceOutputSetting deviceOutputSetting, final DeviceMessageLog deviceMessageLog)
-            throws NodeReadException {
+                    throws NodeReadException {
         final List<PowerUsageDataDto> powerUsageHistoryDataFromRelay = new ArrayList<>();
 
         final int relayIndex = deviceOutputSetting.getExternalId();
@@ -104,7 +104,7 @@ public class Iec61850PowerUsageHistoryCommand {
         final Short lastIndex = onIntervalBuffer.getUnsignedByte(SubDataAttribute.LAST_INDEX).getValue();
 
         deviceMessageLog.addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.SWITCH_ON_INTERVAL_BUFFER,
-                Fc.ST, SubDataAttribute.LAST_INDEX, lastIndex + "");
+                Fc.ST, SubDataAttribute.LAST_INDEX, lastIndex.toString());
 
         /*
          * Last index is the last index written in the 60-entry buffer. When the

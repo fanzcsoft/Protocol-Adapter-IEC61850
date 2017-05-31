@@ -56,7 +56,7 @@ public class Iec61850SetLightCommand {
                         LOGGER.info("set masterControl.enbOper to true to enable switching of relay {}", index);
 
                         deviceMessageLog.addVariable(logicalNode, DataAttribute.MASTER_CONTROL, Fc.CF,
-                                SubDataAttribute.ENABLE_OPERATION, true + "");
+                                SubDataAttribute.ENABLE_OPERATION, Boolean.toString(true));
                     }
 
                     // Switch the relay using Pos.Oper.ctlVal [CO].
