@@ -25,6 +25,15 @@ import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.Qual
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.SubDataAttribute;
 import com.alliander.osgp.dto.valueobjects.microgrids.MeasurementDto;
 
+/**
+ *
+ * This class is used by both combined load and separated load devices
+ *
+ * Combined: single load device contains multiple mmxu/mmtr nodes (deprecated)
+ *
+ * Separated: multiple load devices with single mmxu/mmtr nodes.
+ *
+ */
 public class Iec61850LoadTotalEnergyCommand implements RtuReadCommand<MeasurementDto> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Iec61850LoadTotalEnergyCommand.class);
@@ -33,7 +42,14 @@ public class Iec61850LoadTotalEnergyCommand implements RtuReadCommand<Measuremen
     private final LogicalNode logicalNode;
     private final int index;
 
+    public Iec61850LoadTotalEnergyCommand() {
+        // Constructor for separated load devices
+        this.logicalNode = LogicalNode.fromString(NODE + 1);
+        this.index = 1;
+    }
+
     public Iec61850LoadTotalEnergyCommand(final int index) {
+        // Constructor for combined load devices
         this.logicalNode = LogicalNode.fromString(NODE + index);
         this.index = index;
     }
