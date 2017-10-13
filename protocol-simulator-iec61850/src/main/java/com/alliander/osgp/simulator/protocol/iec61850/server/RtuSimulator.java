@@ -21,6 +21,7 @@ import javax.annotation.PreDestroy;
 
 import org.openmuc.openiec61850.BasicDataAttribute;
 import org.openmuc.openiec61850.ModelNode;
+import org.openmuc.openiec61850.Rcb;
 import org.openmuc.openiec61850.SclParseException;
 import org.openmuc.openiec61850.ServerEventListener;
 import org.openmuc.openiec61850.ServerModel;
@@ -43,6 +44,7 @@ import com.alliander.osgp.simulator.protocol.iec61850.server.logicaldevices.Load
 import com.alliander.osgp.simulator.protocol.iec61850.server.logicaldevices.LogicalDevice;
 import com.alliander.osgp.simulator.protocol.iec61850.server.logicaldevices.Pv;
 import com.alliander.osgp.simulator.protocol.iec61850.server.logicaldevices.Rtu;
+import com.alliander.osgp.simulator.protocol.iec61850.server.logicaldevices.Wind;
 
 public class RtuSimulator implements ServerEventListener {
 
@@ -88,8 +90,51 @@ public class RtuSimulator implements ServerEventListener {
         this.addLogicalDevices(this.serverModel);
     }
 
-    private void addLogicalDevices(final ServerModel serverModel) {
+    public void ensureReportsDisabled() {
+        for (final Rcb rcb : this.server.getModelCopy().getBrcbs()) {
+            this.ensureReportDisabled(rcb);
+        }
+        for (final Rcb rcb : this.server.getModelCopy().getUrcbs()) {
+            this.ensureReportDisabled(rcb);
+        }
+    }
 
+    public void assertAllReportsEnabled() {
+        for (final Rcb rcb : this.server.getModelCopy().getBrcbs()) {
+            this.assertReportEnabled(rcb);
+        }
+        for (final Rcb rcb : this.server.getModelCopy().getUrcbs()) {
+            this.assertReportEnabled(rcb);
+        }
+    }
+
+    public void assertNoReportsEnabled() {
+        for (final Rcb rcb : this.server.getModelCopy().getBrcbs()) {
+            this.assertReportNotEnabled(rcb);
+        }
+        for (final Rcb rcb : this.server.getModelCopy().getUrcbs()) {
+            this.assertReportNotEnabled(rcb);
+        }
+    }
+
+    private void ensureReportDisabled(final Rcb rcb) {
+        rcb.getRptEna().setValue(false);
+        this.server.setValues(Arrays.asList(rcb.getRptEna()));
+    }
+
+    private void assertReportEnabled(final Rcb rcb) {
+        if (!rcb.getRptEna().getValue()) {
+            throw new AssertionError("Report " + rcb.getReference() + " should be enabled");
+        }
+    }
+
+    private void assertReportNotEnabled(final Rcb rcb) {
+        if (rcb.getRptEna().getValue()) {
+            throw new AssertionError("Report " + rcb.getReference() + " should not be enabled");
+        }
+    }
+
+    private void addLogicalDevices(final ServerModel serverModel) {
         this.addRtuDevices(serverModel);
         this.addPvDevices(serverModel);
         this.addBatteryDevices(serverModel);
@@ -100,6 +145,7 @@ public class RtuSimulator implements ServerEventListener {
         this.addGasFurnaceDevices(serverModel);
         this.addHeatPumpDevices(serverModel);
         this.addBoilerDevices(serverModel);
+        this.addWindDevices(serverModel);
         this.addLightMeasurementDevice(serverModel);
     }
 
@@ -230,6 +276,19 @@ public class RtuSimulator implements ServerEventListener {
             i += 1;
             logicalDeviceName = boilerPrefix + i;
             boilerNode = serverModel.getChild(this.getDeviceName() + logicalDeviceName);
+        }
+    }
+
+    private void addWindDevices(final ServerModel serverModel) {
+        final String windPrefix = "WIND";
+        int i = 1;
+        String logicalDeviceName = windPrefix + i;
+        ModelNode windNode = serverModel.getChild(this.getDeviceName() + logicalDeviceName);
+        while (windNode != null) {
+            this.logicalDevices.add(new Wind(this.getDeviceName(), logicalDeviceName, serverModel));
+            i += 1;
+            logicalDeviceName = windPrefix + i;
+            windNode = serverModel.getChild(this.getDeviceName() + logicalDeviceName);
         }
     }
 
@@ -377,7 +436,11 @@ public class RtuSimulator implements ServerEventListener {
                 final List<BasicDataAttribute> values = new ArrayList<>();
 
                 for (final LogicalDevice ld : this.logicalDevices) {
-                    values.addAll(ld.getAttributesAndSetValues(timestamp));
+                    try {
+                        values.addAll(ld.getAttributesAndSetValues(timestamp));
+                    } catch (final Exception e) {
+                        LOGGER.info("Exception while generating values.", e);
+                    }
                 }
 
                 this.server.setValues(values);

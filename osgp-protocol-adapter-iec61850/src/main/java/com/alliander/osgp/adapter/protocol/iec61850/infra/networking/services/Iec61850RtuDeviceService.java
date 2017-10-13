@@ -40,7 +40,6 @@ import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.Devi
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.Function;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.IED;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.LogicalDevice;
-import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.reporting.Iec61850RtuDeviceReportingService;
 import com.alliander.osgp.dto.valueobjects.microgrids.GetDataRequestDto;
 import com.alliander.osgp.dto.valueobjects.microgrids.GetDataResponseDto;
 import com.alliander.osgp.dto.valueobjects.microgrids.GetDataSystemIdentifierDto;
@@ -75,10 +74,10 @@ public class Iec61850RtuDeviceService implements RtuDeviceService {
             final ClientAssociation clientAssociation = this.iec61850DeviceConnectionService
                     .getClientAssociation(deviceRequest.getDeviceIdentification());
 
-            final GetDataResponseDto getDataResponse = this.handleGetData(
-                    new DeviceConnection(new Iec61850Connection(new Iec61850ClientAssociation(clientAssociation, null),
-                            serverModel), deviceRequest.getDeviceIdentification(), deviceRequest
-                            .getOrganisationIdentification(), serverName), deviceRequest);
+            final GetDataResponseDto getDataResponse = this.handleGetData(new DeviceConnection(
+                    new Iec61850Connection(new Iec61850ClientAssociation(clientAssociation, null), serverModel),
+                    deviceRequest.getDeviceIdentification(), deviceRequest.getOrganisationIdentification(), serverName),
+                    deviceRequest);
 
             final GetDataDeviceResponse deviceResponse = new GetDataDeviceResponse(
                     deviceRequest.getOrganisationIdentification(), deviceRequest.getDeviceIdentification(),
@@ -113,10 +112,10 @@ public class Iec61850RtuDeviceService implements RtuDeviceService {
             final ClientAssociation clientAssociation = this.iec61850DeviceConnectionService
                     .getClientAssociation(deviceRequest.getDeviceIdentification());
 
-            this.handleSetData(
-                    new DeviceConnection(new Iec61850Connection(new Iec61850ClientAssociation(clientAssociation, null),
-                            serverModel), deviceRequest.getDeviceIdentification(), deviceRequest
-                            .getOrganisationIdentification(), serverName), deviceRequest);
+            this.handleSetData(new DeviceConnection(
+                    new Iec61850Connection(new Iec61850ClientAssociation(clientAssociation, null), serverModel),
+                    deviceRequest.getDeviceIdentification(), deviceRequest.getOrganisationIdentification(), serverName),
+                    deviceRequest);
 
             final EmptyDeviceResponse deviceResponse = new EmptyDeviceResponse(
                     deviceRequest.getOrganisationIdentification(), deviceRequest.getDeviceIdentification(),
@@ -159,19 +158,15 @@ public class Iec61850RtuDeviceService implements RtuDeviceService {
     // PRIVATE HELPER METHODS =
     // ========================
 
-    private GetDataResponseDto handleGetData(final DeviceConnection connection, final GetDataDeviceRequest deviceRequest)
-            throws ProtocolAdapterException {
+    private GetDataResponseDto handleGetData(final DeviceConnection connection,
+            final GetDataDeviceRequest deviceRequest) throws ProtocolAdapterException {
 
         final GetDataRequestDto requestedData = deviceRequest.getDataRequest();
-        final String serverName = this.getServerName(deviceRequest);
 
         final Function<GetDataResponseDto> function = new Function<GetDataResponseDto>() {
 
             @Override
             public GetDataResponseDto apply(final DeviceMessageLog deviceMessageLog) throws Exception {
-                final Iec61850RtuDeviceReportingService reportingService = new Iec61850RtuDeviceReportingService(
-                        serverName);
-                reportingService.enableReportingOnDevice(connection, deviceRequest.getDeviceIdentification());
 
                 final List<GetDataSystemIdentifierDto> identifiers = new ArrayList<>();
                 for (final SystemFilterDto systemFilter : requestedData.getSystemFilters()) {
@@ -193,15 +188,10 @@ public class Iec61850RtuDeviceService implements RtuDeviceService {
             throws ProtocolAdapterException {
 
         final SetDataRequestDto setDataRequest = deviceRequest.getSetDataRequest();
-        final String serverName = this.getServerName(deviceRequest);
 
         final Function<Void> function = new Function<Void>() {
             @Override
             public Void apply(final DeviceMessageLog deviceMessageLog) throws Exception {
-
-                final Iec61850RtuDeviceReportingService reportingService = new Iec61850RtuDeviceReportingService(
-                        serverName);
-                reportingService.enableReportingOnDevice(connection, deviceRequest.getDeviceIdentification());
 
                 for (final SetDataSystemIdentifierDto identifier : setDataRequest.getSetDataSystemIdentifiers()) {
 
@@ -219,8 +209,8 @@ public class Iec61850RtuDeviceService implements RtuDeviceService {
     }
 
     private String getServerName(final DeviceRequest deviceRequest) {
-        final Iec61850Device iec61850Device = this.iec61850DeviceRepository.findByDeviceIdentification(deviceRequest
-                .getDeviceIdentification());
+        final Iec61850Device iec61850Device = this.iec61850DeviceRepository
+                .findByDeviceIdentification(deviceRequest.getDeviceIdentification());
         if (iec61850Device != null && iec61850Device.getServerName() != null) {
             return iec61850Device.getServerName();
         } else {

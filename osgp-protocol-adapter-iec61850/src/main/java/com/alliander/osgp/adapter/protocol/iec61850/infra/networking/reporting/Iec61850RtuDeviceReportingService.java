@@ -7,288 +7,145 @@
  */
 package com.alliander.osgp.adapter.protocol.iec61850.infra.networking.reporting;
 
-import javax.validation.constraints.NotNull;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
 
-import org.openmuc.openiec61850.Fc;
-import org.openmuc.openiec61850.ModelNode;
+import org.openmuc.openiec61850.ClientAssociation;
+import org.openmuc.openiec61850.Rcb;
 import org.openmuc.openiec61850.ServerModel;
+import org.openmuc.openiec61850.ServiceError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+import com.alliander.osgp.adapter.protocol.iec61850.domain.entities.Iec61850Device;
+import com.alliander.osgp.adapter.protocol.iec61850.domain.entities.Iec61850DeviceReportGroup;
+import com.alliander.osgp.adapter.protocol.iec61850.domain.entities.Iec61850Report;
+import com.alliander.osgp.adapter.protocol.iec61850.domain.entities.Iec61850ReportGroup;
+import com.alliander.osgp.adapter.protocol.iec61850.domain.repositories.Iec61850DeviceReportGroupRepository;
+import com.alliander.osgp.adapter.protocol.iec61850.domain.repositories.Iec61850DeviceRepository;
 import com.alliander.osgp.adapter.protocol.iec61850.exceptions.NodeWriteException;
-import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.DataAttribute;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.DeviceConnection;
-import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.LogicalDevice;
-import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.LogicalNode;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.NodeContainer;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.SubDataAttribute;
 
+@Service
 public class Iec61850RtuDeviceReportingService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Iec61850RtuDeviceReportingService.class);
 
-    private final String serverName;
+    @Autowired
+    private Iec61850DeviceRepository iec61850DeviceRepository;
 
-    public Iec61850RtuDeviceReportingService(@NotNull final String serverName) {
-        super();
-        if (serverName == null) {
-            throw new NullPointerException("serverName may not be null");
-        }
-        this.serverName = serverName;
-    }
+    @Autowired
+    private Iec61850DeviceReportGroupRepository iec61850DeviceReportRepository;
 
-    public void enableReportingOnDevice(final DeviceConnection connection, final String deviceIdentification) {
-        this.enableRtuReportingOnDevice(connection, deviceIdentification);
-        this.enablePvReportingOnDevice(connection, deviceIdentification);
-        this.enableBatteryReportingOnDevice(connection, deviceIdentification);
-        this.enableEngineReportingOnDevice(connection, deviceIdentification);
-        this.enableLoadReportingOnDevice(connection, deviceIdentification);
-        this.enableChpReportingOnDevice(connection, deviceIdentification);
-        this.enableHeatBufferReportingOnDevice(connection, deviceIdentification);
-        this.enableGasFurnaceReportingOnDevice(connection, deviceIdentification);
-        this.enableHeatPumpReportingOnDevice(connection, deviceIdentification);
-        this.enableBoilerReportingOnDevice(connection, deviceIdentification);
-    }
-
-    private void enableRtuReportingOnDevice(final DeviceConnection connection, final String deviceIdentification) {
-        final ServerModel serverModel = connection.getConnection().getServerModel();
-        final String rtuPrefix = LogicalDevice.RTU.getDescription();
-        int i = 1;
-        String logicalDeviceName = rtuPrefix + i;
-        ModelNode rtuNode = serverModel.getChild(this.serverName + logicalDeviceName);
-        while (rtuNode != null) {
-            this.enableStatusReportingOnDevice(connection, deviceIdentification, LogicalDevice.RTU, i,
-                    DataAttribute.REPORT_STATUS_ONE);
-            this.enableHeartbeatReportingOnDevice(connection, deviceIdentification, LogicalDevice.RTU, i,
-                    DataAttribute.REPORT_HEARTBEAT_ONE);
-            i += 1;
-            logicalDeviceName = rtuPrefix + i;
-            rtuNode = serverModel.getChild(this.serverName + logicalDeviceName);
-        }
-    }
-
-    private void enablePvReportingOnDevice(final DeviceConnection connection, final String deviceIdentification) {
-
-        final ServerModel serverModel = connection.getConnection().getServerModel();
-        final String pvPrefix = LogicalDevice.PV.getDescription();
-        int i = 1;
-        String logicalDeviceName = pvPrefix + i;
-        ModelNode pvNode = serverModel.getChild(this.serverName + logicalDeviceName);
-        while (pvNode != null) {
-            this.enableStatusReportingOnDevice(connection, deviceIdentification, LogicalDevice.PV, i,
-                    DataAttribute.REPORT_STATUS_ONE);
-            this.enableMeasurementReportingOnDevice(connection, deviceIdentification, LogicalDevice.PV, i,
-                    DataAttribute.REPORT_MEASUREMENTS_ONE);
-            i += 1;
-            logicalDeviceName = pvPrefix + i;
-            pvNode = serverModel.getChild(this.serverName + logicalDeviceName);
-        }
-    }
-
-    private void enableBatteryReportingOnDevice(final DeviceConnection connection, final String deviceIdentification) {
-
-        final ServerModel serverModel = connection.getConnection().getServerModel();
-        final String batteryPrefix = LogicalDevice.BATTERY.getDescription();
-        int i = 1;
-        String logicalDeviceName = batteryPrefix + i;
-        ModelNode batteryNode = serverModel.getChild(this.serverName + logicalDeviceName);
-        while (batteryNode != null) {
-            this.enableStatusReportingOnDevice(connection, deviceIdentification, LogicalDevice.BATTERY, i,
-                    DataAttribute.REPORT_STATUS_ONE);
-            this.enableMeasurementReportingOnDevice(connection, deviceIdentification, LogicalDevice.BATTERY, i,
-                    DataAttribute.REPORT_MEASUREMENTS_ONE);
-            i += 1;
-            logicalDeviceName = batteryPrefix + i;
-            batteryNode = serverModel.getChild(this.serverName + logicalDeviceName);
-        }
-    }
-
-    private void enableEngineReportingOnDevice(final DeviceConnection connection, final String deviceIdentification) {
-
-        final ServerModel serverModel = connection.getConnection().getServerModel();
-        final String enginePrefix = LogicalDevice.ENGINE.getDescription();
-        int i = 1;
-        String logicalDeviceName = enginePrefix + i;
-        ModelNode engineNode = serverModel.getChild(this.serverName + logicalDeviceName);
-        while (engineNode != null) {
-            this.enableStatusReportingOnDevice(connection, deviceIdentification, LogicalDevice.ENGINE, i,
-                    DataAttribute.REPORT_STATUS_ONE);
-            this.enableMeasurementReportingOnDevice(connection, deviceIdentification, LogicalDevice.ENGINE, i,
-                    DataAttribute.REPORT_MEASUREMENTS_ONE);
-            i += 1;
-            logicalDeviceName = enginePrefix + i;
-            engineNode = serverModel.getChild(this.serverName + logicalDeviceName);
-        }
-    }
-
-    private void enableLoadReportingOnDevice(final DeviceConnection connection, final String deviceIdentification) {
-
-        final ServerModel serverModel = connection.getConnection().getServerModel();
-        final String loadPrefix = LogicalDevice.LOAD.getDescription();
-        int i = 1;
-        String logicalDeviceName = loadPrefix + i;
-        ModelNode loadNode = serverModel.getChild(this.serverName + logicalDeviceName);
-        while (loadNode != null) {
-            this.enableStatusReportingOnDevice(connection, deviceIdentification, LogicalDevice.LOAD, i,
-                    DataAttribute.REPORT_STATUS_ONE);
-            this.enableMeasurementReportingOnDevice(connection, deviceIdentification, LogicalDevice.LOAD, i,
-                    DataAttribute.REPORT_MEASUREMENTS_ONE);
-            i += 1;
-            logicalDeviceName = loadPrefix + i;
-            loadNode = serverModel.getChild(this.serverName + logicalDeviceName);
-        }
-    }
-
-    private void enableHeatBufferReportingOnDevice(final DeviceConnection connection,
-            final String deviceIdentification) {
-
-        final ServerModel serverModel = connection.getConnection().getServerModel();
-        final String heatBufferPrefix = LogicalDevice.HEAT_BUFFER.getDescription();
-        int i = 1;
-        String logicalDeviceName = heatBufferPrefix + i;
-        ModelNode heatBufferNode = serverModel.getChild(this.serverName + logicalDeviceName);
-        while (heatBufferNode != null) {
-            this.enableStatusReportingOnDevice(connection, deviceIdentification, LogicalDevice.HEAT_BUFFER, i,
-                    DataAttribute.REPORT_STATUS_ONE);
-            this.enableMeasurementReportingOnDevice(connection, deviceIdentification, LogicalDevice.HEAT_BUFFER, i,
-                    DataAttribute.REPORT_MEASUREMENTS_ONE);
-            i += 1;
-            logicalDeviceName = heatBufferPrefix + i;
-            heatBufferNode = serverModel.getChild(this.serverName + logicalDeviceName);
-        }
-    }
-
-    private void enableChpReportingOnDevice(final DeviceConnection connection, final String deviceIdentification) {
-
-        final ServerModel serverModel = connection.getConnection().getServerModel();
-        final String chpPrefix = LogicalDevice.CHP.getDescription();
-        int i = 1;
-        String logicalDeviceName = chpPrefix + i;
-        ModelNode chpNode = serverModel.getChild(this.serverName + logicalDeviceName);
-        while (chpNode != null) {
-            this.enableStatusReportingOnDevice(connection, deviceIdentification, LogicalDevice.CHP, i,
-                    DataAttribute.REPORT_STATUS_ONE);
-            this.enableMeasurementReportingOnDevice(connection, deviceIdentification, LogicalDevice.CHP, i,
-                    DataAttribute.REPORT_MEASUREMENTS_ONE);
-            i += 1;
-            logicalDeviceName = chpPrefix + i;
-            chpNode = serverModel.getChild(this.serverName + logicalDeviceName);
-        }
-    }
-
-    private void enableGasFurnaceReportingOnDevice(final DeviceConnection connection,
-            final String deviceIdentification) {
-
-        final ServerModel serverModel = connection.getConnection().getServerModel();
-        final String gasFurnacePrefix = LogicalDevice.GAS_FURNACE.getDescription();
-        int i = 1;
-        String logicalDeviceName = gasFurnacePrefix + i;
-        ModelNode gasFurnaceNode = serverModel.getChild(this.serverName + logicalDeviceName);
-        while (gasFurnaceNode != null) {
-            this.enableStatusReportingOnDevice(connection, deviceIdentification, LogicalDevice.GAS_FURNACE, i,
-                    DataAttribute.REPORT_STATUS_ONE);
-            this.enableMeasurementReportingOnDevice(connection, deviceIdentification, LogicalDevice.GAS_FURNACE, i,
-                    DataAttribute.REPORT_MEASUREMENTS_ONE);
-            i += 1;
-            logicalDeviceName = gasFurnacePrefix + i;
-            gasFurnaceNode = serverModel.getChild(this.serverName + logicalDeviceName);
-        }
-    }
-
-    private void enableHeatPumpReportingOnDevice(final DeviceConnection connection, final String deviceIdentification) {
-        final ServerModel serverModel = connection.getConnection().getServerModel();
-        final String heatPumpPrefix = LogicalDevice.HEAT_PUMP.getDescription();
-        int i = 1;
-        String logicalDeviceName = heatPumpPrefix + i;
-        ModelNode heatPumpNode = serverModel.getChild(this.serverName + logicalDeviceName);
-        while (heatPumpNode != null) {
-            this.enableStatusReportingOnDevice(connection, deviceIdentification, LogicalDevice.HEAT_PUMP, i,
-                    DataAttribute.REPORT_STATUS_ONE);
-            this.enableMeasurementReportingOnDevice(connection, deviceIdentification, LogicalDevice.HEAT_PUMP, i,
-                    DataAttribute.REPORT_MEASUREMENTS_ONE);
-            i += 1;
-            logicalDeviceName = heatPumpPrefix + i;
-            heatPumpNode = serverModel.getChild(this.serverName + logicalDeviceName);
-        }
-    }
-
-    private void enableBoilerReportingOnDevice(final DeviceConnection connection, final String deviceIdentification) {
-        final ServerModel serverModel = connection.getConnection().getServerModel();
-        final String boilerPrefix = LogicalDevice.BOILER.getDescription();
-        int i = 1;
-        String logicalDeviceName = boilerPrefix + i;
-        ModelNode boilerNode = serverModel.getChild(this.serverName + logicalDeviceName);
-        while (boilerNode != null) {
-            this.enableStatusReportingOnDevice(connection, deviceIdentification, LogicalDevice.BOILER, i,
-                    DataAttribute.REPORT_STATUS_ONE);
-            this.enableMeasurementReportingOnDevice(connection, deviceIdentification, LogicalDevice.BOILER, i,
-                    DataAttribute.REPORT_MEASUREMENTS_ONE);
-            i += 1;
-            logicalDeviceName = boilerPrefix + i;
-            boilerNode = serverModel.getChild(this.serverName + logicalDeviceName);
-        }
-    }
-
-    private void enableStatusReportingOnDevice(final DeviceConnection deviceConnection,
-            final String deviceIdentification, final LogicalDevice logicalDevice, final int logicalDeviceIndex,
-            final DataAttribute reportName) {
-
-        LOGGER.info("Allowing device {} to send events", deviceIdentification);
-
+    public void enableReportingForDevice(final DeviceConnection connection, final String deviceIdentification,
+            final String serverName) {
         try {
-            final NodeContainer reportingNode = deviceConnection.getFcModelNode(logicalDevice, logicalDeviceIndex,
-                    LogicalNode.LOGICAL_NODE_ZERO, reportName, Fc.BR);
-            reportingNode.writeBoolean(SubDataAttribute.ENABLE_REPORTING, true);
-        } catch (final NullPointerException e) {
-            LOGGER.debug("NullPointerException", e);
-            LOGGER.warn("Skip enable reporting for device {}{}, report {}.", logicalDevice, logicalDeviceIndex,
-                    reportName.getDescription());
-        } catch (final NodeWriteException e) {
-            LOGGER.debug("NodeWriteException", e);
-            LOGGER.error("Enable reporting for device {}{}, report {}, failed with exception: {}", logicalDevice,
-                    logicalDeviceIndex, reportName.getDescription(), e.getMessage());
-        }
+            final Iec61850Device device = this.iec61850DeviceRepository
+                    .findByDeviceIdentification(deviceIdentification);
 
-    }
-
-    private void enableMeasurementReportingOnDevice(final DeviceConnection deviceConnection,
-            final String deviceIdentification, final LogicalDevice logicalDevice, final int logicalDeviceIndex,
-            final DataAttribute reportName) {
-
-        LOGGER.info("Allowing device {} to send events", deviceIdentification);
-
-        try {
-            final NodeContainer reportingNode = deviceConnection.getFcModelNode(logicalDevice, logicalDeviceIndex,
-                    LogicalNode.LOGICAL_NODE_ZERO, reportName, Fc.BR);
-            reportingNode.writeBoolean(SubDataAttribute.ENABLE_REPORTING, true);
-        } catch (final NullPointerException e) {
-            LOGGER.debug("NullPointerException", e);
-            LOGGER.warn("Skip enable reporting for device {}{}, report {}.", logicalDevice, logicalDeviceIndex,
-                    reportName.getDescription());
-        } catch (final NodeWriteException e) {
-            LOGGER.debug("NodeWriteException", e);
-            LOGGER.error("Enable reporting for device {}{}, report {}, failed with exception: {}", logicalDevice,
-                    logicalDeviceIndex, reportName.getDescription(), e.getMessage());
+            if (device.isEnableAllReportsOnConnect()) {
+                this.enableAllReports(connection, deviceIdentification);
+            } else {
+                this.enableSpecificReports(connection, deviceIdentification, serverName);
+            }
+        } catch (final NullPointerException npe) {
+            LOGGER.error(
+                    "Caught null pointer exception, is Iec61850Device.enableAllReportsOnConnect not set in database?",
+                    npe);
+        } catch (final Exception e) {
+            LOGGER.error("Caught unexpected exception", e);
         }
     }
 
-    private void enableHeartbeatReportingOnDevice(final DeviceConnection deviceConnection,
-            final String deviceIdentification, final LogicalDevice logicalDevice, final int logicalDeviceIndex,
-            final DataAttribute reportName) {
+    private void enableAllReports(final DeviceConnection connection, final String deviceIdentification) {
+        final ServerModel serverModel = connection.getConnection().getServerModel();
 
-        LOGGER.info("Allowing device {} to send events", deviceIdentification);
+        this.enableReports(connection, deviceIdentification, serverModel.getBrcbs());
+        this.enableReports(connection, deviceIdentification, serverModel.getUrcbs());
+    }
+
+    private void enableReports(final DeviceConnection connection, final String deviceIdentification,
+            final Collection<? extends Rcb> reports) {
+        for (final Rcb report : reports) {
+            final String reportReference = report.getReference().toString();
+            try {
+                LOGGER.info("Enable reporting for report {} on device {}.", reportReference, deviceIdentification);
+                final NodeContainer node = new NodeContainer(connection, report);
+                node.writeBoolean(SubDataAttribute.ENABLE_REPORTING, true);
+            } catch (final NullPointerException e) {
+                LOGGER.debug("NullPointerException", e);
+                LOGGER.warn("Skip enable reporting for report {} on device {}.", reportReference, deviceIdentification);
+            } catch (final NodeWriteException e) {
+                LOGGER.debug("NodeWriteException", e);
+                LOGGER.error("Enable reporting for report {} on device {}, failed with exception: {}", reportReference,
+                        deviceIdentification, e.getMessage());
+            }
+        }
+    }
+
+    private void enableSpecificReports(final DeviceConnection connection, final String deviceIdentification,
+            final String serverName) {
+
+        final ServerModel serverModel = connection.getConnection().getServerModel();
+        final ClientAssociation clientAssociation = connection.getConnection().getClientAssociation();
+
+        final List<Iec61850DeviceReportGroup> deviceReportGroups = this.iec61850DeviceReportRepository
+                .findByDeviceIdentificationAndEnabled(deviceIdentification, true);
+        for (final Iec61850DeviceReportGroup deviceReportGroup : deviceReportGroups) {
+            this.enableReportGroup(serverName, deviceIdentification, deviceReportGroup.getIec61850ReportGroup(),
+                    serverModel, clientAssociation);
+        }
+    }
+
+    private void enableReportGroup(final String serverName, final String deviceIdentification,
+            final Iec61850ReportGroup reportGroup, final ServerModel serverModel,
+            final ClientAssociation clientAssociation) {
+        for (final Iec61850Report iec61850Report : reportGroup.getIec61850Reports()) {
+            this.enableReport(serverName, deviceIdentification, iec61850Report, serverModel, clientAssociation);
+        }
+    }
+
+    private void enableReport(final String serverName, final String deviceIdentification,
+            final Iec61850Report iec61850Report, final ServerModel serverModel,
+            final ClientAssociation clientAssociation) {
+        int i = 1;
+        Rcb rcb = this.getRcb(serverModel,
+                this.getReportNode(serverName, iec61850Report.getLogicalDevice(), i, iec61850Report.getLogicalNode()));
+        while (rcb != null) {
+            this.enableRcb(deviceIdentification, clientAssociation, rcb);
+            i += 1;
+            rcb = this.getRcb(
+                    serverModel,
+                    this.getReportNode(serverName, iec61850Report.getLogicalDevice(), i,
+                            iec61850Report.getLogicalNode()));
+        }
+    }
+
+    private String getReportNode(final String serverName, final String logicalDevice, final int index,
+            final String reportNode) {
+        return serverName + logicalDevice + index + "/" + reportNode;
+    }
+
+    private Rcb getRcb(final ServerModel serverModel, final String node) {
+        Rcb rcb = serverModel.getBrcb(node);
+        if (rcb == null) {
+            rcb = serverModel.getUrcb(node);
+        }
+        return rcb;
+    }
+
+    private void enableRcb(final String deviceIdentification, final ClientAssociation clientAssociation, final Rcb rcb) {
         try {
-            final NodeContainer reportingNode = deviceConnection.getFcModelNode(logicalDevice, logicalDeviceIndex,
-                    LogicalNode.LOGICAL_NODE_ZERO, reportName, Fc.RP);
-            reportingNode.writeBoolean(SubDataAttribute.ENABLE_REPORTING, true);
-        } catch (final NullPointerException e) {
-            LOGGER.debug("NullPointerException", e);
-            LOGGER.warn("Skip enable reporting for device {}{}, report {}.", logicalDevice, logicalDeviceIndex,
-                    reportName.getDescription());
-        } catch (final NodeWriteException e) {
-            LOGGER.debug("NodeWriteException", e);
-            LOGGER.error("Enable reporting for device {}{}, report {}, failed with exception: {}", logicalDevice,
-                    logicalDeviceIndex, reportName.getDescription(), e.getMessage());
+            clientAssociation.enableReporting(rcb);
+        } catch (final IOException e) {
+            LOGGER.error("IOException: unable to enable reporting for deviceIdentification " + deviceIdentification, e);
+        } catch (final ServiceError e) {
+            LOGGER.error("ServiceError: unable to enable reporting for deviceIdentification " + deviceIdentification, e);
         }
     }
 
