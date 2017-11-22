@@ -51,7 +51,7 @@ public class Iec61850GetConfigurationCommand {
 
     public ConfigurationDto getConfigurationFromDevice(final Iec61850Client iec61850Client,
             final DeviceConnection deviceConnection, final Ssld ssld, final Iec61850Mapper mapper)
-                    throws ProtocolAdapterException {
+            throws ProtocolAdapterException {
         final Function<ConfigurationDto> function = new Function<ConfigurationDto>() {
 
             @Override
@@ -100,10 +100,10 @@ public class Iec61850GetConfigurationCommand {
                         DataAttribute.SOFTWARE_CONFIGURATION, Fc.CF, SubDataAttribute.LIGHT_TYPE, lightTypeValue);
 
                 final LightTypeDto lightType = LightTypeDto.valueOf(lightTypeValue);
-                final short astroGateSunRiseOffset = softwareConfiguration.getShort(
-                        SubDataAttribute.ASTRONOMIC_SUNRISE_OFFSET).getValue();
-                final short astroGateSunSetOffset = softwareConfiguration.getShort(
-                        SubDataAttribute.ASTRONOMIC_SUNSET_OFFSET).getValue();
+                final short astroGateSunRiseOffset = softwareConfiguration
+                        .getShort(SubDataAttribute.ASTRONOMIC_SUNRISE_OFFSET).getValue();
+                final short astroGateSunSetOffset = softwareConfiguration
+                        .getShort(SubDataAttribute.ASTRONOMIC_SUNSET_OFFSET).getValue();
 
                 deviceMessageLog.addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION,
                         DataAttribute.SOFTWARE_CONFIGURATION, Fc.CF, SubDataAttribute.ASTRONOMIC_SUNRISE_OFFSET,
@@ -173,17 +173,26 @@ public class Iec61850GetConfigurationCommand {
                         clock.getFcmodelNode());
 
                 final int timeSyncFrequency = clock.getUnsignedShort(SubDataAttribute.TIME_SYNC_FREQUENCY).getValue();
-                final boolean automaticSummerTimingEnabled = clock.getBoolean(
-                        SubDataAttribute.AUTOMATIC_SUMMER_TIMING_ENABLED).getValue();
+                final boolean automaticSummerTimingEnabled = clock
+                        .getBoolean(SubDataAttribute.AUTOMATIC_SUMMER_TIMING_ENABLED).getValue();
                 final String summerTimeDetails = clock.getString(SubDataAttribute.SUMMER_TIME_DETAILS);
                 final String winterTimeDetails = clock.getString(SubDataAttribute.WINTER_TIME_DETAILS);
 
+                final String ntpHost = clock.getString(SubDataAttribute.NTP_HOST);
+                final boolean ntpEnabled = clock.getBoolean(SubDataAttribute.NTP_ENABLED).getValue();
+                final int ntpSyncInterval = clock.getUnsignedShort(SubDataAttribute.NTP_SYNC_INTERVAL).getValue();
+
                 configuration.setTimeSyncFrequency(timeSyncFrequency);
                 configuration.setAutomaticSummerTimingEnabled(automaticSummerTimingEnabled);
-                configuration.setSummerTimeDetails(new DaylightSavingTimeTransition(TIME_ZONE_AMSTERDAM,
-                        summerTimeDetails).getDateTimeForNextTransition().toDateTime(DateTimeZone.UTC));
-                configuration.setWinterTimeDetails(new DaylightSavingTimeTransition(TIME_ZONE_AMSTERDAM,
-                        winterTimeDetails).getDateTimeForNextTransition().toDateTime(DateTimeZone.UTC));
+                configuration
+                        .setSummerTimeDetails(new DaylightSavingTimeTransition(TIME_ZONE_AMSTERDAM, summerTimeDetails)
+                                .getDateTimeForNextTransition().toDateTime(DateTimeZone.UTC));
+                configuration
+                        .setWinterTimeDetails(new DaylightSavingTimeTransition(TIME_ZONE_AMSTERDAM, winterTimeDetails)
+                                .getDateTimeForNextTransition().toDateTime(DateTimeZone.UTC));
+                configuration.setNtpHost(ntpHost);
+                configuration.setNtpEnabled(ntpEnabled);
+                configuration.setNtpSyncInterval(ntpSyncInterval);
 
                 deviceMessageLog.addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.CLOCK, Fc.CF,
                         SubDataAttribute.TIME_SYNC_FREQUENCY, Integer.toString(timeSyncFrequency));
@@ -194,6 +203,12 @@ public class Iec61850GetConfigurationCommand {
                         SubDataAttribute.SUMMER_TIME_DETAILS, summerTimeDetails);
                 deviceMessageLog.addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.CLOCK, Fc.CF,
                         SubDataAttribute.WINTER_TIME_DETAILS, winterTimeDetails);
+                deviceMessageLog.addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.CLOCK, Fc.CF,
+                        SubDataAttribute.NTP_HOST, ntpHost);
+                deviceMessageLog.addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.CLOCK, Fc.CF,
+                        SubDataAttribute.NTP_ENABLED, String.valueOf(ntpEnabled));
+                deviceMessageLog.addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.CLOCK, Fc.CF,
+                        SubDataAttribute.NTP_SYNC_INTERVAL, String.valueOf(ntpSyncInterval));
 
                 // getting the TLS configuration values
                 // LOGGER.info("Reading the TLS configuration values");
@@ -253,15 +268,11 @@ public class Iec61850GetConfigurationCommand {
         final int switchTypeValue = switchType.getByte(SubDataAttribute.STATE).getValue();
         if (expectedSwType != switchTypeValue) {
             throw new ProtocolAdapterException("DeviceOutputSetting (internal index = "
-                    + deviceOutputSetting.getInternalId()
-                    + ", external index = "
-                    + deviceOutputSetting.getExternalId()
-                    + ") has a RelayType ("
-                    + registeredRelayType
-                    + ") that does not match the SwType on the device: "
+                    + deviceOutputSetting.getInternalId() + ", external index = " + deviceOutputSetting.getExternalId()
+                    + ") has a RelayType (" + registeredRelayType + ") that does not match the SwType on the device: "
                     + (switchTypeValue == SWITCH_TYPE_TARIFF ? "Tariff switch (0)"
-                            : (switchTypeValue == SWITCH_TYPE_LIGHT ? "Light switch (1)" : "Unknown value: "
-                                    + switchTypeValue)));
+                            : (switchTypeValue == SWITCH_TYPE_LIGHT ? "Light switch (1)"
+                                    : "Unknown value: " + switchTypeValue)));
         }
 
         deviceMessageLog.addVariable(logicalNode, DataAttribute.SWITCH_TYPE, Fc.ST, SubDataAttribute.STATE,

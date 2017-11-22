@@ -92,18 +92,16 @@ public class Iec61850SetConfigurationCommand {
                         LOGGER.info("Updating OspgIpAddress to {}", configuration.getOsgpIpAddres());
                         registration.writeString(SubDataAttribute.SERVER_ADDRESS, configuration.getOsgpIpAddres());
 
-                        deviceMessageLog.addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION,
-                                DataAttribute.REGISTRATION, Fc.CF, SubDataAttribute.SERVER_ADDRESS,
-                                configuration.getOsgpIpAddres());
+                        deviceMessageLog.addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.REGISTRATION,
+                                Fc.CF, SubDataAttribute.SERVER_ADDRESS, configuration.getOsgpIpAddres());
                     }
 
                     if (configuration.getOsgpPortNumber() != null) {
                         LOGGER.info("Updating OsgpPortNumber to {}", configuration.getOsgpPortNumber());
                         registration.writeInteger(SubDataAttribute.SERVER_PORT, configuration.getOsgpPortNumber());
 
-                        deviceMessageLog.addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION,
-                                DataAttribute.REGISTRATION, Fc.CF, SubDataAttribute.SERVER_PORT, configuration
-                                        .getOsgpPortNumber().toString());
+                        deviceMessageLog.addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.REGISTRATION,
+                                Fc.CF, SubDataAttribute.SERVER_PORT, configuration.getOsgpPortNumber().toString());
                     }
                 }
 
@@ -120,19 +118,18 @@ public class Iec61850SetConfigurationCommand {
 
                     if (configuration.getAstroGateSunRiseOffset() != null) {
                         LOGGER.info("Updating AstroGateSunRiseOffset to {}", configuration.getAstroGateSunRiseOffset());
-                        softwareConfiguration.writeShort(SubDataAttribute.ASTRONOMIC_SUNRISE_OFFSET, configuration
-                                .getAstroGateSunRiseOffset().shortValue());
+                        softwareConfiguration.writeShort(SubDataAttribute.ASTRONOMIC_SUNRISE_OFFSET,
+                                configuration.getAstroGateSunRiseOffset().shortValue());
 
                         deviceMessageLog.addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION,
-                                DataAttribute.SOFTWARE_CONFIGURATION, Fc.CF,
-                                SubDataAttribute.ASTRONOMIC_SUNRISE_OFFSET,
+                                DataAttribute.SOFTWARE_CONFIGURATION, Fc.CF, SubDataAttribute.ASTRONOMIC_SUNRISE_OFFSET,
                                 Short.toString(configuration.getAstroGateSunRiseOffset().shortValue()));
                     }
 
                     if (configuration.getAstroGateSunSetOffset() != null) {
                         LOGGER.info("Updating AstroGateSunSetOffset to {}", configuration.getAstroGateSunSetOffset());
-                        softwareConfiguration.writeShort(SubDataAttribute.ASTRONOMIC_SUNSET_OFFSET, configuration
-                                .getAstroGateSunSetOffset().shortValue());
+                        softwareConfiguration.writeShort(SubDataAttribute.ASTRONOMIC_SUNSET_OFFSET,
+                                configuration.getAstroGateSunSetOffset().shortValue());
 
                         deviceMessageLog.addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION,
                                 DataAttribute.SOFTWARE_CONFIGURATION, Fc.CF, SubDataAttribute.ASTRONOMIC_SUNSET_OFFSET,
@@ -141,21 +138,24 @@ public class Iec61850SetConfigurationCommand {
 
                     if (configuration.getLightType() != null) {
                         LOGGER.info("Updating LightType to {}", configuration.getLightType());
-                        softwareConfiguration.writeString(SubDataAttribute.LIGHT_TYPE, configuration.getLightType()
-                                .name());
+                        softwareConfiguration.writeString(SubDataAttribute.LIGHT_TYPE,
+                                configuration.getLightType().name());
 
                         deviceMessageLog.addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION,
-                                DataAttribute.SOFTWARE_CONFIGURATION, Fc.CF, SubDataAttribute.LIGHT_TYPE, configuration
-                                        .getLightType().name());
+                                DataAttribute.SOFTWARE_CONFIGURATION, Fc.CF, SubDataAttribute.LIGHT_TYPE,
+                                configuration.getLightType().name());
                     }
                 }
 
                 // Checking to see if all register values are null, so that we
                 // don't read the values for no reason.
-                if (!(configuration.getTimeSyncFrequency() == null
-                        && configuration.isAutomaticSummerTimingEnabled() == null
-                        && configuration.getSummerTimeDetails() == null && configuration.getWinterTimeDetails() == null)) {
+                final boolean clockConfigurationChanged = configuration.getTimeSyncFrequency() != null
+                        || configuration.isAutomaticSummerTimingEnabled() != null
+                        || configuration.getSummerTimeDetails() != null && configuration.getWinterTimeDetails() != null
+                        || configuration.getNtpEnabled() != null && configuration.getNtpHost() != null
+                        || configuration.getNtpSyncInterval() != null;
 
+                if (clockConfigurationChanged) {
                     final NodeContainer clock = deviceConnection.getFcModelNode(LogicalDevice.LIGHTING,
                             LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.CLOCK, Fc.CF);
                     iec61850Client.readNodeDataValues(deviceConnection.getConnection().getClientAssociation(),
@@ -166,8 +166,8 @@ public class Iec61850SetConfigurationCommand {
                         clock.writeUnsignedShort(SubDataAttribute.TIME_SYNC_FREQUENCY,
                                 configuration.getTimeSyncFrequency());
 
-                        deviceMessageLog.addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.CLOCK,
-                                Fc.CF, SubDataAttribute.TIME_SYNC_FREQUENCY,
+                        deviceMessageLog.addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.CLOCK, Fc.CF,
+                                SubDataAttribute.TIME_SYNC_FREQUENCY,
                                 Integer.toString(configuration.getTimeSyncFrequency()));
                     }
 
@@ -177,8 +177,8 @@ public class Iec61850SetConfigurationCommand {
                         clock.writeBoolean(SubDataAttribute.AUTOMATIC_SUMMER_TIMING_ENABLED,
                                 configuration.isAutomaticSummerTimingEnabled());
 
-                        deviceMessageLog.addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.CLOCK,
-                                Fc.CF, SubDataAttribute.AUTOMATIC_SUMMER_TIMING_ENABLED,
+                        deviceMessageLog.addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.CLOCK, Fc.CF,
+                                SubDataAttribute.AUTOMATIC_SUMMER_TIMING_ENABLED,
                                 Boolean.toString(configuration.isAutomaticSummerTimingEnabled()));
                     }
 
@@ -197,25 +197,52 @@ public class Iec61850SetConfigurationCommand {
                     final DateTime winterTimeDetails = configuration.getWinterTimeDetails();
                     if (summerTimeDetails != null) {
 
-                        final String mwdValueForBeginOfDst = DaylightSavingTimeTransition.forDateTimeAccordingToFormat(
-                                summerTimeDetails, dstFormatMwd).getTransition();
+                        final String mwdValueForBeginOfDst = DaylightSavingTimeTransition
+                                .forDateTimeAccordingToFormat(summerTimeDetails, dstFormatMwd).getTransition();
                         LOGGER.info("Updating DstBeginTime to {} based on SummerTimeDetails {}", mwdValueForBeginOfDst,
                                 summerTimeDetails);
                         clock.writeString(SubDataAttribute.SUMMER_TIME_DETAILS, mwdValueForBeginOfDst);
 
-                        deviceMessageLog.addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.CLOCK,
-                                Fc.CF, SubDataAttribute.SUMMER_TIME_DETAILS, mwdValueForBeginOfDst);
+                        deviceMessageLog.addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.CLOCK, Fc.CF,
+                                SubDataAttribute.SUMMER_TIME_DETAILS, mwdValueForBeginOfDst);
                     }
                     if (winterTimeDetails != null) {
 
-                        final String mwdValueForEndOfDst = DaylightSavingTimeTransition.forDateTimeAccordingToFormat(
-                                winterTimeDetails, dstFormatMwd).getTransition();
+                        final String mwdValueForEndOfDst = DaylightSavingTimeTransition
+                                .forDateTimeAccordingToFormat(winterTimeDetails, dstFormatMwd).getTransition();
                         LOGGER.info("Updating DstEndTime to {} based on WinterTimeDetails {}", mwdValueForEndOfDst,
                                 winterTimeDetails);
                         clock.writeString(SubDataAttribute.WINTER_TIME_DETAILS, mwdValueForEndOfDst);
 
-                        deviceMessageLog.addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.CLOCK,
-                                Fc.CF, SubDataAttribute.WINTER_TIME_DETAILS, mwdValueForEndOfDst);
+                        deviceMessageLog.addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.CLOCK, Fc.CF,
+                                SubDataAttribute.WINTER_TIME_DETAILS, mwdValueForEndOfDst);
+                    }
+                    if (configuration.getNtpEnabled() != null) {
+                        LOGGER.info("Updating ntpEnabled to {}", configuration.getNtpEnabled());
+
+                        clock.writeBoolean(SubDataAttribute.NTP_ENABLED, configuration.getNtpEnabled());
+
+                        deviceMessageLog.addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.CLOCK, Fc.CF,
+                                SubDataAttribute.NTP_ENABLED, Boolean.toString(configuration.getNtpEnabled()));
+                    }
+
+                    if (configuration.getNtpHost() != null) {
+                        LOGGER.info("Updating ntpHost to {}", configuration.getNtpHost());
+
+                        clock.writeString(SubDataAttribute.NTP_HOST, configuration.getNtpHost());
+
+                        deviceMessageLog.addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.CLOCK, Fc.CF,
+                                SubDataAttribute.NTP_HOST, configuration.getNtpHost());
+                    }
+
+                    if (configuration.getNtpSyncInterval() != null) {
+                        LOGGER.info("Updating ntpSyncInterval to {}", configuration.getNtpSyncInterval());
+
+                        clock.writeUnsignedShort(SubDataAttribute.NTP_SYNC_INTERVAL,
+                                configuration.getNtpSyncInterval());
+
+                        deviceMessageLog.addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.CLOCK, Fc.CF,
+                                SubDataAttribute.NTP_SYNC_INTERVAL, configuration.getNtpSyncInterval().toString());
                     }
                 }
 
@@ -244,23 +271,20 @@ public class Iec61850SetConfigurationCommand {
                     LOGGER.info("Updating deviceFixedIpAddress to {}", configuration.getDeviceFixedIp().getIpAddress());
                     ipConfiguration.writeString(SubDataAttribute.IP_ADDRESS, deviceFixedIp.getIpAddress());
 
-                    deviceMessageLog.addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION,
-                            DataAttribute.IP_CONFIGURATION, Fc.CF, SubDataAttribute.IP_ADDRESS,
-                            deviceFixedIp.getIpAddress());
+                    deviceMessageLog.addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.IP_CONFIGURATION,
+                            Fc.CF, SubDataAttribute.IP_ADDRESS, deviceFixedIp.getIpAddress());
 
                     LOGGER.info("Updating deviceFixedIpNetmask to {}", configuration.getDeviceFixedIp().getNetMask());
                     ipConfiguration.writeString(SubDataAttribute.NETMASK, deviceFixedIp.getNetMask());
 
-                    deviceMessageLog
-                            .addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.IP_CONFIGURATION, Fc.CF,
-                            SubDataAttribute.NETMASK, deviceFixedIp.getNetMask());
+                    deviceMessageLog.addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.IP_CONFIGURATION,
+                            Fc.CF, SubDataAttribute.NETMASK, deviceFixedIp.getNetMask());
 
                     LOGGER.info("Updating deviceFixIpGateway to {}", configuration.getDeviceFixedIp().getGateWay());
                     ipConfiguration.writeString(SubDataAttribute.GATEWAY, deviceFixedIp.getGateWay());
 
-                    deviceMessageLog
-                            .addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.IP_CONFIGURATION, Fc.CF,
-                            SubDataAttribute.GATEWAY, deviceFixedIp.getGateWay());
+                    deviceMessageLog.addVariable(LogicalNode.STREET_LIGHT_CONFIGURATION, DataAttribute.IP_CONFIGURATION,
+                            Fc.CF, SubDataAttribute.GATEWAY, deviceFixedIp.getGateWay());
                 }
 
                 // Checking to see if all TLS values are null, so that we

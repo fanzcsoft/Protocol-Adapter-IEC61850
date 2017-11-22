@@ -86,12 +86,25 @@ public class Iec61850SetScheduleCommand {
                                     + MAX_NUMBER_OF_SCHEDULE_ENTRIES + " is not possible.");
                         }
 
+                        // Get the logical node for the relay index.
                         final LogicalNode logicalNode = LogicalNode.getSwitchComponentByIndex(relayIndex);
+                        // Check if the relay can be operated, if not, enable
+                        // operation for the current relay. This is needed to
+                        // ensure that the switch schedule which will be written
+                        // to the device can be executed.
+                        Iec61850SetScheduleCommand.this.enableOperationOfRelay(deviceConnection, iec61850Client,
+                                deviceMessageLog, logicalNode, relayIndex);
+
+                        // Get the logical node and read all the values for the
+                        // schedule of the current relay.
                         final NodeContainer schedule = deviceConnection.getFcModelNode(LogicalDevice.LIGHTING,
                                 logicalNode, DataAttribute.SCHEDULE, Fc.CF);
                         iec61850Client.readNodeDataValues(deviceConnection.getConnection().getClientAssociation(),
                                 schedule.getFcmodelNode());
 
+                        // Write the schedule entries of the switch schedule to
+                        // the logical node of the schedule for the current
+                        // relay.
                         for (int i = 0; i < numberOfScheduleEntries; i++) {
 
                             LOGGER.info("Writing {} schedule entry {} for relay {}", tariffOrLight, i + 1, relayIndex);
@@ -172,8 +185,8 @@ public class Iec61850SetScheduleCommand {
                                         Integer.toString(timeOffValue));
                             }
 
-                            final Byte timeOffActionTime = scheduleNode
-                                    .getByte(SubDataAttribute.SCHEDULE_TIME_OFF_TYPE).getValue();
+                            final Byte timeOffActionTime = scheduleNode.getByte(SubDataAttribute.SCHEDULE_TIME_OFF_TYPE)
+                                    .getValue();
                             if (timeOffActionTime != timeOffTypeValue) {
                                 scheduleNode.writeByte(SubDataAttribute.SCHEDULE_TIME_OFF_TYPE, timeOffTypeValue);
 
@@ -182,8 +195,8 @@ public class Iec61850SetScheduleCommand {
                                         Byte.toString(timeOffTypeValue));
                             }
 
-                            final Integer minimumTimeOn = scheduleNode.getUnsignedShort(
-                                    SubDataAttribute.MINIMUM_TIME_ON).getValue();
+                            final Integer minimumTimeOn = scheduleNode
+                                    .getUnsignedShort(SubDataAttribute.MINIMUM_TIME_ON).getValue();
                             final Integer newMinimumTimeOn = scheduleEntry.getMinimumLightsOn() / 60;
                             if (minimumTimeOn != newMinimumTimeOn) {
                                 scheduleNode.writeUnsignedShort(SubDataAttribute.MINIMUM_TIME_ON, newMinimumTimeOn);
@@ -193,8 +206,8 @@ public class Iec61850SetScheduleCommand {
                                         Integer.toString(newMinimumTimeOn));
                             }
 
-                            final Integer triggerMinutesBefore = scheduleNode.getUnsignedShort(
-                                    SubDataAttribute.SCHEDULE_TRIGGER_MINUTES_BEFORE).getValue();
+                            final Integer triggerMinutesBefore = scheduleNode
+                                    .getUnsignedShort(SubDataAttribute.SCHEDULE_TRIGGER_MINUTES_BEFORE).getValue();
                             if (triggerMinutesBefore != scheduleEntry.getTriggerWindowMinutesBefore()) {
                                 scheduleNode.writeUnsignedShort(SubDataAttribute.SCHEDULE_TRIGGER_MINUTES_BEFORE,
                                         scheduleEntry.getTriggerWindowMinutesBefore());
@@ -204,8 +217,8 @@ public class Iec61850SetScheduleCommand {
                                         Integer.toString(scheduleEntry.getTriggerWindowMinutesBefore()));
                             }
 
-                            final Integer triggerMinutesAfter = scheduleNode.getUnsignedShort(
-                                    SubDataAttribute.SCHEDULE_TRIGGER_MINUTES_AFTER).getValue();
+                            final Integer triggerMinutesAfter = scheduleNode
+                                    .getUnsignedShort(SubDataAttribute.SCHEDULE_TRIGGER_MINUTES_AFTER).getValue();
                             if (triggerMinutesAfter != scheduleEntry.getTriggerWindowMinutesAfter()) {
                                 scheduleNode.writeUnsignedShort(SubDataAttribute.SCHEDULE_TRIGGER_MINUTES_AFTER,
                                         scheduleEntry.getTriggerWindowMinutesAfter());
@@ -216,8 +229,7 @@ public class Iec61850SetScheduleCommand {
                             }
                         }
                     }
-                    DeviceMessageLoggingService.logMessage(deviceMessageLog,
-                            deviceConnection.getDeviceIdentification(),
+                    DeviceMessageLoggingService.logMessage(deviceMessageLog, deviceConnection.getDeviceIdentification(),
                             deviceConnection.getOrganisationIdentification(), false);
                     return null;
                 }
@@ -284,9 +296,9 @@ public class Iec61850SetScheduleCommand {
 
                         // First time we come across this relay, checking its
                         // type.
-                        this.checkRelayForSchedules(
-                                ssldDataService.getDeviceOutputSettingForInternalIndex(ssld, internalIndex)
-                                .getRelayType(), relayType, internalIndex);
+                        this.checkRelayForSchedules(ssldDataService
+                                .getDeviceOutputSettingForInternalIndex(ssld, internalIndex).getRelayType(), relayType,
+                                internalIndex);
 
                         // Adding it to scheduleEntries.
                         final List<ScheduleEntry> scheduleEntries = new ArrayList<>();
@@ -311,12 +323,12 @@ public class Iec61850SetScheduleCommand {
             final WindowTypeDto triggerWindow = schedule.getTriggerWindow();
             if (triggerWindow != null) {
                 if (triggerWindow.getMinutesBefore() > Integer.MAX_VALUE) {
-                    throw new IllegalArgumentException("Schedule TriggerWindow minutesBefore must not be greater than "
-                            + Integer.MAX_VALUE);
+                    throw new IllegalArgumentException(
+                            "Schedule TriggerWindow minutesBefore must not be greater than " + Integer.MAX_VALUE);
                 }
                 if (triggerWindow.getMinutesAfter() > Integer.MAX_VALUE) {
-                    throw new IllegalArgumentException("Schedule TriggerWindow minutesAfter must not be greater than "
-                            + Integer.MAX_VALUE);
+                    throw new IllegalArgumentException(
+                            "Schedule TriggerWindow minutesAfter must not be greater than " + Integer.MAX_VALUE);
                 }
                 builder.triggerWindowMinutesBefore((int) triggerWindow.getMinutesBefore());
                 builder.triggerWindowMinutesAfter((int) triggerWindow.getMinutesAfter());
@@ -340,8 +352,8 @@ public class Iec61850SetScheduleCommand {
             }
             return builder.build();
         } catch (IllegalStateException | IllegalArgumentException e) {
-            throw new ProtocolAdapterException("Error converting ScheduleDto and LightValueDto into a ScheduleEntry: "
-                    + e.getMessage(), e);
+            throw new ProtocolAdapterException(
+                    "Error converting ScheduleDto and LightValueDto into a ScheduleEntry: " + e.getMessage(), e);
         }
     }
 
@@ -383,8 +395,8 @@ public class Iec61850SetScheduleCommand {
      */
     private short convertTime(final String time) throws ProtocolAdapterException {
         if (time == null || !time.matches("\\d\\d:\\d\\d(:\\d\\d)?\\.?\\d*")) {
-            throw new ProtocolAdapterException("Schedule time (" + time
-                    + ") is not formatted as hh:mm, hh:mm:ss or hh:mm:ss.SSS");
+            throw new ProtocolAdapterException(
+                    "Schedule time (" + time + ") is not formatted as hh:mm, hh:mm:ss or hh:mm:ss.SSS");
         }
         return Short.parseShort(time.replace(":", "").substring(0, 4));
     }
@@ -411,6 +423,8 @@ public class Iec61850SetScheduleCommand {
     /**
      * Disable the schedule entries for all relays of a given
      * {@link RelayTypeDto} using the {@link DeviceOutputSetting}s for a device.
+     *
+     * @throws NodeException
      */
     private void disableScheduleEntries(final RelayTypeDto relayTypeDto, final DeviceConnection deviceConnection,
             final Iec61850Client iec61850Client, final DeviceMessageLog deviceMessageLog, final Ssld ssld,
@@ -443,6 +457,30 @@ public class Iec61850SetScheduleCommand {
                             SubDataAttribute.SCHEDULE_ENABLE, Boolean.toString(false));
                 }
             }
+        }
+    }
+
+    private void enableOperationOfRelay(final DeviceConnection deviceConnection, final Iec61850Client iec61850Client,
+            final DeviceMessageLog deviceMessageLog, final LogicalNode logicalNode, final Integer index)
+            throws NodeException {
+        // Check if CfSt.enbOper [CF] is set to true. If it is
+        // not set to true, the relay can not be operated.
+        final NodeContainer masterControl = deviceConnection.getFcModelNode(LogicalDevice.LIGHTING, logicalNode,
+                DataAttribute.MASTER_CONTROL, Fc.CF);
+        iec61850Client.readNodeDataValues(deviceConnection.getConnection().getClientAssociation(),
+                masterControl.getFcmodelNode());
+
+        final BdaBoolean enbOper = masterControl.getBoolean(SubDataAttribute.ENABLE_OPERATION);
+        if (enbOper.getValue()) {
+            LOGGER.info("masterControl.enbOper is true, switching of relay {} is enabled", index);
+        } else {
+            LOGGER.info("masterControl.enbOper is false, switching of relay {} is disabled", index);
+            // Set the value to true.
+            masterControl.writeBoolean(SubDataAttribute.ENABLE_OPERATION, true);
+            LOGGER.info("set masterControl.enbOper to true to enable switching of relay {}", index);
+
+            deviceMessageLog.addVariable(logicalNode, DataAttribute.MASTER_CONTROL, Fc.CF,
+                    SubDataAttribute.ENABLE_OPERATION, Boolean.toString(true));
         }
     }
 }

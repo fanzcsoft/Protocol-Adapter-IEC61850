@@ -17,8 +17,7 @@ import org.springframework.stereotype.Service;
 
 import com.alliander.osgp.adapter.protocol.iec61850.device.rtu.RtuReadCommand;
 import com.alliander.osgp.adapter.protocol.iec61850.device.rtu.RtuWriteCommand;
-import com.alliander.osgp.adapter.protocol.iec61850.exceptions.NodeReadException;
-import com.alliander.osgp.adapter.protocol.iec61850.exceptions.NodeWriteException;
+import com.alliander.osgp.adapter.protocol.iec61850.exceptions.NodeException;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.Iec61850Client;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.SystemService;
 import com.alliander.osgp.adapter.protocol.iec61850.infra.networking.helper.DeviceConnection;
@@ -43,7 +42,7 @@ public class Iec61850EngineSystemService implements SystemService {
 
     @Override
     public GetDataSystemIdentifierDto getData(final SystemFilterDto systemFilter, final Iec61850Client client,
-            final DeviceConnection connection) throws NodeReadException {
+            final DeviceConnection connection) throws NodeException {
 
         final int logicalDeviceIndex = systemFilter.getId();
 
@@ -81,24 +80,17 @@ public class Iec61850EngineSystemService implements SystemService {
 
     @Override
     public void setData(final SetDataSystemIdentifierDto systemIdentifier, final Iec61850Client client,
-            final DeviceConnection connection) throws NodeWriteException {
+            final DeviceConnection connection) throws NodeException {
 
         final int logicalDeviceIndex = systemIdentifier.getId();
 
         LOGGER.info("Set data called for logical device {}{}", DEVICE.getDescription(), logicalDeviceIndex);
 
-        for (final SetPointDto sp : systemIdentifier.getSetPoints()) {
-
-            final RtuWriteCommand<SetPointDto> command = Iec61850SetPointCommandFactory.getInstance()
-                    .getCommand(sp.getNode() + sp.getId());
-
-            if (command == null) {
-                LOGGER.warn("Unsupported set point [{}], skip set data for it.", sp.getNode() + sp.getId());
-            } else {
-                command.executeWrite(client, connection, DEVICE, logicalDeviceIndex, sp);
-            }
-        }
-
+        /*
+         * Set profiles before setpoints, so that profile updates can be
+         * detected by an increment of the SchdId after the profiles are already
+         * set to the RTU
+         */
         for (final ProfileDto p : systemIdentifier.getProfiles()) {
             final RtuWriteCommand<ProfileDto> command = Iec61850WriteProfileCommandFactory.getInstance()
                     .getCommand(p.getNode() + p.getId());
@@ -108,6 +100,17 @@ public class Iec61850EngineSystemService implements SystemService {
                 command.executeWrite(client, connection, DEVICE, logicalDeviceIndex, p);
             }
         }
+
+        for (final SetPointDto sp : systemIdentifier.getSetPoints()) {
+            final RtuWriteCommand<SetPointDto> command = Iec61850SetPointCommandFactory.getInstance()
+                    .getCommand(sp.getNode() + sp.getId());
+            if (command == null) {
+                LOGGER.warn("Unsupported set point [{}], skip set data for it.", sp.getNode() + sp.getId());
+            } else {
+                command.executeWrite(client, connection, DEVICE, logicalDeviceIndex, sp);
+            }
+        }
+
     }
 
 }
