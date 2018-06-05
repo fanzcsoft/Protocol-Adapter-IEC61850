@@ -37,6 +37,7 @@ import com.alliander.osgp.adapter.protocol.iec61850.device.ssld.responses.GetCon
 import com.alliander.osgp.adapter.protocol.iec61850.device.ssld.responses.GetFirmwareVersionDeviceResponse;
 import com.alliander.osgp.adapter.protocol.iec61850.device.ssld.responses.GetPowerUsageHistoryDeviceResponse;
 import com.alliander.osgp.adapter.protocol.iec61850.device.ssld.responses.GetStatusDeviceResponse;
+import com.alliander.osgp.adapter.protocol.iec61850.domain.valueobjects.DeviceConnectionParameters;
 import com.alliander.osgp.adapter.protocol.iec61850.domain.valueobjects.EventType;
 import com.alliander.osgp.adapter.protocol.iec61850.exceptions.ConnectionFailureException;
 import com.alliander.osgp.adapter.protocol.iec61850.exceptions.NodeException;
@@ -411,7 +412,7 @@ public class Iec61850SsldDeviceService implements SsldDeviceService {
             final Ssld ssld = this.ssldDataService.findDevice(deviceRequest.getDeviceIdentification());
 
             new Iec61850SetScheduleCommand().setScheduleOnDevice(this.iec61850Client, deviceConnection,
-                    deviceRequest.getRelayType(), deviceRequest.getScheduleMessageDataContainer().getScheduleList(),
+                    deviceRequest.getRelayType(), deviceRequest.getSchedule().getScheduleList(),
                     ssld, this.ssldDataService);
 
             this.createSuccessfulDefaultResponse(deviceRequest, deviceResponseHandler);
@@ -538,9 +539,14 @@ public class Iec61850SsldDeviceService implements SsldDeviceService {
     // ======================================
 
     private DeviceConnection connectToDevice(final DeviceRequest deviceRequest) throws ConnectionFailureException {
-        return this.iec61850DeviceConnectionService.connectWithoutConnectionCaching(deviceRequest.getIpAddress(),
-                deviceRequest.getDeviceIdentification(), deviceRequest.getOrganisationIdentification(), IED.FLEX_OVL,
-                IED.FLEX_OVL.getDescription(), LogicalDevice.LIGHTING.getDescription());
+
+        final DeviceConnectionParameters deviceConnectionParameters = DeviceConnectionParameters.newBuilder()
+                .ipAddress(deviceRequest.getIpAddress()).deviceIdentification(deviceRequest.getDeviceIdentification())
+                .ied(IED.FLEX_OVL).serverName(IED.FLEX_OVL.getDescription())
+                .logicalDevice(LogicalDevice.LIGHTING.getDescription()).build();
+
+        return this.iec61850DeviceConnectionService.connectWithoutConnectionCaching(deviceConnectionParameters,
+                deviceRequest.getOrganisationIdentification());
     }
 
     // ========================
