@@ -19,7 +19,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jms.listener.SessionAwareMessageListener;
-import org.springframework.stereotype.Component;
 
 import com.alliander.osgp.shared.exceptionhandling.ComponentType;
 import com.alliander.osgp.shared.exceptionhandling.FunctionalException;
@@ -32,7 +31,6 @@ import com.alliander.osgp.shared.infra.jms.MessageProcessorMap;
 import com.alliander.osgp.shared.infra.jms.ProtocolResponseMessage;
 import com.alliander.osgp.shared.infra.jms.ResponseMessageResultType;
 
-@Component(value = "iec61850RequestsMessageListener")
 public class DeviceRequestMessageListener implements SessionAwareMessageListener<Message> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DeviceRequestMessageListener.class);
@@ -55,10 +53,12 @@ public class DeviceRequestMessageListener implements SessionAwareMessageListener
     public void onMessage(final Message message, final Session session) throws JMSException {
         final ObjectMessage objectMessage = (ObjectMessage) message;
         String messageType = null;
+        int messagePriority;
         MessageProcessor processor = null;
         try {
             messageType = message.getJMSType();
-            LOGGER.info("Received message of type: {}", messageType);
+            messagePriority = message.getJMSPriority();
+            LOGGER.info("Received message of type: {} with message priority: {}", messageType, messagePriority);
             processor = this.iec61850RequestMessageProcessorMap.getMessageProcessor(objectMessage);
         } catch (final IllegalArgumentException | JMSException e) {
             LOGGER.error("Unexpected IllegalArgumentException | JMSExceptionduring during onMessage(Message)", e);
@@ -83,8 +83,8 @@ public class DeviceRequestMessageListener implements SessionAwareMessageListener
 
             final DeviceMessageMetadata deviceMessageMetadata = new DeviceMessageMetadata(objectMessage);
             final ProtocolResponseMessage protocolResponseMessage = new ProtocolResponseMessage.Builder()
-            .deviceMessageMetadata(deviceMessageMetadata).domain(domain).domainVersion(domainVersion)
-            .result(result).osgpException(osgpException).dataObject(dataObject).scheduled(false).build();
+                    .deviceMessageMetadata(deviceMessageMetadata).domain(domain).domainVersion(domainVersion)
+                    .result(result).osgpException(osgpException).dataObject(dataObject).scheduled(false).build();
 
             this.deviceResponseMessageSender.send(protocolResponseMessage);
         } catch (final Exception e) {
